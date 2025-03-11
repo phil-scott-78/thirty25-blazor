@@ -23,7 +23,7 @@ With that in mind (and after I read a couple of articles around creating dotnet 
 
 ## dotnet soddi
 
-![soddi screenshot](/Content/Blog/media/2021-01-18-21-42-38.png)
+![soddi screenshot](Content/Blog/media/2021-01-18-21-42-38.png)
 
 Because dotnet-soddi is a dotnet tool, you install it using the `dotnet tool install` command. As of right now, it's still in (very) pre-release so a version number will be needed e.g.
 

@@ -88,7 +88,7 @@ The item will provide intellisense for all the available icons and we'll have a 
 
 The problem is when I go to compile, I now have a 4mb dll that contains every one of those methods.
 
-![all the icons](/Content/Blog/media/2022-11-20-14-33-15.png)
+![all the icons](Content/Blog/media/2022-11-20-14-33-15.png)
 
 Ouch.
 
@@ -112,4 +112,4 @@ dotnet publish -c Release
 
 the output of our library is much different. It goes from 4mb down to 9kb! No third party javascript, no external fonts - just pure C# writing out the icons as a SVG.
 
-![only what we used](/Content/Blog/media/2022-11-20-14-34-02.png)
+![only what we used](Content/Blog/media/2022-11-20-14-34-02.png)

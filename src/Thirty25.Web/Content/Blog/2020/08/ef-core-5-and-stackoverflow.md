@@ -164,7 +164,7 @@ with the following comment. It'll disable inspections for the entire file.
 Another option would be to move the generated models and context into their own folder that is marked as generated in
 your Resharper or Rider Options.
 
-![Rider Settings Page](/Content/Blog/media/generated-files-settings.png)
+![Rider Settings Page](Content/Blog/media/generated-files-settings.png)
 
 When you save these make sure to save them to your Team Shared Settings. This will create a
 `solution-name.sln.dotsettings` file that you should commit to source control. Without this file in source control other

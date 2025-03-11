@@ -1,41 +1,65 @@
-name: Build and publish to gh pages
+name: Build and publish to GitHub Pages
 
 on:
   push:
-    branches: [ "*" ]
+    branches: [ "main" ]
+
 env:
   ASPNETCORE_ENVIRONMENT: Production
   WEBAPP_PATH: ./src/Thirty25.Web/
   WEBAPP_CSPROJ: Thirty25.Web.csproj
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write 
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          
       - name: Remove launchSettings.json (to not override ASPNETCORE_ENVIRONMENT)
-        run: rm  ${{ env.WEBAPP_PATH }}Properties/launchSettings.json
+        run: rm ${{ env.WEBAPP_PATH }}Properties/launchSettings.json
+        
       - name: Add Base HTML
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: kannansuresh/ghaction-base-href-rewriter@v1.0.0
         with:
-          find: '<base href="/"'
-          replace: '<base href="/thirty25-blazor/"'
-          include: "${{ env.WEBAPP_PATH }}/output/index.html"
-          regex: false
+          base_href: '/thirty25-blazor/'
+          html_glob: '${{ env.WEBAPP_PATH }}Components/App.razor'
+          
       - name: Run webapp and generate static files
-        run: |
-          dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}}  --configuration Release
-          
-      - run: touch ${{ env.WEBAPP_PATH }}/output/.nojekyll #folder starting with _ are handled as jekyll. This file will prevent that.  
-          
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        run: dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Add .nojekyll file
+        run: touch ${{ env.WEBAPP_PATH }}output/.nojekyll
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: ${{ env.WEBAPP_PATH }}output
-  
+          path: ${{ env.WEBAPP_PATH }}output
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

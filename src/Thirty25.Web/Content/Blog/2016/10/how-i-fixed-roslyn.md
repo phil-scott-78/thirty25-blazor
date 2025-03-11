@@ -102,7 +102,7 @@ things broke. Hopefully with that information I could see what changed and figur
 state. A quick look at the difference between what's in VS 2015 Update 3 and VS15 unfortunately provide slightly
 overwhelming.
 
-![3,700 commits](/Content/Blog/media/commits.png)
+![3,700 commits](Content/Blog/media/commits.png)
 
 But I did have a powerful thing at my disposal. My reproducible test case was an actual program. I can automate this.
 Git has a nice tool called [`bisect`](https://git-scm.com/docs/git-bisect) just for this. TLDR of `git bisect` if you
@@ -162,14 +162,14 @@ bisect run success
 Fantastic. Looks like I found the guilty commit. Hopefully I could open this up and spot whatever changed relatively
 quickly. Unfortunately, well, this was a huge commit.
 
-![Lots of changes](/Content/Blog/media/huge-commit.png)
+![Lots of changes](Content/Blog/media/huge-commit.png)
 
 Sigh. Lots of code to read, but it looked like quite a bit of it was unit tests. Knowing I was dealing with a lambda
 issue there was one thing to do at this point - `CTRL-F` and search for lambda in the
 [commit on github](https://github.com/dotnet/roslyn/commit/6c9e18649f576bd9df1e0db8ad21bfbce0454704). Eye balling the
 highlighted results showed a couple of hot spots with `lambda` appearing frequently so I quickly scrolled there.
 
-![Is that a debug.assert](/Content/Blog/media/lambda-assert.png)
+![Is that a debug.assert](Content/Blog/media/lambda-assert.png)
 
 That looks like somewhere to start! But I needed a better way to test than hitting the command line and compiling over
 and over again. I needed a unit test. I found a file named

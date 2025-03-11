@@ -17,7 +17,7 @@ end up representing the bulk of the code in the web application portion of nearl
 But one little thing starts to bother me when working with these libraries is ReSharper and Rider insistence that my
 implementations of these tools are unused.
 
-![Unused images as seen in rider](/Content/Blog/media/unused-classes.png)
+![Unused images as seen in rider](Content/Blog/media/unused-classes.png)
 
 Take this sample code from
 [Jimmy Bogard's Contoso University ASP.NET Pages demo application](https://github.com/jbogard/ContosoUniversityDotNetCore-Pages).
@@ -52,7 +52,7 @@ familiar with this pattern to not get the warnings. One way we can overcome this
 `JetBrains.Annotations` NuGet package. It contains the `[UsedImplicitly]` annotation. This annotation hints to the
 inspector that the class is not instantiated directly.
 
-![Used implicitly applied](/Content/Blog/media/used-implicitly.png)
+![Used implicitly applied](Content/Blog/media/used-implicitly.png)
 
 While this solves the warning, it's ugly and gets repetitive real quick.
 
@@ -155,7 +155,7 @@ But once you reload your solution, your handlers, validators and profiles should
 want to verify the attribute has been applied you can select one of the classes we wrote the external annotations for
 and choose "Quick Documentation" (`CTRL-SHIFT-F1`).
 
-![Quick documentation](/Content/Blog/media/quick-documentation.png)
+![Quick documentation](Content/Blog/media/quick-documentation.png)
 
 Here we see the `UsedImplicitly` flag being applied.
 

@@ -73,7 +73,7 @@ While it is a simple profile, launching it results in a blank screen followed by
 
 So let's find out what the hold up is. First things first, I want to create a new Windows Terminal Profile for launching PowerShell without a profile. We are going to do some measuring of our script speed and it is critical nothing is loaded when we do so. To do so create a new profile and set the command line to `pwsh.exe -noProfile`.
 
-![Windows Terminal PowerShell no Profile](/Content/Blog/media/2021-12-12-21-13-58.png)
+![Windows Terminal PowerShell no Profile](Content/Blog/media/2021-12-12-21-13-58.png)
 
 We need to do this because we are going to use a profiling tool to measure the script line-by-line. The tool I like to use is [PSProfiler](https://github.com/IISResetMe/PSProfiler). I personally use the `1.0.5-preview1` release which includes a a nice feature for highlighting the slowest lines.
 
@@ -94,7 +94,7 @@ Measure-Script -Path $PROFILE -Top 5
 
 This script will launch our profile and measure each line's performance. With the `-Top` command it'll also go ahead and highlight the top 5 slowest lines.
 
-![PSProfiler results](/Content/Blog/media/2021-12-12-21-28-41.png)
+![PSProfiler results](Content/Blog/media/2021-12-12-21-28-41.png)
 
 Taking a look at my script's performance we can see that while posh-git and zlocation are both taking over 100ms each, it's loading up the Visual Studio Shell that's really eating up some time. It's over half a second by itself. Unfortunately that half a second is going to be the fastest we can run our profile. It's a single line and we have to live with it.
 
@@ -199,7 +199,7 @@ Run-Step "VS2022 Shell" {
 }
 ```
 
-![Final Powershell prompt](/Content/Blog/media/full-loading.gif)
+![Final Powershell prompt](Content/Blog/media/full-loading.gif)
 
 ## Really Stretching for Performance
 

@@ -28,9 +28,8 @@ app.Run();
 
 public static class WebsiteKeys
 {
-    public const string GitHubRepo = "https://github.com/BlazorStatic/Thirty25.Web";
-    public const string X = "https://x.com/";
+    public const string GitHubRepo = "https://github.com/phil-scott-78/thirty25-blazor";
     public const string Title = "Thirty25";
-    public const string BlogPostStorageAddress = $"{GitHubRepo}/tree/main/Content/Blog";
+    public const string BlogPostStorageAddress = $"{GitHubRepo}/tree/main/src/Thirty25.Web/Content/Blog";
     public const string BlogLead = "Quite exciting this computer magic";
 }

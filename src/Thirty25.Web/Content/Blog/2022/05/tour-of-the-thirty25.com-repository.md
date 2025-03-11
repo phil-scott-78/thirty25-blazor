@@ -23,7 +23,7 @@ The `-b` creates a new branch and `-e` launches VS Code. I like to put new posts
 
 https://github.com/phil-scott-78/thirty25-statiq/blob/main/Statiq/NewPostCommand.cs
 
-![New-Post](/Content/Blog/media/2022-05-30-02-19-19.png)
+![New-Post](Content/Blog/media/2022-05-30-02-19-19.png)
 
 png-compress is another command. It looks at all files edited or untracked for the current commit and uses TinyPng to compress them. You can find that command here.
 
@@ -37,7 +37,7 @@ To use you'll need an API key from tinypng and set its value with a `TinyPngKey`
 
 https://github.com/phil-scott-78/thirty25-statiq/blob/main/Statiq/PngCompress.cs
 
-![running png-compress](/Content/Blog/media/2022-05-30-02-28-36.png)
+![running png-compress](Content/Blog/media/2022-05-30-02-28-36.png)
 
 ## Roslyn highlighting
 
@@ -49,7 +49,7 @@ https://github.com/phil-scott-78/thirty25-statiq/blob/main/Statiq/RoslynHighligh
 
 Social cards are generated for each post using an [ASP.NET razor file](https://github.com/phil-scott-78/thirty25-statiq/blob/main/Statiq/SocialCard.cshtml) to convert the razor output to a png using Playwright.
 
-![Social media card in action](/Content/Blog/media/2022-05-30-02-34-53.png)
+![Social media card in action](Content/Blog/media/2022-05-30-02-34-53.png)
 
 https://github.com/phil-scott-78/thirty25-statiq/blob/main/Statiq/Pipelines/SocialImages.cs
 

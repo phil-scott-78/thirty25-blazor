@@ -4,7 +4,7 @@ A minimalistic blog template designed to get your Blazor-based blog up and runni
 the [BlazorStatic](https://github.com/tesar-tech/BlazorStatic) library to convert a Blazor app into a static site
 generator
 
-<img src="./Content/Blog/media/programming_bug.jpg"  width="200" >
+<img src=".Content/Blog/media/programming_bug.jpg"  width="200" >
 
 ## Features
 
