@@ -501,76 +501,38 @@ body, ::before, ::after {
   font-size:1rem;
   line-height:1.5555556;
 }
-.prose ol[type="i"] {
-  list-style-type:lower-roman;
-}
-.prose thead {
-  border-bottom-color:var(--monorail-prose-th-borders);
-  border-bottom-width:1px;
-}
-.prose tbody tr:last-child {
-  border-bottom-width:0px;
-}
-.prose p {
-  margin-bottom:1.25em;
-  margin-top:1.25em;
-}
-.prose h2 strong {
-  font-weight:800;
-}
-.prose ol[type="a"] {
-  list-style-type:lower-alpha;
-}
-.prose h3 {
-  color:var(--monorail-prose-headings);
-  font-size:1.25em;
-  font-weight:600;
-  line-height:1.6;
-  margin-bottom:0.6em;
-  margin-top:1.6em;
-}
-.prose h4 {
-  color:var(--monorail-prose-headings);
-  font-weight:600;
-  line-height:1.5;
-  margin-bottom:0.5em;
-  margin-top:1.5em;
-}
-.prose h4 strong {
-  font-weight:700;
-}
 .prose ol {
   list-style-type:decimal;
   margin-bottom:1.25em;
   margin-top:1.25em;
   padding-left:1.25em;
 }
-.prose pre code {
-  background-color:transparent;
-  border-radius:0;
-  border-width:0;
-  color:inherit;
-  font-family:inherit;
-  font-size:inherit;
-  font-weight:inherit;
-  line-height:inherit;
-  padding:0;
-}
-.prose h1 strong {
-  font-weight:900;
-}
-.prose h3 strong {
+.prose h2 {
+  color:var(--monorail-prose-headings);
+  font-size:1.5em;
   font-weight:700;
+  line-height:1.3333333;
+  margin-bottom:0.6em;
+  margin-top:2em;
+}
+.prose ol[type="i"] {
+  list-style-type:lower-roman;
+}
+.prose ol > li {
+  padding-left:0.375em;
+}
+.prose ol[type="I"] {
+  list-style-type:upper-roman;
 }
 .prose ol[type="A"] {
   list-style-type:upper-alpha;
 }
-.prose tfoot {
-  border-top-color:var(--monorail-prose-th-borders);
-  border-top-width:1px;
-}
-.prose ol > li {
-  padding-left:0.375em;
+.prose table {
+  margin-bottom:2em;
+  margin-top:2em;
+  table-layout:auto;
+  text-align:left;
+  width:100%;
 }
 .prose ol[type="1"] {
   list-style-type:decimal;
@@ -579,17 +541,28 @@ body, ::before, ::after {
   border-bottom-color:var(--monorail-prose-td-borders);
   border-bottom-width:1px;
 }
-.prose tbody td {
-  vertical-align:baseline;
+.prose h1 strong {
+  font-weight:900;
 }
-.prose ol[type="I"] {
-  list-style-type:upper-roman;
+.prose thead th {
+  color:var(--monorail-prose-headings);
+  font-weight:600;
+  vertical-align:bottom;
 }
-.prose ul {
-  list-style-type:disc;
+.prose p {
   margin-bottom:1.25em;
   margin-top:1.25em;
-  padding-left:1.25em;
+}
+.prose h3 strong {
+  font-weight:700;
+}
+.prose h3 {
+  color:var(--monorail-prose-headings);
+  font-size:1.25em;
+  font-weight:600;
+  line-height:1.6;
+  margin-bottom:0.6em;
+  margin-top:1.6em;
 }
 .prose pre {
   background-color:var(--monorail-prose-pre-bg);
@@ -606,6 +579,12 @@ body, ::before, ::after {
   padding-right:1.1428571em;
   padding-top:0.8571429em;
 }
+.prose h4 strong {
+  font-weight:700;
+}
+.prose tbody tr:last-child {
+  border-bottom-width:0px;
+}
 .prose h1 {
   color:var(--monorail-prose-headings);
   font-size:2.25em;
@@ -614,32 +593,49 @@ body, ::before, ::after {
   margin-bottom:0.8888889em;
   margin-top:0;
 }
-.prose table {
-  margin-bottom:2em;
-  margin-top:2em;
-  table-layout:auto;
-  text-align:left;
-  width:100%;
+.prose tfoot {
+  border-top-color:var(--monorail-prose-th-borders);
+  border-top-width:1px;
 }
 .prose ul > li {
   padding-left:0.375em;
 }
-.prose thead th {
+.prose tbody td {
+  vertical-align:baseline;
+}
+.prose ol[type="a"] {
+  list-style-type:lower-alpha;
+}
+.prose h4 {
   color:var(--monorail-prose-headings);
   font-weight:600;
-  vertical-align:bottom;
+  line-height:1.5;
+  margin-bottom:0.5em;
+  margin-top:1.5em;
 }
-.prose code {
-  color:var(--monorail-prose-code);
-  font-weight:600;
+.prose h2 strong {
+  font-weight:800;
 }
-.prose h2 {
-  color:var(--monorail-prose-headings);
-  font-size:1.5em;
-  font-weight:700;
-  line-height:1.3333333;
-  margin-bottom:0.6em;
-  margin-top:2em;
+.prose ul {
+  list-style-type:disc;
+  margin-bottom:1.25em;
+  margin-top:1.25em;
+  padding-left:1.25em;
+}
+.prose thead {
+  border-bottom-color:var(--monorail-prose-th-borders);
+  border-bottom-width:1px;
+}
+.prose pre code {
+  background-color:transparent;
+  border-radius:0;
+  border-width:0;
+  color:inherit;
+  font-family:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  line-height:inherit;
+  padding:0;
 }
 .prose a {
   border-bottom-color:oklch(0.623 0.214 259.815 / 75%);
@@ -647,6 +643,10 @@ body, ::before, ::after {
   color:var(--monorail-prose-links);
   font-weight:inherit;
   text-decoration:none;
+}
+.prose code {
+  color:var(--monorail-prose-code);
+  font-weight:600;
 }
 .dark .dark\:prose-invert {
   --monorail-prose-body:var(--monorail-prose-invert-body);
@@ -962,6 +962,20 @@ body, ::before, ::after {
     font-size:1rem;
     line-height:1.5555556;
   }
+  .md\:prose-base ol {
+    margin-bottom:1.25em;
+    margin-top:1.25em;
+    padding-left:1.25em;
+  }
+  .md\:prose-base h2 {
+    font-size:1.5em;
+    line-height:1.3333333;
+    margin-bottom:0.6em;
+    margin-top:2em;
+  }
+  .md\:prose-base ol > li {
+    padding-left:0.375em;
+  }
   .md\:prose-base p {
     margin-bottom:1.25em;
     margin-top:1.25em;
@@ -971,24 +985,6 @@ body, ::before, ::after {
     line-height:1.6;
     margin-bottom:0.6em;
     margin-top:1.6em;
-  }
-  .md\:prose-base h4 {
-    line-height:1.5;
-    margin-bottom:0.5em;
-    margin-top:1.5em;
-  }
-  .md\:prose-base ol {
-    margin-bottom:1.25em;
-    margin-top:1.25em;
-    padding-left:1.25em;
-  }
-  .md\:prose-base ol > li {
-    padding-left:0.375em;
-  }
-  .md\:prose-base ul {
-    margin-bottom:1.25em;
-    margin-top:1.25em;
-    padding-left:1.25em;
   }
   .md\:prose-base pre {
     font-size:0.875em;
@@ -1009,11 +1005,15 @@ body, ::before, ::after {
   .md\:prose-base ul > li {
     padding-left:0.375em;
   }
-  .md\:prose-base h2 {
-    font-size:1.5em;
-    line-height:1.3333333;
-    margin-bottom:0.6em;
-    margin-top:2em;
+  .md\:prose-base h4 {
+    line-height:1.5;
+    margin-bottom:0.5em;
+    margin-top:1.5em;
+  }
+  .md\:prose-base ul {
+    margin-bottom:1.25em;
+    margin-top:1.25em;
+    padding-left:1.25em;
   }
   .md\:h-12 {
     height:3rem;
