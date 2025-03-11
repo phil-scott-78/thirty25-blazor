@@ -1,0 +1,41 @@
+name: Build and publish to gh pages
+
+on:
+  push:
+    branches: [ "*" ]
+env:
+  ASPNETCORE_ENVIRONMENT: Production
+  WEBAPP_PATH: ./src/Thirty25.Web/
+  WEBAPP_CSPROJ: Thirty25.Web.csproj
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Remove launchSettings.json (to not override ASPNETCORE_ENVIRONMENT)
+        run: rm  ${{ env.WEBAPP_PATH }}Properties/launchSettings.json
+      - name: Add Base HTML
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: '<base href="/"'
+          replace: '<base href="/thirty25-blazor/"'
+          include: "${{ env.WEBAPP_PATH }}/output/index.html"
+          regex: false
+      - name: Run webapp and generate static files
+        run: |
+          dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}}  --configuration Release
+          
+      - run: touch ${{ env.WEBAPP_PATH }}/output/.nojekyll #folder starting with _ are handled as jekyll. This file will prevent that.  
+          
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ${{ env.WEBAPP_PATH }}output
+  
