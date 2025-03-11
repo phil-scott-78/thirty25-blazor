@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2020-08-26T00:00:00.000">August 26, 2020</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>CQRS Repository with EF Core</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>Chances are the only reason you clicked on this article was to scroll right to the comments so you can call me an idiot.
+&quot;<code>DbSet</code> IS a repository!&quot; you are here to tell me. Well yes. But maybe, just maybe, we can have a bit of a better
+repository. We'll leave all the functionality on the existing <code>DbSet</code> and expose it directly. Our main work will be
+wrapping up our <code>DbContext</code> and adding a little extra to make things a bit easier when working in a CQRS architecture.</p>
+<h2 id="setting-up-a-useless-repository">Setting Up A Useless Repository</h2>
+<p>Our basic querying interface will look like this</p>
+<pre><code class="language-c#">public interface IRepository&lt;TContext&gt; where TContext : DbContext
+{
+    IQueryable&lt;T&gt; Query&lt;T&gt;() where T : class;
+}
+</code></pre>
+<p>Because <code>DbSet</code> is the repository pattern we just need to expose it.</p>
+<pre><code class="language-c#">public class Repository&lt;TContext&gt; : IRepository&lt;TContext&gt; where TContext : DbContext
+{
+    private readonly TContext _context;
+
+    public Repository(TContext context) =&gt; _context = context;
+    public IQueryable&lt;T&gt; Query&lt;T&gt;() where T : class =&gt; _context.Set&lt;T&gt;();
+}
+</code></pre>
+<p>Looking good! Now we'll use our DI framework of choice that supports open generics to wire our interface up. Once that's
+done querying will look something along the lines of</p>
+<pre><code class="language-c#">await _repository.Query&lt;Blogs&gt;().FirstAsync(i =&gt; i.Id = 123);
+</code></pre>
+<p>Two steps back, zero steps forward so far. But this is just the base. Let's solve some pain points.</p>
+<h2 id="problem-one-tagging">Problem One - Tagging</h2>
+<p>A feature gone unnoticed for many with EF Core 2.2 was the addition of
+<a href="https://docs.microsoft.com/en-us/ef/core/querying/tags">Query tags</a>. This allows us to include a comment in the
+generated SQL. This may not seem like a huge deal, but once our code makes it to production and our SQL DBA is sending
+you questions on some costly query that's showing up in the Query Store we can use the information included in this tag
+to track down the problematic code.</p>
+<p>Given this linq query</p>
+<pre><code class="language-c#">var context = new BlogContext();
+var blogs = await context.Blogs
+    .TagWith(&quot;Querying all blogs&quot;)
+    .ToListAsync();
+</code></pre>
+<p>With this is the SQL that is executed with our tag</p>
+<pre><code class="language-sql">-- Querying all blogs
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+</code></pre>
+<p>It's important to remember that this is what's sent to the server. That means it is what will show up a trace session or
+the query store. These tags are helpful when you start seeing expensive queries that could come from anywhere in the
+app. Well, that is if we remembered to include it.</p>
+<p>So, let's include it automatically.</p>
+<p>While it's nice to have some text in there what if we included the method name and filename? We can rely on a little
+compiler magic and add that to our repository.</p>
+<pre><code class="language-c#">public IQueryable&lt;T&gt; Query&lt;T&gt;(
+    [System.Runtime.CompilerServices.CallerMemberName]
+    string memberName = &quot;&quot;,
+    [System.Runtime.CompilerServices.CallerFilePath]
+    string sourceFilePath = &quot;&quot;,
+    [System.Runtime.CompilerServices.CallerLineNumber]
+    int sourceLineNumber = 0) where T : class
+{
+    return _context.Set&lt;T&gt;()
+        .TagWith($&quot;{memberName} {sourceFilePath}:{sourceLineNumber}&quot;);
+}
+</code></pre>
+<p>Our new <code>Query</code> method now takes 3 optional parameter marked with
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/caller-information">caller information</a>.
+If you aren't familiar with these attributes the compiler will automatically populate those fields with the appropriate
+values. Keep in mind that they are populated by the compiler and not at runtime so there won't be a performance penalty.
+One gotcha here is we need to make sure our interface also has the same attributes. Without both the interface and
+implementation having the interfaces you'll get the default values.</p>
+<p>Now when we rerun our our original LINQ query, we generated SQL somewhat like the following</p>
+<pre><code class="language-sql">-- Can_query() C:\projects\repo\RepositoryTests.cs:42
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;BlogId&quot; = 123
+LIMIT 1
+</code></pre>
+<p>With this change we now automatically get all our queries tagged with their source. <code>TagWith()</code> can be chained too,
+allowing us to still provide extra details when the need arises.</p>
+<pre><code class="language-c#">var first = await repository.Query(i =&gt; i.Blogs)
+    .TagWith(&quot;Querying blog 123&quot;)
+    .FirstOrDefaultAsync(i =&gt; i.BlogId == 123);
+</code></pre>
+<p>produces</p>
+<pre><code class="language-sql">-- Can_query() C:\projects\repo\RepositoryTests.cs:42
+
+-- Querying blog 123
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;BlogId&quot; = 123
+LIMIT 1
+</code></pre>
+<h2 id="problem-2-commands-and-queries">Problem 2 - Commands and Queries</h2>
+<p><a href="https://martinfowler.com/bliki/CQRS.html">Command Query Responsibility Segregation</a> (CQRS) isn't new, but it has seen a
+rise in popularity of late. If you aren't familiar with it, I'll leave getting into the weeds of that pattern for
+someone else. For our purposes we'll stick to a super simple idea that an architecture with different code path for when
+doing queries and commands is sometimes useful. One way I like to enforce this is with two repositories - a command and
+a query repository.</p>
+<p>For our purposes we'll split <code>IRepository&lt;T&gt;</code> into <code>ICommandRepository&lt;T&gt;</code> and <code>IQueryRepository&lt;T&gt;</code>. Query repository
+stays the same with just a <code>Query</code> method. That's all it needs. We won't be updating the data when issuing our queries
+so no need for anything else. Our command repository we'll add a simple <code>SaveChangesAsync()</code> and <code>Set&lt;T&gt;</code> for working
+directly with the <code>DbSet</code> and persisting the data.</p>
+<pre><code class="language-c#">public Task SaveChangesAsync() =&gt; _context.SaveChangesAsync();
+public DbSet&lt;T&gt; Set&lt;T&gt;() where T : class =&gt; _context.Set&lt;T&gt;();
+</code></pre>
+<p>Save changes doesn't allow tagging, unfortunately, so our implementation is dead simple. Now our code to create and
+persist an item would look something like this</p>
+<pre><code class="language-csharp">var blog = new Blog()
+{
+    Url = &quot;http://example.com/rss.xml&quot;,
+    BlogId = 123
+};
+
+await commandRepository.Set&lt;Blog&gt;.AddAsync(blog);
+await commandRepository.SaveChangesAsync();
+</code></pre>
+<p>Not a ton of value being added, even though it is nice having two implementations that are explicit on their use. But
+there is one EF detail that we can include in our query repository. Our <code>QueryRepository</code> will never return data that
+will be used for updates in a <code>DbContext</code>. We don't even have a method to persist it if we wanted. With EF when you are
+querying data it makes sense to also call <code>AsNoTracking()</code>. By default,
+<a href="https://docs.microsoft.com/en-us/ef/core/querying/tracking">EF will include tracking details</a> when we query. This data
+can become quite cumbersome over time and introduces a performance penalty when all we want is read-only data. When we
+are using our <code>QueryRepository</code> that is precisely what we are doing so let's include it. Now our implementation while
+simple is providing a much better foundation for queries.</p>
+<pre><code class="language-c#">public IQueryable&lt;T&gt; Query&lt;T&gt;(
+    [System.Runtime.CompilerServices.CallerMemberName]
+    string memberName = &quot;&quot;,
+    [System.Runtime.CompilerServices.CallerFilePath]
+    string sourceFilePath = &quot;&quot;,
+    [System.Runtime.CompilerServices.CallerLineNumber]
+    int sourceLineNumber = 0) where T : class
+{
+    return _context.Set&lt;T&gt;()
+        .AsNoTracking()
+        .TagWith($&quot;{memberName}() {sourceFilePath}:{sourceLineNumber}&quot;);
+}
+</code></pre>
+<h2 id="problem-3-dbcontextfactory-management">Problem 3 - DbContextFactory Management</h2>
+<p>With EF Core 5 preview 7 Microsoft
+<a href="https://devblogs.microsoft.com/dotnet/announcing-entity-framework-core-ef-core-5-0-preview-7/#dbcontextfactory">shipped a context factory</a>
+out of the box with EF Core. Many people have rolled their own implementation, but if you haven't ran across this
+pattern the added benefit of using a factory comes when you are relying on dependency injection. Take for example a
+controller taking in a <code>DbContext</code> as a dependency.</p>
+<p>In our scenario maybe we are doing some basic validation on the command that is requested. If it doesn't meet our rules
+we send back a <code>BadRequest</code> without touching the database. But if our constructor is asking for <code>DbContext</code> that means
+ASP.NET is gonna build up an instance even though we don't need one. Even for a simple context this can be at least 20ms
+of time and allocations we don't need. By using a factory ASP.NET will give us an instance of the factory, which by
+default is a singleton. So in our <code>BadRequest</code> example there would be now zero allocations and no time spent building
+the context.</p>
+<p>The downside is we must now manage the lifetime of the context. This can be done pretty simply with an <code>using</code>
+statement, but that is still one more thing to worry about while writing code and doing code reviews. If we've gone
+through the trouble of creating our repository we might as well do this once here.</p>
+<p>Now our constructor of our repository will look something like this</p>
+<pre><code class="language-c#">private readonly Lazy&lt;TContext&gt; _context;
+
+public CommandRepository(IDbContextFactory&lt;TContext&gt; contextFactory)
+{
+    _context = new Lazy&lt;TContext&gt;(contextFactory.CreateDbContext);
+}
+</code></pre>
+<p>Because <code>_context</code> is now lazy we'll need to adjust our instance methods to use the <code>.Value</code> property</p>
+<pre><code class="language-c#">public Task SaveChangesAsync() =&gt; _context.Value.SaveChangesAsync();
+public DbSet&lt;T&gt; Set&lt;T&gt;() where T : class =&gt; _context.Value.Set&lt;T&gt;();
+public DbSet&lt;T&gt; Set&lt;T&gt;(Func&lt;TContext, DbSet&lt;T&gt;&gt; action) where T : class
+    =&gt; action.Invoke(_context.Value);
+</code></pre>
+<p>and we'll also need to dispose because that's the whole reason we are going through this trouble</p>
+<pre><code class="language-c#">public void Dispose()
+{
+    if (_context.IsValueCreated) _context.Value.Dispose();
+}
+</code></pre>
+<p>Assuming we adjust our container properly we shouldn't have to adjust any of our code. A more complete example might
+toss the <code>Lazy</code> altogether and reduce our allocations even further.</p>
+<h2 id="pros-and-cons">Pros and Cons</h2>
+<p>Obviously this usage isn't for everyone. But I find by restricting the surface of <code>DbContext</code> on commands plus enhancing
+<code>IQueryable</code> with our tags and automatic <code>AsNoTracking</code> it produces more consistent code.</p>
+<h3 id="pros">Pros</h3>
+<ul>
+<li>Automatic tagging of all queries with member name, source file and line number for debugging in SQL tools.</li>
+<li>Automatic disabling of tracking information in code paths that are query only.</li>
+<li>No temptation to include commands in query only code path. You must be explicit with the command repository.</li>
+<li>Command repositories have enforced standard code paths. E.g. without adding <code>Add</code> method to the repository interface
+developers will need to be consistent and use the <code>DbSet</code> implementation.</li>
+<li>We aren't hiding <code>DbSet</code> or <code>IQueryable</code> allowing the devs to work with EF in an optimal fashion and not have to
+write a ton of boiler plate <code>Get</code>, <code>GetAll</code>, <code>GetById</code>, etc implementations of your typical <code>IRepository</code>
+implementation around EF.</li>
+</ul>
+<h3 id="cons">Cons</h3>
+<ul>
+<li>As you need more functionality exposed from the <code>DbContext</code> you may find yourself expanding out the interfaces.
+Ideally you can leave these two interfaces slim and add new services when needing to work with underlying
+<code>DbContext</code> details.</li>
+<li>If you are used to using <code>IRepository</code> because it makes mocking your data access easier than mocking out EF's
+objects this won't help you as you'll still need to mock <code>DbSet</code>.</li>
+<li>You look like a crazy person for wrapping a perfectly good repository pattern.</li>
+</ul>
+<h2 id="example-code-notes">Example Code Notes</h2>
+<p>The code in the repository is configured using Lamar as a container with a SQLite backend to demonstrate what would be
+closer to real world usage. It also expands upon the repositories to include a <code>Set</code> and <code>Query</code> method that accept a
+lambda to allow code such as <code>Query(i =&gt; i.Blogs)</code> for better discoverability of the context's <code>DbSet</code> members.</p>
+<p>To demonstrate the <code>IDbContextFactory</code> we are targeting EF Core 5 preview bits which require .NET Standard 2.1. The CQRS
+portion works fine in EF Core 3 as long as you rework the constructor to take a <code>DbContext</code> directly.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2020/08/cqrs-ef-core-repository-pattern">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Entity Framework">Entity Framework</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

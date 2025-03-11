@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2021-12-10T00:00:00.000">December 10, 2021</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Better Tagging of EF Core Queries with .NET 6</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p><strong>Note:</strong> This is an updated version of a <a href="../../2020/09/tagging-query-with-ef-core/">previous post</a> that extends the functionality using .NET 6.</p>
+<p>With <a href="https://devblogs.microsoft.com/dotnet/announcing-entity-framework-core-2-2/#query-tags">EF Core 2.2</a> Microsoft
+added the <code>TagWith</code> extension method. This allows us to write a query such as</p>
+<pre><code class="language-csharp">var result = await bloggingContext.Blogs
+    .Where(i =&gt; i.Url.StartsWith(&quot;http://example.com&quot;))
+    .TagWith(&quot;Looking for example.com&quot;)
+    .FirstOrDefaultAsync();
+</code></pre>
+<p>Now when you execute your code the following statement, you'll see a comment included with the command</p>
+<pre><code class="language-sql">-- Looking for example.com
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'http://%')
+LIMIT 1
+</code></pre>
+<p>The <a href="../../2020/09/tagging-query-with-ef-core/">previous post on tagging</a> introduced my <code>TagWithSource</code> that extended this functionality by automatically including the caller information.</p>
+<p>Well, a year later EF Core 6 now includes <a href="https://docs.microsoft.com/en-us/ef/core/what-is-new/ef-core-6.0/whatsnew#tag-queries-with-file-name-and-line-number"><code>TagWithCallSite</code></a> so this functionality is built in.</p>
+<pre><code class="language-csharp">var result = await bloggingContext.Blogs
+    .Where(i =&gt; i.Url.StartsWith(&quot;https://&quot;))
+    .Take(5)
+    .OrderBy(i =&gt; i.BlogId)
+    .TagWithCallSite()
+    .ToListAsync();
+</code></pre>
+<p>This will now include the file (but no method name) in the query, similar to my previous post.</p>
+<pre><code class="language-sql">-- File: R:\thirty25\ef-core-tagging\tests\EfCoreTagging.Tests\UnitTest1.cs:46
+
+SELECT &quot;t&quot;.&quot;BlogId&quot;, &quot;t&quot;.&quot;Url&quot;
+FROM (
+    SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+    FROM &quot;Blogs&quot; AS &quot;b&quot;
+    WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'https://%')
+    LIMIT @__p_0
+) AS &quot;t&quot;
+ORDER BY &quot;t&quot;.&quot;BlogId&quot;
+</code></pre>
+<p>But, we can stay one step of ahead of Microsoft. Let's include a bit more info. .NET 6 also introduced
+<a href="https://github.com/dotnet/csharplang/blob/main/proposals/csharp-10.0/caller-argument-expression.md">CallerArgumentExpression</a>
+which allows us to even include the expression that called our method.</p>
+<p>With the addition of this attribute, we can create our own <code>TagWith</code>
+that in addition to the  the source location, we can also pull the expression calling the
+LINQ query. Our extension method will look similar to this:</p>
+<pre><code class="language-csharp">public static IQueryable&lt;T&gt; TagWithSource&lt;T&gt;(this IQueryable&lt;T&gt; queryable,
+    string tag = default,
+    [CallerLineNumber] int lineNumber = 0,
+    [CallerFilePath] string filePath = &quot;&quot;,
+    [CallerMemberName] string memberName = &quot;&quot;,
+    [CallerArgumentExpression(&quot;queryable&quot;)]
+    string argument = &quot;&quot;)
+{
+    // argument could be multiple lines with whitespace so let's normalize it down to one line
+    var trimmedLines = string.Join(
+        string.Empty,
+        argument.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Select(i =&gt; i.Trim())
+    );
+
+    var tagContent = string.IsNullOrWhiteSpace(tag)
+        ? default
+        : tag + Environment.NewLine;
+
+    tagContent += trimmedLines + Environment.NewLine + $&quot; at {memberName}  - {filePath}:{lineNumber}&quot;;
+
+    return queryable.TagWith(tagContent);
+}
+</code></pre>
+<p>This allows us to include an optionally custom tag text, plus automatically include the method name, file, file number and now thanks to the addition of <code>CallerArgumentExpression</code>
+we get the full LINQ statement too.</p>
+<pre><code class="language-sql">-- bloggingContext.Blogs.Where(i =&gt; i.Url.StartsWith(&quot;https://&quot;)).Take(5).OrderBy(i =&gt; i.BlogId)
+--  at Test1  - R:\thirty25\ef-core-tagging\tests\EfCoreTagging.Tests\UnitTest1.cs:46
+
+SELECT &quot;t&quot;.&quot;BlogId&quot;, &quot;t&quot;.&quot;Url&quot;
+FROM (
+    SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+    FROM &quot;Blogs&quot; AS &quot;b&quot;
+    WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'https://%')
+    LIMIT @__p_0
+) AS &quot;t&quot;
+ORDER BY &quot;t&quot;.&quot;BlogId&quot;
+
+</code></pre>
+<p>So the first line is our call with the whitespace normalized out. Second line is what we could get with our previous helper or the built in statement. Pretty cool!</p>
+<p>There are some gotchas. Because of the <code>CallerArgumentExpression</code> addition, order will matter. Typically <code>TagWith</code> or <code>TagWithSiteCaller</code> can be placed anywhere in the LINQ chain. They are only bringing in a file name and a line number. But, because we are going to want to include everything in the
+LINQ chain, the only way the compiler will know this is if we place the <code>TagWithSource</code> call at the end. Because of this, it might make sense to add some helpers that also wrap <code>ToListAsync</code>, <code>FirstOrDefaultAsync</code> and other final LINQ operators to ensure it is called in the correct spot.</p>
+<p>This is easier said than done. We unfortunately can't just wrap our call to <code>TagWithSource</code> like so.</p>
+<pre><code class="language-csharp">public static async Task&lt;List&lt;T&gt;&gt; ToListWithSourceAsync&lt;T&gt;(this IQueryable&lt;T&gt; queryable, CancellationToken cancellationToken = default)
+{
+    return await queryable
+        .TagWithSource()
+        .ToListAsync(cancellationToken);
+}
+</code></pre>
+<p>The result of this call will use this helper as the source when we call <code>TagWithSource</code>. Note that file is actually our extension and
+the only member we know about is <code>queryable</code>. Without reflection we can't go up the call stack.</p>
+<pre><code class="language-sql">-- ToListWithSourceAsync  - R:\thirty25\ef-core-tagging\src\EfCoreTagging.Data\IQueryableTaggingExtensions.cs27
+-- queryable
+
+SELECT &quot;t&quot;.&quot;BlogId&quot;, &quot;t&quot;.&quot;Url&quot;
+FROM (
+    SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+    FROM &quot;Blogs&quot; AS &quot;b&quot;
+    WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'https://%')
+    LIMIT @__p_0
+) AS &quot;t&quot;
+ORDER BY &quot;t&quot;.&quot;BlogId&quot;
+</code></pre>
+<p>To work around this, you have to include all the <code>Caller</code> attributes on your <code>ToListAsync</code> wrapper. A nice bonus here is that because
+we are controlling the last call in the chain, we can also include this if we want.</p>
+<p>After moving the formatting code into it's helper, the method looks like</p>
+<pre><code class="language-csharp">public static async Task&lt;List&lt;T&gt;&gt; ToListWithSourceAsync&lt;T&gt;(this IQueryable&lt;T&gt; queryable, 
+    string tag = default,
+    [CallerLineNumber] int lineNumber = 0,
+    [CallerFilePath] string filePath = &quot;&quot;,
+    [CallerMemberName] string memberName = &quot;&quot;,
+    [CallerArgumentExpression(&quot;queryable&quot;)] string argument = &quot;&quot;,
+    CancellationToken cancellationToken = default)
+{
+    return await queryable
+        .TagWith(GetTagContent&lt;T&gt;(tag, lineNumber, filePath, memberName,
+            $&quot;{argument}.{nameof(ToListWithSourceAsync)}()&quot;))
+        .ToListAsync(cancellationToken);
+}
+
+</code></pre>
+<p>and this is called by</p>
+<pre><code class="language-csharp">var result = await bloggingContext.Blogs
+    .Where(i =&gt; i.Url.StartsWith(&quot;https://&quot;))
+    .Take(5)
+    .OrderBy(i =&gt; i.BlogId)
+    .ToListWithSourceTagAsync();
+</code></pre>
+<p>Now we not only get the correct tag with the proper expression, but we also get our addition call to <code>ToListWithSourceTagAsync</code> method included</p>
+<pre><code class="language-sql">-- bloggingContext.Blogs.Where(i =&gt; i.Url.StartsWith(&quot;https://&quot;)).Take(5).OrderBy(i =&gt; i.BlogId).ToListWithSourceAsync()
+--  at Test1_WithToList  - R:\thirty25\ef-core-tagging\tests\EfCoreTagging.Tests\UnitTest1.cs:67
+
+SELECT &quot;t&quot;.&quot;BlogId&quot;, &quot;t&quot;.&quot;Url&quot;
+FROM (
+    SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+    FROM &quot;Blogs&quot; AS &quot;b&quot;
+    WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'https://%')
+    LIMIT @__p_0
+) AS &quot;t&quot;
+ORDER BY &quot;t&quot;.&quot;BlogId&quot;
+</code></pre>
+<p>It could get rather tedious to include them all, but this might prove worth a bit of copy and paste (or a T4 template) to get you there.</p>
+<h2 id="notes">Notes</h2>
+<p>While poking around the source of Microsoft's <code>TagWithCallSite</code> source, I noticed they used the attribute <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.query.notparameterizedattribute?view=efcore-5.0"><code>NotParameterized</code></a> on the tag and caller info. Only information I can find states that this &quot;signals that custom LINQ operator parameter should not be parameterized during query compilation.&quot; This sounds like a good optimization to also include, so the full call now looks more like this when you view the repository.</p>
+<pre><code class="language-csharp"> public static IQueryable&lt;T&gt; TagWithSource&lt;T&gt;(this IQueryable&lt;T&gt; queryable,
+    [NotParameterized] string tag = default,
+    [NotParameterized] [CallerLineNumber] int lineNumber = 0,
+    [NotParameterized] [CallerFilePath] string filePath = &quot;&quot;,
+    [NotParameterized] [CallerMemberName] string memberName = &quot;&quot;,
+    [NotParameterized] [CallerArgumentExpression(&quot;queryable&quot;)]
+    string argument = &quot;&quot;)
+{
+    return queryable.TagWith(GetTagContent&lt;T&gt;(tag, lineNumber, filePath, memberName, argument));
+}
+</code></pre>
+<p>Additionally, because we are including comments that can change between compiles, this will cause a miss on the plan cache after a deployment for possibly many queries.
+You might want to run this by the DBA. Personally I think this is an acceptable risk, but if this is an extremely critical path it is worth noting.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2021/12/tagging-query-with-ef-core">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Entity Framework">Entity Framework</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/net6">net6</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

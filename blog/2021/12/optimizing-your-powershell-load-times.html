@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2021-12-11T00:00:00.000">December 11, 2021</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Optimizing Your PowerShell Load Times</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>Sometimes I just want to drop into my shell and get things done without a GUI or any other things slowing me down. I love PowerShell and Windows Terminal, but the idea I'm hoping into speedy power-mode is dashed when I sit and watch an empty screen load things up and a little message telling me how slow it is.</p>
+<p>Not that PowerShell is at fault here. These performance issues are self-inflected, of course. I have multiple tools running to make my experience better, and with tools loading comes load times. Right now my PowerShell profile requires the following tools, and at this point I'm not sure I can live without them.</p>
+<ul>
+<li><a href="https://ohmyposh.dev/">oh-my-posh</a>. Prompt theming. A must have.</li>
+<li><a href="https://github.com/dahlbyk/posh-git">posh-git</a>. Enhancements for git in PowerShell</li>
+<li><a href="https://github.com/PowerShell/PSReadLine">PSReadLine</a>. Improvements for the command line editing experience.</li>
+<li><a href="https://docs.microsoft.com/en-us/visualstudio/ide/reference/command-prompt-powershell?view=vs-2022">Visual Studio Developer Command Prompt and Developer PowerShell</a>. Adds common Visual Studio paths and environmental variables to the path.</li>
+<li><a href="https://github.com/vors/ZLocation">ZLocation</a>. Tracks most common directories used and let's you quickly jump to them with the <code>z</code> command.</li>
+<li><a href="https://chocolatey.org/">Chocolatey</a>. Package manager.</li>
+</ul>
+<p>Each tool I can't live without, but each tool needs to be imported each time I launch a new shell. It's not the end of the world, but clicking that button and seeing a blank screen followed by this doesn't sit right with me</p>
+<pre><code>PowerShell 7.2.0
+Copyright (c) Microsoft Corporation.
+
+https://aka.ms/powershell
+Type 'help' to get help.
+
+Loading personal and system profiles took 1234ms.
+</code></pre>
+<p>We can make this faster.</p>
+<h2 id="our-profile">Our Profile</h2>
+<p>I'm going to assume you are already familiar with <a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.2">PowerShell profiles</a>. For my purposes I do everything in the &quot;Current user, Current host&quot; profile which you can edit by running <code>notepad $PROFILE</code>.</p>
+<p>Here's my profile as a starting point for our performance tuning. Most of it is pretty straight forward and copied right from the different modules' getting started guide. The first line might not make sense at first, but it's forcing the console to be UTF8. This allows our console apps to use advanced unicode output e.g. rocket ship emojis.</p>
+<pre><code class="language-powershell">[console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+
+# Chocolatey profile
+$ChocolateyProfile = &quot;$env:ChocolateyInstall\helpers\chocolateyProfile.psm1&quot;
+Import-Module &quot;$ChocolateyProfile&quot;
+
+# posh-git
+Import-Module posh-git
+$env:POSH_GIT_ENABLED = $true
+
+# oh-my-posh
+Import-Module oh-my-posh
+set-poshprompt C:\Users\phils\hotstick.omp.json
+$DefaultUser = 'phils'
+Enable-Poshtooltips
+
+# Chocolatey profile
+Import-Module ZLocation
+
+# PSReadLine
+Import-Module PSReadLine
+
+# VS2022 environmental variables
+Import-Module &quot;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll&quot;
+Enter-VsDevShell d0d15d66 -SkipAutomaticLocation -DevCmdArguments &quot;-arch=x64 -host_arch=x64&quot; | Out-Null
+
+</code></pre>
+<p>The last section where I load the Visual Studio Command Line. I got this script from reverse engineering the profile that is automatically added to Windows Terminal. Depending on your version of Visual Studio it may (and almost certainly will) be different. Alternately, you can use <a href="https://gist.github.com/ArthurHNL/b29f008cbc7a159a6ae82a7152b1cb2a">this gist that will search for the latest VS version and use it</a>. I've found it adds even more time so I'm ok with hard coding the path and other script values. The very last line redirects the output to <code>Out-Null</code> simply because I don't want the big default loading banner.</p>
+<p>While it is a simple profile, launching it results in a blank screen followed by PowerShell telling me that my profile loaded in over a second. To me, that's pretty darn slow, especially on modern hardware.</p>
+<h2 id="finding-out-whats-so-darn-slow">Finding Out What's So Darn Slow</h2>
+<p>So let's find out what the hold up is. First things first, I want to create a new Windows Terminal Profile for launching PowerShell without a profile. We are going to do some measuring of our script speed and it is critical nothing is loaded when we do so. To do so create a new profile and set the command line to <code>pwsh.exe -noProfile</code>.</p>
+<p><img src="/Content/Blog/media/2021-12-12-21-13-58.png" alt="Windows Terminal PowerShell no Profile" /></p>
+<p>We need to do this because we are going to use a profiling tool to measure the script line-by-line. The tool I like to use is <a href="https://github.com/IISResetMe/PSProfiler">PSProfiler</a>. I personally use the <code>1.0.5-preview1</code> release which includes a a nice feature for highlighting the slowest lines.</p>
+<p>First we need to install the module by running</p>
+<pre><code class="language-powershell">Install-Module -Name PSProfiler -AllowPrerelease
+</code></pre>
+<p>Because we won't be using this all the time I won't include this in my PowerShell profile, but I'll instead run <code>Import-Module PSProfiler</code> when needed.</p>
+<p>Once this is installed, start a new terminal tab using our &quot;PowerShell No Profile&quot; option. This should launch in a flash giving us a glimmer of hope of what we can accomplish. We have nothing loaded yet which means PSProfiler will get a true measurement of the time it takes to import all our modules. To do so we run the following command</p>
+<pre><code class="language-powershell">Import-Module PSProfiler
+Measure-Script -Path $PROFILE -Top 5
+</code></pre>
+<p>This script will launch our profile and measure each line's performance. With the <code>-Top</code> command it'll also go ahead and highlight the top 5 slowest lines.</p>
+<p><img src="/Content/Blog/media/2021-12-12-21-28-41.png" alt="PSProfiler results" /></p>
+<p>Taking a look at my script's performance we can see that while posh-git and zlocation are both taking over 100ms each, it's loading up the Visual Studio Shell that's really eating up some time. It's over half a second by itself. Unfortunately that half a second is going to be the fastest we can run our profile. It's a single line and we have to live with it.</p>
+<p>But, there is good news. It's actions don't impact the other modules. We can load it in parallel while the other items load too. The way we can do this is via <a href="https://docs.microsoft.com/en-us/powershell/module/threadjob/start-threadjob?view=powershell-7.2"><code>Start-ThreadJob</code></a>. This will create a background-job we can use for loading this module. The code for this will be</p>
+<pre><code class="language-powershell">$vsshell = Start-ThreadJob {
+  Import-Module &quot;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll&quot;
+  Enter-VsDevShell d0d15d66 -SkipAutomaticLocation -DevCmdArguments &quot;-arch=x64 -host_arch=x64&quot; | Out-Null
+}
+</code></pre>
+<p>This code should be at very top of our script before any other modules run. It needs to launch immediately. The rest of our script stays the same and they run side-by-side while <code>Enter-VsDevShell</code> does it's thing. But, because the VS shell script is so slow, the other items will complete before our background job. That means before we exit our profile we need to tell our script to wait for our background job to complete. To do so we run</p>
+<pre><code class="language-powershell">Receive-Job $vsshell -Wait -AutoRemoveJob
+</code></pre>
+<p>This uses the variable we stored our job to tell powershell to wait for it to complete and go ahead and remove it too. This should be the last thing our script does.</p>
+<p>We can save our profile and relaunch a new PowerShell instance. It still won't be as fast as running with no profile, but with any luck it should be around a half second or faster now as we are able to load everything else while <code>Enter-VsDevShell</code> is running. On my machine, this shaves around 300ms as everything completes and waits 200ms additional seconds for the VS shell to be built. This gets me below 500ms pretty consistently which I can live with.</p>
+<h2 id="adding-visual-feedback">Adding Visual Feedback</h2>
+<p>Since we are stuck with half-second load time there is another trick we can do to at least make it seem like it's loading fast - display stuff. Seeing the screen do something is at least better than blank screen, so let's add some feedback. The pattern I've landed on is displaying &quot;Loading <em>module name</em>&quot; followed by a check mark once it is loaded. To do this I created a function to keep it consistent.</p>
+<pre><code class="language-powershell">function Run-Step([string] $Description, [ScriptBlock]$script)
+{
+  Write-Host  -NoNewline &quot;Loading &quot; $Description.PadRight(20)
+  &amp; $script
+  Write-Host &quot;`u{2705}&quot; # checkmark emoji
+}
+</code></pre>
+<p>This function takes a description that I want to display and a script block. It displays my text, runs the script and finally writes an emoji checkmark. An example call would be</p>
+<pre><code class="language-powershell">Run-Step &quot;Posh-Git&quot; {
+  Import-Module posh-git
+  $env:POSH_GIT_ENABLED = $true
+}
+</code></pre>
+<p>Keep in mind, however, that we are running two threads here. I keep all the UI off the background thread that's loading the dev shell stuff. I wrap the <code>Receive-Job</code> in the <code>Run-Step</code> command. This has the added benefit of about every 100ms a new line is printed to the screen with the final one being the completion of the VS Shell import.</p>
+<p>I do a few other things to keep things moving fast. I include the <code>-noLogo</code> switch for my PowerShell profile in Windows Terminal to hide the default logo display and use my own. This has the added benefit of not checking for a new version of PowerShell which does speed things up a tad. Since we won't have the typical PowerShell banner, I roll my own.</p>
+<p>This results in our final script.</p>
+<pre><code class="language-powershell">function Run-Step([string] $Description, [ScriptBlock]$script)
+{
+  Write-Host  -NoNewline &quot;Loading &quot; $Description.PadRight(20)
+  &amp; $script
+  Write-Host &quot;`u{2705}&quot; # checkmark emoji
+}
+
+[console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+
+Write-Host &quot;Loading PowerShell $($PSVersionTable.PSVersion)...&quot; -ForegroundColor 3
+Write-Host
+
+# this takes a sec, but we can also do it concurrently with the rest of the profile loading
+$vsshell = Start-ThreadJob {
+  Import-Module &quot;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll&quot;
+  Enter-VsDevShell d0d15d66 -SkipAutomaticLocation -DevCmdArguments &quot;-arch=x64 -host_arch=x64&quot; | Out-Null
+}
+
+# Chocolatey profile
+Run-Step &quot;Chocolatey&quot; {
+  $ChocolateyProfile = &quot;$env:ChocolateyInstall\helpers\chocolateyProfile.psm1&quot;
+  Import-Module &quot;$ChocolateyProfile&quot;
+}
+
+# posh-git
+Run-Step &quot;Posh-Git&quot; {
+  Import-Module posh-git
+  $env:POSH_GIT_ENABLED = $true
+}
+
+# oh-my-posh
+Run-Step &quot;oh-my-posh&quot; {
+  Import-Module oh-my-posh
+  set-poshprompt C:\Users\phils\hotstick.omp.json
+  $DefaultUser = 'phils'
+  Enable-Poshtooltips
+}
+
+# Chocolatey profile
+Run-Step &quot;ZLocation&quot; {
+  Import-Module ZLocation
+}
+
+Run-Step &quot;PSReadline&quot; {
+  Import-Module PSReadLine
+}
+
+# we already started this task earlier, just gotta receive it now
+Run-Step &quot;VS2022 Shell&quot; {
+  Receive-Job $vsshell -Wait -AutoRemoveJob
+}
+</code></pre>
+<p><img src="/Content/Blog/media/full-loading.gif" alt="Final Powershell prompt" /></p>
+<h2 id="really-stretching-for-performance">Really Stretching for Performance</h2>
+<p>If you are still seeing things go slow, there is one last thing to try - working around Windows Defender. We are loading quite a bit of code on start up, many times from locations that defender hasn't scanned recently. This can add some serious delays. Run your script with it enabled a few times to get a baseline, then disable it and run it a few more times. This will give you an idea if it is the culprit.</p>
+<p>I'm not going to provide a recipe for how to speed it up, but I've had good luck using <a href="https://docs.microsoft.com/en-us/sysinternals/downloads/procmon">Process Monitor</a> and adding filtering on the <code>MsMpEng.exe</code> process. From there I go through the paths that show up frequently and just make a judgement call on whether or not they should be hit that often.</p>
+<p>Personally, I do not like to add processes to my exclusion list. The idea of adding <code>pwsh.exe</code> as something that Defender is ignoring is a step too far for me. I want that process monitored. But my personal comfort level of safety I do feel ok adding paths like <code>C:\Program Files\PowerShell</code> to the exclusion list. By filtering out folders that I feel other pieces of Windows should be keeping safe, I can find a good middle ground between performance and security that works for me.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2021/12/optimizing-your-powershell-load-times">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

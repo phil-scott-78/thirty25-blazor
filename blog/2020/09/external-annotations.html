@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2020-09-10T00:00:00.000">September 10, 2020</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>UsedImplicitly on External Libraries</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>Three tools that repeatedly show up in my ASP.NET Core applications are AutoMapper, FluentValidation and MediatR. They
+end up representing the bulk of the code in the web application portion of nearly all my web projects.</p>
+<p>But one little thing starts to bother me when working with these libraries is ReSharper and Rider insistence that my
+implementations of these tools are unused.</p>
+<p><img src="/Content/Blog/media/unused-classes.png" alt="Unused images as seen in rider" /></p>
+<p>Take this sample code from
+<a href="https://github.com/jbogard/ContosoUniversityDotNetCore-Pages">Jimmy Bogard's Contoso University ASP.NET Pages demo application</a>.
+I can assure you that all three of the classes here are used, but their usage is discovered at runtime therefor the
+inspections are blissfully unaware</p>
+<ul>
+<li><p><code>Validator</code>. This class is dynamically created by FluentValidation. In <code>StartUp.cs</code> we tell FluentValidation to
+discover all validation classes in the assembly at runtime via the code</p>
+<pre><code class="language-csharp">.AddFluentValidation(cfg =&gt; { cfg.RegisterValidatorsFromAssemblyContaining&lt;Startup&gt;(); });
+</code></pre>
+</li>
+<li><p><code>MappingProfile</code>. Used by AutoMapper. Also in <code>StartUp.cs</code>. The code</p>
+<pre><code class="language-csharp">services.AddAutoMapper(typeof(Startup));
+</code></pre>
+<p>will scan the assembly looking for classes that inherit from <code>MappingProfile</code></p>
+</li>
+<li><p><code>QueryHandler</code>. Used by MediatR. The code</p>
+<pre><code class="language-csharp">services.AddMediatR(typeof(Startup));
+</code></pre>
+<p>will scan our assembly registering handlers automatically.</p>
+</li>
+</ul>
+<p>Obviously it isn't the end of the world that we are getting these tips. But it would be nice for devs already not
+familiar with this pattern to not get the warnings. One way we can overcome this is to install the
+<code>JetBrains.Annotations</code> NuGet package. It contains the <code>[UsedImplicitly]</code> annotation. This annotation hints to the
+inspector that the class is not instantiated directly.</p>
+<p><img src="/Content/Blog/media/used-implicitly.png" alt="Used implicitly applied" /></p>
+<p>While this solves the warning, it's ugly and gets repetitive real quick.</p>
+<p>But there is hope. With the 2020 release of Rider and ReSharper the [UsedImplicitly] attribute got a new flag as one of
+it's parameters -
+<a href="https://www.jetbrains.com/help/resharper/Reference__Code_Annotation_Attributes.html#UsedImplicitlyAttribute"><code>ImplicitUseTargetFlags.WithInheritors</code></a>.
+What this flag does is tells the code inspector that all classes that inherit (or implement) this class are used
+implicitly.</p>
+<p>Unfortunately, we can't apply that attribute to the classes we need. They are all third party packages. One workaround
+is we could create a class that inherits from the three we need to annotate, apply this annotation, and then change all
+our code to use those instead. That's not much better than just applying the <code>[UsedImplicitly]</code> attribute directly
+though.</p>
+<h2 id="external-annotations-to-the-rescue">External Annotations to the Rescue</h2>
+<p>The analysis engine allows us to cheat.
+<a href="https://www.jetbrains.com/help/resharper/Code_Analysis__External_Annotations.html">External annotations</a> allow us to
+create an xml file containing the types we want to annotate along with the specific annotation we want.</p>
+<p>To do so we create a folder in the root of our solution named <code>ExternalAnnotations</code>. In this folder we'll create an XML
+file matching each of our third party libraries (i.e. <code>AutoMapper.xml</code>, <code>MediatR.xml</code> and <code>FluentValidation.xml</code>).</p>
+<p>The format of these files will look like this</p>
+<pre><code class="language-xml">&lt;assembly name=&quot;{{library-name}}&quot;&gt;
+    &lt;member name=&quot;{{ symbol-id of what-to-annotate }}&quot;&gt;
+        &lt;attribute ctor=&quot;{{ symbol-id of attribute to apply}}&quot; /&gt;
+    &lt;/member&gt;
+&lt;/assembly&gt;
+</code></pre>
+<p>E.g. for AutoMapper we want to apply the <code>UsedImplicitly</code> annotation to the <code>AutoMapper.Profile</code> type. To get the symbol
+id we can use a ReSharper trick. You can click on the class you need to discover the symbol and click
+<code>ReSharper Edit | Copy XML-Doc ID to Clipboard</code>. Clicking on <code>Profile</code> and running this command copies
+<code>T:AutoMapper.Profile</code> to our clipboard. I don't think this feature exists in Rider so you will need to use ReSharper.
+The second step involves finding the constructor of the attribute we want to apply. The secret to doing this is to
+search the internet and find an external annotation that already has applied it and copy and paste.</p>
+<p>Given this we can now generate our full annotation</p>
+<pre><code class="language-xml">&lt;assembly name=&quot;AutoMapper&quot;&gt;
+    &lt;member name=&quot;T:AutoMapper.Profile&quot;&gt;
+        &lt;attribute ctor=&quot;M:JetBrains.Annotations.UsedImplicitlyAttribute.#ctor(JetBrains.Annotations.ImplicitUseTargetFlags)&quot; &gt;
+            &lt;argument&gt;5&lt;/argument&gt;
+        &lt;/attribute&gt;
+    &lt;/member&gt;
+&lt;/assembly&gt;
+</code></pre>
+<p>The 5 in this case comes from the flag <code>ImplicitUseTargetFlags</code> definition. We want <code>WithInheritors</code> and we might as
+well add <code>Itself</code> too.</p>
+<pre><code class="language-csharp">[Flags]
+public enum ImplicitUseTargetFlags
+{
+    Default = 1,
+    Itself = Default, // 0x00000001
+    /// &lt;summary&gt;Members of entity marked with attribute are considered used.&lt;/summary&gt;
+    Members = 2,
+    /// &lt;summary&gt; Inherited entities are considered used. &lt;/summary&gt;
+    WithInheritors = 4,
+    /// &lt;summary&gt;Entity marked with attribute and all its members considered used.&lt;/summary&gt;
+    WithMembers = Members | Itself, // 0x00000003
+}
+</code></pre>
+<p>Armed with this knowledge we can create an xml file for MediatR and FluentValidation. For MediatR we'll want to annotate
+<code>IRequestHandler&lt;&gt;</code>. The code for that is</p>
+<pre><code class="language-xml">&lt;assembly name=&quot;MediatR&quot;&gt;
+    &lt;member name=&quot;T:MediatR.IRequestHandler`2&quot;&gt;
+        &lt;attribute ctor=&quot;M:JetBrains.Annotations.UsedImplicitlyAttribute.#ctor(JetBrains.Annotations.ImplicitUseTargetFlags)&quot; &gt;
+            &lt;argument&gt;5&lt;/argument&gt;
+        &lt;/attribute&gt;
+    &lt;/member&gt;
+&lt;/assembly&gt;
+</code></pre>
+<p>For FluentValidation we want <code>AbstractValidator&lt;&gt;</code>. The code for that is</p>
+<pre><code class="language-xml">&lt;assembly name=&quot;FluentValidation&quot;&gt;
+    &lt;member name=&quot;T:FluentValidation.AbstractValidator`1&quot;&gt;
+        &lt;attribute ctor=&quot;M:JetBrains.Annotations.UsedImplicitlyAttribute.#ctor(JetBrains.Annotations.ImplicitUseTargetFlags)&quot; &gt;
+            &lt;argument&gt;5&lt;/argument&gt;
+        &lt;/attribute&gt;
+    &lt;/member&gt;
+&lt;/assembly&gt;
+</code></pre>
+<p>After we create the file we will need to close our solution. You might even need to shut Visual Studio and/or Rider all
+the way down and restart them.</p>
+<p>But once you reload your solution, your handlers, validators and profiles should no longer be marked as unused. If you
+want to verify the attribute has been applied you can select one of the classes we wrote the external annotations for
+and choose &quot;Quick Documentation&quot; (<code>CTRL-SHIFT-F1</code>).</p>
+<p><img src="/Content/Blog/media/quick-documentation.png" alt="Quick documentation" /></p>
+<p>Here we see the <code>UsedImplicitly</code> flag being applied.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>I've never been a huge fan of littering <code>[UsedImplicitly]</code> throughout my code. But with the new addition of
+<code>WithInheritors</code> not only is it easier to apply I feel applying this at the interface or base class level it is more
+descriptive than on the implementation itself when working with DI. For example if you had a generic repository you
+could mark <code>IRepository&lt;&gt;</code> with the interface. Now classes that properly implement that interface will be marked while a
+class that does not will remain marked as unused. Maybe one day the analysis engine will be able to dynamically load
+these classes that are used implicitly, but until then this is a decent workaround.</p>
+<p>To see these changes in action (well, lack of action I guess) check out the sample repository. And feel free to copy and
+paste the <code>ExternalAnnotations</code> folder into your application, restart your IDE and see your unused warnings go away.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2020/09/external-annotations">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/MediatR">MediatR</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/AutoMapper">AutoMapper</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/FluentValidation">FluentValidation</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Rider">Rider</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/ReSharper">ReSharper</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

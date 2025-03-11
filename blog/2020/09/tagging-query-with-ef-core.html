@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2020-09-02T00:00:00.000">September 2, 2020</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Better Tagging of EF Core Queries</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>One of the quickest ways to earn the ire of a DBA is to shrug your shoulders, and tell them you don't know what code
+created the query that is slowing down their server. Sure, with a little hunting and knowledge of the code base you can
+generally spot the offending query, but wouldn't it be nice if the query the DBA is looking at had more information to
+track it down?</p>
+<p>This is where query tagging comes in. Query tags let you add a comment to the command EF sends to your database
+provider. Because this tag is a comment included as part of the command, it will be stored with the statement in your
+common DBA tools like SQL Query Store or when viewing them via Extended Events.</p>
+<p>With <a href="https://devblogs.microsoft.com/dotnet/announcing-entity-framework-core-2-2/#query-tags">EF Core 2.2</a> Microsoft
+added the <code>TagWith</code> extension method. This allows us to write a query such as</p>
+<pre><code class="language-csharp">var result = await bloggingContext.Blogs
+    .Where(i =&gt; i.Url.StartsWith(&quot;http://example.com&quot;))
+    .TagWith(&quot;Looking for example.com&quot;)
+    .FirstOrDefaultAsync();
+</code></pre>
+<p>Now when you execute your code the following statement, you'll see a comment included with the command</p>
+<pre><code class="language-sql">-- Looking for example.com
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'http://%')
+LIMIT 1
+</code></pre>
+<p>Now when an irate DBA sees a misbehaving query they can pass it along hopefully keeping the comment. Now a little find
+in files and we should be able to go right there.</p>
+<p>But what if we wanted to make it even easier on us?</p>
+<p>Using
+<a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/caller-information">caller information</a>
+attributes we can automatically pull the method, filename, and line number. Given this we can create our own <code>TagWith</code>
+that accepts these parameters and automatically generates a comment with the source location of whoever is calling the
+LINQ query. Our extension method will look similar to this.</p>
+<pre><code class="language-csharp">public static IQueryable&lt;T&gt; TagWithSource&lt;T&gt;(
+    this IQueryable&lt;T&gt; queryable,
+    [CallerLineNumber] int lineNumber = 0,
+    [CallerFilePath] string filePath = &quot;&quot;,
+    [CallerMemberName] string memberName = &quot;&quot;)
+{
+    return queryable.TagWith($&quot;{memberName}  - {filePath}:{lineNumber}&quot;);
+}
+</code></pre>
+<p>Additionally, <code>TagWith</code> can be chained. EF will allow you to call it multiple times and it'll generate a new comment for
+each call</p>
+<pre><code class="language-csharp">var result = await bloggingContext.Blogs
+    .Where(i =&gt; i.Url.StartsWith(&quot;http://example.com&quot;))
+    .TagWith(&quot;Looking for example.com&quot;)
+    .TagWithSource()
+    .FirstOrDefaultAsync();
+</code></pre>
+<p>This generated the following command</p>
+<pre><code class="language-sql">-- Looking for example.com
+
+-- Test1  - R:\Projects\thirty25\ef-core-tagging\tests\EfCoreTagging.Tests\UnitTest1.cs:45
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'http://%')
+LIMIT 1
+</code></pre>
+<p>Because this pattern is pretty common, I'll also typically create an overload for our <code>TagWithSource</code> that takes in a
+string</p>
+<pre><code class="language-csharp">public static IQueryable&lt;T&gt; TagWithSource&lt;T&gt;(this IQueryable&lt;T&gt; queryable,
+    string tag,
+    [CallerLineNumber] int lineNumber = 0,
+    [CallerFilePath] string filePath = &quot;&quot;,
+    [CallerMemberName] string memberName = &quot;&quot;)
+{
+    return queryable.TagWith($&quot;{tag}{Environment.NewLine}{memberName}  - {filePath}:{lineNumber}&quot;);
+}
+</code></pre>
+<p>This will produce similar output as above, but slightly cleaner without the line-break between the two tag statements</p>
+<pre><code class="language-sql">-- Looking for example.com
+-- Test1  - R:\Projects\thirty25\ef-core-tagging\tests\EfCoreTagging.Tests\UnitTest1.cs:45
+
+SELECT &quot;b&quot;.&quot;BlogId&quot;, &quot;b&quot;.&quot;Url&quot;
+FROM &quot;Blogs&quot; AS &quot;b&quot;
+WHERE &quot;b&quot;.&quot;Url&quot; IS NOT NULL AND (&quot;b&quot;.&quot;Url&quot; LIKE 'http://%')
+LIMIT 1
+</code></pre>
+<h2 id="limitations">Limitations</h2>
+<p>The biggest limitation is that you'll only get the immediate caller of your queries. If you have this buried in a super
+abstracted repository there's a good chance every comment will be the same comment pointing to something like the
+<code>Get - Repository.cs:49</code>. In this case you might want to look at parsing the <code>StackTrace</code> to move up the stack and
+include all the user code in the path with your tag. I know that we've all been taught to avoid accessing the stack
+trace directly because &quot;it's slow&quot;, but honestly grabbing the stacktrace and looping through all the frames with file
+names and line numbers is around 50 microseconds on my dev machine. We can make a database query that will be measured
+in, at best, milliseconds. Personally, in the systems I've worked with this is an acceptable perf loss for the added
+benefit, but obviously don't implement it blindly if this code is part of an extremely high traffic site.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2020/09/tagging-query-with-ef-core">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Entity Framework">Entity Framework</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

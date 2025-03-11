@@ -1,0 +1,1111 @@
+/*
+1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
+*/
+
+*,
+::before,
+::after {
+    box-sizing: border-box; /* 1 */
+    border-width: 0; /* 2 */
+    border-style: solid; /* 2 */
+    border-color: rgb(229, 231, 235);
+}
+
+::before,
+::after {
+    --tw-content: '';
+}
+
+/*
+1. Use a consistent sensible line-height in all browsers.
+2. Prevent adjustments of font size after orientation changes in iOS.
+3. Use a more readable tab size.
+*/
+
+html {
+    line-height: 1.5; /* 1 */
+    -webkit-text-size-adjust: 100%; /* 2 */
+    -moz-tab-size: 4; /* 3 */
+    tab-size: 4; /* 3 */
+}
+
+/*
+1. Remove the margin in all browsers.
+2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+*/
+
+body {
+    margin: 0; /* 1 */
+    line-height: inherit; /* 2 */
+}
+
+/*
+1. Add the correct height in Firefox.
+2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+3. Ensure horizontal rules are visible by default.
+*/
+
+hr {
+    height: 0; /* 1 */
+    color: inherit; /* 2 */
+    border-top-width: 1px; /* 3 */
+}
+
+/*
+Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+
+abbr:where([title]) {
+    text-decoration: underline dotted;
+}
+
+/*
+Remove the default font size and weight for headings.
+*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/*
+Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+/*
+Add the correct font weight in Edge and Safari.
+*/
+
+b,
+strong {
+    font-weight: bolder;
+}
+
+/*
+1. Use the user's configured `mono` font family by default.
+2. Correct the odd `em` font sizing in all browsers.
+*/
+
+code,
+kbd,
+samp,
+pre {
+    font-size: 1em; /* 2 */
+}
+
+/*
+Add the correct font size in all browsers.
+*/
+
+small {
+    font-size: 80%;
+}
+
+/*
+Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+sup {
+    top: -0.5em;
+}
+
+/*
+1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+3. Remove gaps between table borders by default.
+*/
+
+table {
+    text-indent: 0; /* 1 */
+    border-color: inherit; /* 2 */
+    border-collapse: collapse; /* 3 */
+}
+
+/*
+1. Change the font styles in all browsers.
+2. Remove the margin in Firefox and Safari.
+3. Remove default padding in all browsers.
+*/
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit; /* 1 */
+    font-size: 100%; /* 1 */
+    line-height: inherit; /* 1 */
+    color: inherit; /* 1 */
+    margin: 0; /* 2 */
+    padding: 0; /* 3 */
+}
+
+/*
+Remove the inheritance of text transform in Edge and Firefox.
+*/
+
+button,
+select {
+    text-transform: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Remove default button styles.
+*/
+
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+    -webkit-appearance: button; /* 1 */
+    background-color: transparent; /* 2 */
+    background-image: none; /* 2 */
+}
+
+/*
+Use the modern Firefox focus style for all focusable elements.
+*/
+
+:-moz-focusring {
+    outline: auto;
+}
+
+/*
+Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+
+:-moz-ui-invalid {
+    box-shadow: none;
+}
+
+/*
+Add the correct vertical alignment in Chrome and Firefox.
+*/
+
+progress {
+    vertical-align: baseline;
+}
+
+/*
+Correct the cursor style of increment and decrement buttons in Safari.
+*/
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+    height: auto;
+}
+
+/*
+1. Correct the odd appearance in Chrome and Safari.
+2. Correct the outline style in Safari.
+*/
+
+[type='search'] {
+    -webkit-appearance: textfield; /* 1 */
+    outline-offset: -2px; /* 2 */
+}
+
+/*
+Remove the inner padding in Chrome and Safari on macOS.
+*/
+
+::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/*
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Change font properties to `inherit` in Safari.
+*/
+
+::-webkit-file-upload-button {
+    -webkit-appearance: button; /* 1 */
+    font: inherit; /* 2 */
+}
+
+/*
+Add the correct display in Chrome and Safari.
+*/
+
+summary {
+    display: list-item;
+}
+
+/*
+Removes the default spacing and border for appropriate elements.
+*/
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+    margin: 0;
+}
+
+fieldset {
+    margin: 0;
+    padding: 0;
+}
+
+legend {
+    padding: 0;
+}
+
+ol,
+ul,
+menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+Prevent resizing textareas horizontally by default.
+*/
+
+textarea {
+    resize: vertical;
+}
+
+/*
+1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+2. Set the default placeholder color to the user's configured gray 400 color.
+*/
+
+input::placeholder,
+textarea::placeholder {
+    opacity: 1; /* 1 */
+    color: #9ca3af; /* 2 */
+}
+
+/*
+Set the default cursor for buttons.
+*/
+
+button,
+[role="button"] {
+    cursor: pointer;
+}
+
+/*
+Make sure disabled buttons don't get the pointer cursor.
+*/
+:disabled {
+    cursor: default;
+}
+
+/*
+1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+   This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+    display: block; /* 1 */
+    vertical-align: middle; /* 2 */
+}
+
+/*
+Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+
+img,
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+/*
+Ensure the default browser behavior of the `hidden` attribute.
+*/
+
+[hidden] {
+    display: none;
+}
+body, ::before, ::after {
+  --monorail-ring-offset-shadow:0 0 #0000;
+  --monorail-ring-shadow:0 0 #0000;
+  --monorail-rotate:0;
+  --monorail-scale-x:1;
+  --monorail-scale-y:1;
+  --monorail-shadow:0 0 #0000;
+  --monorail-shadow-colored:0 0 #0000;
+  --monorail-skew-x:0;
+  --monorail-skew-y:0;
+  --monorail-translate-x:0;
+  --monorail-translate-y:0;
+}
+.antialiased {
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-font-smoothing:antialiased;
+}
+.font-sans {
+  font-family:-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
+}
+.bg-primary-50 {
+  --monorail-bg-opacity:1;
+  background-color:oklch(0.978 0.011 300.000 / var(--monorail-bg-opacity));
+}
+.dark .dark\:bg-primary-950 {
+  --monorail-bg-opacity:1;
+  background-color:oklch(0.238 0.054 300.000 / var(--monorail-bg-opacity));
+}
+.transition-colors {
+  transition-duration:150ms;
+  transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
+}
+.divide-y > :not([hidden]) ~ :not([hidden]) {
+  --monorail-divide-y-reverse:0;
+  border-bottom-width:calc(1px * var(--monorail-divide-y-reverse));
+  border-top-width:calc(1px * calc(1 - var(--monorail-divide-y-reverse)));
+}
+.divide-primary-300\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color:oklch(0.827 0.091 300.000 / 0.1);
+}
+.sr-only {
+  border-width:0;
+  clip:rect(0, 0, 0, 0);
+  height:1px;
+  margin:-1px;
+  overflow:hidden;
+  padding:0;
+  position:absolute;
+  white-space:nowrap;
+  width:1px;
+}
+.text-base {
+  font-size:1rem;
+  line-height:1.5rem;
+}
+.font-medium {
+  font-weight:500;
+}
+.leading-6 {
+  line-height:1.5rem;
+}
+.text-primary-400 {
+  --monorail-text-opacity:1;
+  color:oklch(0.742 0.140 300.000 / var(--monorail-text-opacity));
+}
+.space-y-1 > :not([hidden])~:not([hidden]) {
+  --monorail-space-y-reverse:0;
+  margin-bottom:calc(0.25rem * var(--monorail-space-y-reverse));
+  margin-top:calc(0.25rem * calc(1 - var(--monorail-space-y-reverse)));
+}
+.space-y-6 > :not([hidden])~:not([hidden]) {
+  --monorail-space-y-reverse:0;
+  margin-bottom:calc(1.5rem * var(--monorail-space-y-reverse));
+  margin-top:calc(1.5rem * calc(1 - var(--monorail-space-y-reverse)));
+}
+.text-2xl {
+  font-size:1.5rem;
+  line-height:2rem;
+}
+.font-bold {
+  font-weight:700;
+}
+.leading-8 {
+  line-height:2rem;
+}
+.tracking-tight {
+  letter-spacing:-0.025em;
+}
+.text-primary-900 {
+  --monorail-text-opacity:1;
+  color:oklch(0.320 0.073 300.000 / var(--monorail-text-opacity));
+}
+.dark .dark\:text-primary-50 {
+  --monorail-text-opacity:1;
+  color:oklch(0.978 0.011 300.000 / var(--monorail-text-opacity));
+}
+.flex {
+  display:flex;
+}
+.flex-wrap {
+  flex-wrap:wrap;
+}
+.text-primary-500 {
+  --monorail-text-opacity:1;
+  color:oklch(0.648 0.147 300.000 / var(--monorail-text-opacity));
+}
+.hover\:text-primary-400:hover {
+  --monorail-text-opacity:1;
+  color:oklch(0.742 0.140 300.000 / var(--monorail-text-opacity));
+}
+.text-sm {
+  font-size:.875rem;
+  line-height:1.25rem;
+}
+.uppercase {
+  text-transform:uppercase;
+}
+.prose {
+  --monorail-prose-body:oklch(0.373 0.034 259.733);
+  --monorail-prose-code:oklch(0.21 0.034 264.665);
+  --monorail-prose-headings:oklch(0.21 0.034 264.665);
+  --monorail-prose-invert-body:oklch(0.872 0.01 258.338);
+  --monorail-prose-invert-code:white;
+  --monorail-prose-invert-headings:white;
+  --monorail-prose-invert-links:white;
+  --monorail-prose-invert-pre-bg:rgb(0 0 0 / 50%);
+  --monorail-prose-invert-pre-code:oklch(0.872 0.01 258.338);
+  --monorail-prose-invert-td-borders:oklch(0.373 0.034 259.733);
+  --monorail-prose-invert-th-borders:oklch(0.446 0.03 256.802);
+  --monorail-prose-links:oklch(0.21 0.034 264.665);
+  --monorail-prose-pre-bg:oklch(0.278 0.033 256.848);
+  --monorail-prose-pre-code:oklch(0.928 0.006 264.531);
+  --monorail-prose-td-borders:oklch(0.928 0.006 264.531);
+  --monorail-prose-th-borders:oklch(0.872 0.01 258.338);
+  color:var(--monorail-prose-body);
+  font-size:1rem;
+  line-height:1.5555556;
+}
+.prose ol[type="a"] {
+  list-style-type:lower-alpha;
+}
+.prose code {
+  color:var(--monorail-prose-code);
+  font-weight:600;
+}
+.prose thead th {
+  color:var(--monorail-prose-headings);
+  font-weight:600;
+  vertical-align:bottom;
+}
+.prose table {
+  margin-bottom:2em;
+  margin-top:2em;
+  table-layout:auto;
+  text-align:left;
+  width:100%;
+}
+.prose ol[type="I"] {
+  list-style-type:upper-roman;
+}
+.prose tbody td {
+  vertical-align:baseline;
+}
+.prose h1 {
+  color:var(--monorail-prose-headings);
+  font-size:2.25em;
+  font-weight:800;
+  line-height:1.1111111;
+  margin-bottom:0.8888889em;
+  margin-top:0;
+}
+.prose h2 {
+  color:var(--monorail-prose-headings);
+  font-size:1.5em;
+  font-weight:700;
+  line-height:1.3333333;
+  margin-bottom:0.6em;
+  margin-top:2em;
+}
+.prose thead {
+  border-bottom-color:var(--monorail-prose-th-borders);
+  border-bottom-width:1px;
+}
+.prose tbody tr {
+  border-bottom-color:var(--monorail-prose-td-borders);
+  border-bottom-width:1px;
+}
+.prose pre code {
+  background-color:transparent;
+  border-radius:0;
+  border-width:0;
+  color:inherit;
+  font-family:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  line-height:inherit;
+  padding:0;
+}
+.prose h3 {
+  color:var(--monorail-prose-headings);
+  font-size:1.25em;
+  font-weight:600;
+  line-height:1.6;
+  margin-bottom:0.6em;
+  margin-top:1.6em;
+}
+.prose h2 strong {
+  font-weight:800;
+}
+.prose ul > li {
+  padding-left:0.375em;
+}
+.prose p {
+  margin-bottom:1.25em;
+  margin-top:1.25em;
+}
+.prose a {
+  border-bottom-color:oklch(0.623 0.214 259.815 / 75%);
+  border-bottom-width:1px;
+  color:var(--monorail-prose-links);
+  font-weight:inherit;
+  text-decoration:none;
+}
+.prose ol[type="i"] {
+  list-style-type:lower-roman;
+}
+.prose tfoot {
+  border-top-color:var(--monorail-prose-th-borders);
+  border-top-width:1px;
+}
+.prose h4 {
+  color:var(--monorail-prose-headings);
+  font-weight:600;
+  line-height:1.5;
+  margin-bottom:0.5em;
+  margin-top:1.5em;
+}
+.prose ol[type="1"] {
+  list-style-type:decimal;
+}
+.prose ol[type="A"] {
+  list-style-type:upper-alpha;
+}
+.prose ol > li {
+  padding-left:0.375em;
+}
+.prose pre {
+  background-color:var(--monorail-prose-pre-bg);
+  border-radius:10px;
+  color:var(--monorail-prose-pre-code);
+  font-size:0.875em;
+  font-weight:300;
+  line-height:1.7142857;
+  margin-bottom:1.7142857em;
+  margin-top:1.7142857em;
+  overflow-x:auto;
+  padding-bottom:0.8571429em;
+  padding-left:1.1428571em;
+  padding-right:1.1428571em;
+  padding-top:0.8571429em;
+}
+.prose h1 strong {
+  font-weight:900;
+}
+.prose h4 strong {
+  font-weight:700;
+}
+.prose ul {
+  list-style-type:disc;
+  margin-bottom:1.25em;
+  margin-top:1.25em;
+  padding-left:1.25em;
+}
+.prose ol {
+  list-style-type:decimal;
+  margin-bottom:1.25em;
+  margin-top:1.25em;
+  padding-left:1.25em;
+}
+.prose h3 strong {
+  font-weight:700;
+}
+.prose tbody tr:last-child {
+  border-bottom-width:0px;
+}
+.dark .dark\:prose-invert {
+  --monorail-prose-body:var(--monorail-prose-invert-body);
+  --monorail-prose-code:var(--monorail-prose-invert-code);
+  --monorail-prose-headings:var(--monorail-prose-invert-headings);
+  --monorail-prose-links:var(--monorail-prose-invert-links);
+  --monorail-prose-pre-bg:var(--monorail-prose-invert-pre-bg);
+  --monorail-prose-pre-code:var(--monorail-prose-invert-pre-code);
+  --monorail-prose-td-borders:var(--monorail-prose-invert-td-borders);
+  --monorail-prose-th-borders:var(--monorail-prose-invert-th-borders);
+}
+.max-w-none {
+  max-width:none;
+}
+.justify-evenly {
+  justify-content:space-evenly;
+}
+.gap-1 {
+  gap:0.25rem;
+}
+.divide-primary-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color:oklch(0.469 0.107 300.000);
+}
+.space-y-2 > :not([hidden])~:not([hidden]) {
+  --monorail-space-y-reverse:0;
+  margin-bottom:calc(0.5rem * var(--monorail-space-y-reverse));
+  margin-top:calc(0.5rem * calc(1 - var(--monorail-space-y-reverse)));
+}
+.text-3xl {
+  font-size:1.875rem;
+  line-height:2.25rem;
+}
+.font-extrabold {
+  font-weight:800;
+}
+.leading-9 {
+  line-height:2.25rem;
+}
+.text-primary-100 {
+  --monorail-text-opacity:1;
+  color:oklch(0.936 0.032 300.000 / var(--monorail-text-opacity));
+}
+.text-lg {
+  font-size:1.125rem;
+  line-height:1.75rem;
+}
+.leading-7 {
+  line-height:1.75rem;
+}
+.text-primary-300 {
+  --monorail-text-opacity:1;
+  color:oklch(0.827 0.091 300.000 / var(--monorail-text-opacity));
+}
+.text-primary-800 {
+  --monorail-text-opacity:1;
+  color:oklch(0.394 0.090 300.000 / var(--monorail-text-opacity));
+}
+.dark .dark\:text-primary-200 {
+  --monorail-text-opacity:1;
+  color:oklch(0.881 0.061 300.000 / var(--monorail-text-opacity));
+}
+.text-primary-950 {
+  --monorail-text-opacity:1;
+  color:oklch(0.238 0.054 300.000 / var(--monorail-text-opacity));
+}
+.prose-invert {
+  --monorail-prose-body:var(--monorail-prose-invert-body);
+  --monorail-prose-code:var(--monorail-prose-invert-code);
+  --monorail-prose-headings:var(--monorail-prose-invert-headings);
+  --monorail-prose-links:var(--monorail-prose-invert-links);
+  --monorail-prose-pre-bg:var(--monorail-prose-invert-pre-bg);
+  --monorail-prose-pre-code:var(--monorail-prose-invert-pre-code);
+  --monorail-prose-td-borders:var(--monorail-prose-invert-td-borders);
+  --monorail-prose-th-borders:var(--monorail-prose-invert-th-borders);
+}
+.text-center {
+  text-align:center;
+}
+.space-y-10 > :not([hidden])~:not([hidden]) {
+  --monorail-space-y-reverse:0;
+  margin-bottom:calc(2.5rem * var(--monorail-space-y-reverse));
+  margin-top:calc(2.5rem * calc(1 - var(--monorail-space-y-reverse)));
+}
+.prose-sm {
+  font-size:0.875rem;
+  line-height:1.7142857;
+}
+.max-w-full {
+  max-width:100%;
+}
+.dark .dark\:font-light {
+  font-weight:300;
+}
+.leading-5 {
+  line-height:1.25rem;
+}
+.text-xs {
+  font-size:.75rem;
+  line-height:1rem;
+}
+.tracking-wide {
+  letter-spacing:0.025em;
+}
+.sticky {
+  position:sticky;
+}
+.w-full {
+  width:100%;
+}
+.backdrop-blur {
+  backdrop-filter:blur(8px);
+}
+.bg-primary-200 {
+  --monorail-bg-opacity:1;
+  background-color:oklch(0.881 0.061 300.000 / var(--monorail-bg-opacity));
+}
+.dark .dark\:bg-primary-900\/70 {
+  background-color:oklch(0.320 0.073 300.000 / 0.7);
+}
+.border-b {
+  border-bottom-width:1px;
+}
+.border-primary-900\/20 {
+  border-color:oklch(0.320 0.073 300.000 / 0.2);
+}
+.dark .dark\:border-primary-50\/10 {
+  border-color:oklch(0.978 0.011 300.000 / 0.1);
+}
+.shadow-md {
+  --monorail-shadow:0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --monorail-shadow-colored:0 4px 6px -1px --monorail-shadow-color, 0 2px 4px -2px --monorail-shadow-color;
+  box-shadow:var(--monorail-ring-offset-shadow), 0 0 #0000, var(--monorail-ring-shadow), 0 0 #0000, var(--monorail-shadow);
+}
+.dark .dark\:shadow-lg {
+  --monorail-shadow:0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --monorail-shadow-colored:0 10px 15px -3px --monorail-shadow-color, 0 4px 6px -4px --monorail-shadow-color;
+  box-shadow:var(--monorail-ring-offset-shadow), 0 0 #0000, var(--monorail-ring-shadow), 0 0 #0000, var(--monorail-shadow);
+}
+.z-50 {
+  z-index:50;
+}
+.max-w-5xl {
+  max-width:64rem;
+}
+.items-center {
+  align-items:center;
+  align-items:center;
+}
+.inline-block {
+  display:inline-block;
+}
+.h-10 {
+  height:2.5rem;
+}
+.w-10 {
+  width:2.5rem;
+}
+.rounded-full {
+  border-radius:9999px;
+}
+.bg-gradient-to-br {
+  background-image:linear-gradient(to bottom right, var(--monorail-gradient-stops));
+}
+.from-accent-800 {
+  --monorail-gradient-from:oklch(0.394 0.090 180.000 / 1);
+  --monorail-gradient-stops:var(--monorail-gradient-from), var(--monorail-gradient-to, oklch(0.394 0.090 180.000 / 1));
+}
+.to-accent-500 {
+  --monorail-gradient-to:oklch(0.648 0.147 180.000 / 1);
+}
+.dark .dark\:from-accent-500 {
+  --monorail-gradient-from:oklch(0.648 0.147 180.000 / 1);
+  --monorail-gradient-stops:var(--monorail-gradient-from), var(--monorail-gradient-to, oklch(0.648 0.147 180.000 / 1));
+}
+.dark .dark\:to-accent-300 {
+  --monorail-gradient-to:oklch(0.827 0.091 180.000 / 1);
+}
+.text-primary-700 {
+  --monorail-text-opacity:1;
+  color:oklch(0.469 0.107 300.000 / var(--monorail-text-opacity));
+}
+.dark .dark\:text-primary-300 {
+  --monorail-text-opacity:1;
+  color:oklch(0.827 0.091 300.000 / var(--monorail-text-opacity));
+}
+.dark .dark\:text-yellow-300 {
+  --monorail-text-opacity:1;
+  color:oklch(0.905 0.182 98.111 / var(--monorail-text-opacity));
+}
+.stroke-1 {
+  stroke-width:1;
+}
+.opacity-80 {
+  opacity:0.8;
+}
+.h-6 {
+  height:1.5rem;
+}
+.w-6 {
+  width:1.5rem;
+}
+.text-primary-600 {
+  --monorail-text-opacity:1;
+  color:oklch(0.573 0.130 300.000 / var(--monorail-text-opacity));
+}
+.hover\:text-primary-300:hover {
+  --monorail-text-opacity:1;
+  color:oklch(0.827 0.091 300.000 / var(--monorail-text-opacity));
+}
+.transition-all {
+  transition-duration:150ms;
+  transition-property:all;
+  transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover\:scale-105:hover {
+  --monorail-scale-x:1.05;
+  --monorail-scale-y:1.05;
+  transform:translate(var(--monorail-translate-x), var(--monorail-translate-y)) rotate(var(--monorail-rotate)) skewX(var(--monorail-skew-x)) skewY(var(--monorail-skew-y)) scaleX(var(--monorail-scale-x)) scaleY(var(--monorail-scale-y));
+}
+.fill-current {
+  fill:currentColor;
+}
+.mx-auto {
+  margin-left:auto;
+  margin-right:auto;
+}
+.py-4 {
+  padding-bottom:1rem;
+  padding-top:1rem;
+}
+.py-2 {
+  padding-bottom:0.5rem;
+  padding-top:0.5rem;
+}
+.px-4 {
+  padding-left:1rem;
+  padding-right:1rem;
+}
+.pt-10 {
+  padding-top:2.5rem;
+}
+.pt-8 {
+  padding-top:2rem;
+}
+.pb-7 {
+  padding-bottom:1.75rem;
+}
+.first\:pt-0:first-child {
+  padding-top:0px;
+}
+.last\:pb-0:last-child {
+  padding-bottom:0px;
+}
+.mr-3 {
+  margin-right:0.75rem;
+}
+.pb-8 {
+  padding-bottom:2rem;
+}
+.pt-6 {
+  padding-top:1.5rem;
+}
+.mt-8 {
+  margin-top:2rem;
+}
+.pb-6 {
+  padding-bottom:1.5rem;
+}
+.pt-4 {
+  padding-top:1rem;
+}
+.top-0 {
+  top:0px;
+}
+.left-2 {
+  left:0.5rem;
+}
+.mr-4 {
+  margin-right:1rem;
+}
+.ml-auto {
+  margin-left:auto;
+}
+.mr-6 {
+  margin-right:1.5rem;
+}
+.mt-4 {
+  margin-top:1rem;
+}
+.mb-4 {
+  margin-bottom:1rem;
+}
+@media (min-width:640px) {
+  .sm\:text-4xl {
+    font-size:2.25rem;
+    line-height:2.5rem;
+  }
+  .sm\:leading-10 {
+    line-height:2.5rem;
+  }
+}
+@media (min-width:768px) {
+  .md\:space-y-5 > :not([hidden])~:not([hidden]) {
+    --monorail-space-y-reverse:0;
+    margin-bottom:calc(1.25rem * var(--monorail-space-y-reverse));
+    margin-top:calc(1.25rem * calc(1 - var(--monorail-space-y-reverse)));
+  }
+  .md\:text-6xl {
+    font-size:3.75rem;
+    line-height:1;
+  }
+  .md\:prose-base {
+    font-size:1rem;
+    line-height:1.5555556;
+  }
+  .md\:prose-base h1 {
+    font-size:2.25em;
+    line-height:1.1111111;
+    margin-bottom:0.8888889em;
+    margin-top:0;
+  }
+  .md\:prose-base h2 {
+    font-size:1.5em;
+    line-height:1.3333333;
+    margin-bottom:0.6em;
+    margin-top:2em;
+  }
+  .md\:prose-base h3 {
+    font-size:1.25em;
+    line-height:1.6;
+    margin-bottom:0.6em;
+    margin-top:1.6em;
+  }
+  .md\:prose-base ul > li {
+    padding-left:0.375em;
+  }
+  .md\:prose-base p {
+    margin-bottom:1.25em;
+    margin-top:1.25em;
+  }
+  .md\:prose-base h4 {
+    line-height:1.5;
+    margin-bottom:0.5em;
+    margin-top:1.5em;
+  }
+  .md\:prose-base ol > li {
+    padding-left:0.375em;
+  }
+  .md\:prose-base pre {
+    font-size:0.875em;
+    line-height:1.7142857;
+    margin-bottom:1.7142857em;
+    margin-top:1.7142857em;
+    padding-bottom:0.8571429em;
+    padding-left:1.1428571em;
+    padding-right:1.1428571em;
+    padding-top:0.8571429em;
+  }
+  .md\:prose-base ul {
+    margin-bottom:1.25em;
+    margin-top:1.25em;
+    padding-left:1.25em;
+  }
+  .md\:prose-base ol {
+    margin-bottom:1.25em;
+    margin-top:1.25em;
+    padding-left:1.25em;
+  }
+  .md\:h-12 {
+    height:3rem;
+  }
+  .md\:w-12 {
+    width:3rem;
+  }
+  .md\:text-4xl {
+    font-size:2.25rem;
+    line-height:2.5rem;
+  }
+  .md\:py-4 {
+    padding-bottom:1rem;
+    padding-top:1rem;
+  }
+  .md\:px-8 {
+    padding-left:2rem;
+    padding-right:2rem;
+  }
+  .md\:mb-16 {
+    margin-bottom:4rem;
+  }
+}
+@media (min-width:1024px) {
+  .lg\:space-y-2 > :not([hidden])~:not([hidden]) {
+    --monorail-space-y-reverse:0;
+    margin-bottom:calc(0.5rem * var(--monorail-space-y-reverse));
+    margin-top:calc(0.5rem * calc(1 - var(--monorail-space-y-reverse)));
+  }
+  .lg\:leading-loose {
+    line-height:2;
+  }
+}
+@media (min-width:1280px) {
+  .xl\:grid {
+    display:grid;
+  }
+  .xl\:grid-cols-4 {
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+  }
+  .xl\:items-baseline {
+    align-items:baseline;
+    align-items:baseline;
+  }
+  .xl\:space-y-0 > :not([hidden])~:not([hidden]) {
+    --monorail-space-y-reverse:0;
+    margin-bottom:calc(0px * var(--monorail-space-y-reverse));
+    margin-top:calc(0px * calc(1 - var(--monorail-space-y-reverse)));
+  }
+  .xl\:col-span-3 {
+    grid-column:span 3 / span 3;
+  }
+  .xl\:divide-y > :not([hidden]) ~ :not([hidden]) {
+    --monorail-divide-y-reverse:0;
+    border-bottom-width:calc(1px * var(--monorail-divide-y-reverse));
+    border-top-width:calc(1px * calc(1 - var(--monorail-divide-y-reverse)));
+  }
+  .xl\:divide-primary-700 > :not([hidden]) ~ :not([hidden]) {
+    border-color:oklch(0.469 0.107 300.000);
+  }
+  .xl\:gap-x-6 {
+    column-gap:1.5rem;
+  }
+  .xl\:divide-y-0 > :not([hidden]) ~ :not([hidden]) {
+    --monorail-divide-y-reverse:0;
+    border-bottom-width:calc(0px * var(--monorail-divide-y-reverse));
+    border-top-width:calc(0px * calc(1 - var(--monorail-divide-y-reverse)));
+  }
+  .xl\:row-span-2 {
+    grid-row:span 2 / span 2;
+  }
+  .xl\:col-start-1 {
+    grid-column-start:1;
+  }
+  .xl\:row-start-2 {
+    grid-row-start:2;
+  }
+  .xl\:py-8 {
+    padding-bottom:2rem;
+    padding-top:2rem;
+  }
+  .xl\:px-0 {
+    padding-left:0px;
+    padding-right:0px;
+  }
+  .xl\:pb-6 {
+    padding-bottom:1.5rem;
+  }
+  .xl\:pb-0 {
+    padding-bottom:0px;
+  }
+  .xl\:pt-8 {
+    padding-top:2rem;
+  }
+}

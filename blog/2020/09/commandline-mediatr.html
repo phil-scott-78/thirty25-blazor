@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2020-09-09T00:00:00.000">September 9, 2020</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Command Line Verbs and MediatR</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>Verbs are a way to split our console application in distinct actions within an app. If you've used the git command line
+you've encountered them. <code>git clone</code>, <code>git commit</code>, etc are all each verbs. Each one of those verbs has its own set of
+options and even help text. It's like having many command line apps within one master application.</p>
+<p>With a .NET application we have a lot of different ways to tackle creating a console app that supports verbs, but my go
+to choice is <a href="https://github.com/commandlineparser/commandline">CommandlineParser</a>. Their
+<a href="https://github.com/commandlineparser/commandline/wiki/Verbs">documentation on verbs</a> has a good write up on how to get
+started.</p>
+<p>I'll include a few examples, but I'll keep them short because I'm gonna go a totally different route later. To define
+the verb with <code>CommandLineParser</code> you create a class and mark it with the <code>[Verb]</code> attribute. Their example looks like
+this</p>
+<pre><code class="language-csharp">[Verb(&quot;add&quot;, HelpText = &quot;Add file contents to the index.&quot;)]
+class AddOptions
+{
+     // normal options here
+}
+
+[Verb(&quot;commit&quot;, HelpText = &quot;Record changes to the repository.&quot;)]
+class CommitOptions {
+     // normal options here
+}
+
+[Verb(&quot;clone&quot;, HelpText = &quot;Clone a repository into a new directory.&quot;)]
+class CloneOptions {
+     // normal options here
+}
+</code></pre>
+<p>To parse and execute the selected verb you'd use <code>Parser</code>'s object <code>ParseArguments</code> function passing in your options and
+the methods you want to execute for each option.</p>
+<pre><code class="language-csharp">static int Main(string[] args) {
+    Parser.Default.ParseArguments&lt;AddOptions, CommitOptions, CloneOptions&gt;(args)
+        .WithParsed&lt;AddOptions&gt;(options =&gt; ExecuteAdd(options, fileSystem))
+        .WithParsed&lt;CommitOptions&gt;(options =&gt; ExecuteCommit(options))
+        .WithParsed&lt;CloneOptions&gt;(options =&gt; ExecuteClone(options, fileSystem, httpClient))
+        .WithNotParsed(errors =&gt; ...)
+}
+</code></pre>
+<p>That's not terrible. Most people end up creating a new method for each verb and begin their processing from there. This
+is perfectly fine for a lot of apps, but we can do better.</p>
+<p>When I look at the above example, I see the following issues:</p>
+<ul>
+<li>Every time I add a verb, I need to remember to adjust the <code>Main</code> method to add my new option.</li>
+<li>I'd like to keep the code for executing my verbs close to my verb definition rather than tying it to the parser.</li>
+<li>Handling dependencies could be better. With my simple example above I have an instance of <code>fileSystem</code> and
+<code>httpClient</code> built but I'm not using them in all code paths.</li>
+<li>I'd like to be able to test my verbs without needing to run the application. Right now I could make the <code>Execute...</code>
+methods public and call those, but I'd like to be closer to the same path <code>Program.Main</code> takes.</li>
+</ul>
+<p>Looking at the code there is a definite pattern arising. Take message, in this case the options, and pass it to the
+appropriate handler. If you've worked on a modern ASP.NET code base of late (or read the title of this blog post) you'll
+know where I'm going next</p>
+<h2 id="this-calls-for-mediatr">This calls for MediatR</h2>
+<p><a href="https://github.com/jbogard/MediatR">MediatR</a> for those unfamiliar is a simple implementation of the
+<a href="https://refactoring.guru/design-patterns/mediator">mediator pattern</a>. It's extremely common in larger ASP.NET
+applications, especially those using CQRS. But nothing says we can't use it in a command line app too. Since MediatR
+will want a service location we'll also add dependency injection into our console application. This will require a
+little bit more work up front, but it'll provide the value as we add and test each new verb.</p>
+<p>For my project I'm going to use <a href="https://jasperfx.github.io/lamar/">Lamar</a> as my container. There is nothing special
+Lamar is bringing to the table over any other IoC container so feel free to use your tool of choice. You should be able
+to mold one of the <a href="https://github.com/jbogard/MediatR/tree/master/samples">projects from the MediatR samples libraries</a>
+to get your registration correct.</p>
+<h2 id="setting-up-our-console-app">Setting up our Console App</h2>
+<p>We'll create a new console application and add the following packages</p>
+<pre><code class="language-shell">dotnet add package Lamar
+dotnet add package MediatR
+dotnet add package CommandLineParser
+</code></pre>
+<p>Now we need to create our project's verbs. We'll stick with the <code>CommandLineParser</code> example and add a couple of verbs so
+we can see them in action. Add these classes each in their own in a corresponding file</p>
+<pre><code class="language-csharp">// e.g. consoleapp add myfile.txt
+[Verb(&quot;add&quot;, HelpText = &quot;Add file contents to the index.&quot;)]
+public class AddOptions
+{
+    [Value(0, MetaName = &quot;Path&quot;, Required = true)]
+    public string Path { get; set; }
+}
+
+
+// e.g. consoleapp commit -m &quot;my message&quot;
+[Verb(&quot;commit&quot;, HelpText = &quot;Record changes to the repository.&quot;)]
+public class CommitOptions
+{
+    [Option('m', &quot;Message&quot;, HelpText = &quot;Message for commit&quot;)]
+    public string Message { get; set; }
+}
+
+// e.g. consoleapp clone http://example.com/repo
+[Verb(&quot;clone&quot;, HelpText = &quot;Clone a repository into a new directory.&quot;)]
+public class CloneOptions
+{
+    [Value(0, MetaName = &quot;Url&quot;, Required = true)]
+    public string Url { get; set; }
+}
+</code></pre>
+<p>If you've worked with <code>CommandLineParser</code> in the past, there isn't anything new here. But we do need to tell MediatR
+that we'll be using them. We'll need to make each of these classes implement <code>IRequest&lt;int&gt;</code>. This tells MediatR that
+this is a request that will return an int.</p>
+<p>Now our options look should be looking like this.</p>
+<pre><code class="language-csharp">public class CommitOptions : IRequest&lt;int&gt; {/*...*/}
+public class AddOptions : IRequest&lt;int&gt; {/*...*/}
+public class CloneOptions : IRequest&lt;int&gt; {/*...*/}
+</code></pre>
+<p>Now that MediatR knows what our requests look like, we need to add a handler for each one of them. I prefer to create
+the handler side by side with the request in one single file. The syntax for your handler along with the request will
+give you one file that looks like this</p>
+<pre><code class="language-csharp">// e.g. consoleapp commit -m &quot;my message&quot;
+[Verb(&quot;commit&quot;, HelpText = &quot;Record changes to the repository.&quot;)]
+public class CommitOptions
+{
+    [Option('m', &quot;Message&quot;, HelpText = &quot;Message for commit&quot;)]
+    public string Message { get; set; }
+}
+
+public class CommitHandler : IRequestHandler&lt;CommitOptions, int&gt;
+{
+    public async Task&lt;int&gt; Handle(CommitOptions request, CancellationToken cancellationToken)
+    {
+        throw new System.NotImplementedException();
+    }
+}
+</code></pre>
+<p>The <code>Handle</code> method is part of the interface of <code>IRequestHandle</code>. We'll create a handler for each one of them. You'll
+notice that there will be a parameter named <code>request</code> with the options we need for our verb. Perfect! Now each of our
+verbs have a standard handler. We just need a way for MediatR to actually work.</p>
+<h2 id="configure-our-container">Configure our Container</h2>
+<p>Our next step is going to be building our container. I'll be using Lamar but your code should look similar to this if
+you copy and paste our of the MediatR examples correctly</p>
+<pre><code class="language-csharp">private static Container BuildContainer()
+{
+    return new Container(cfg =&gt;
+    {
+        cfg.Scan(scanner =&gt;
+        {
+            scanner.AssemblyContainingType&lt;Program&gt;();
+            scanner.ConnectImplementationsToTypesClosing(typeof(IRequestHandler&lt;,&gt;));
+            scanner.ConnectImplementationsToTypesClosing(typeof(INotificationHandler&lt;&gt;));
+        });
+
+        cfg.For(typeof(IPipelineBehavior&lt;,&gt;))
+            .Add(typeof(RequestPreProcessorBehavior&lt;,&gt;));
+        cfg.For(typeof(IPipelineBehavior&lt;,&gt;))
+            .Add(typeof(RequestPostProcessorBehavior&lt;,&gt;));
+
+        cfg.For&lt;IMediator&gt;().Use&lt;Mediator&gt;().Transient();
+        cfg.For&lt;ServiceFactory&gt;().Use(ctx =&gt; ctx.GetInstance);
+    });
+}
+</code></pre>
+<p>Let's walk through this. A lot of this code isn't needed to get our examples running, but we'll want to use it because
+it does configure some MediatR functionality that may prove useful in the future.</p>
+<p>We are telling Lamar to scan the assembly with our Program looking for any classes that implement <code>IRequestHandler&lt;,&gt;</code>
+and <code>INotificationHandler&lt;&gt;</code>. The later is currently unused and could be deleted, but I like to leave it enabled to make
+sure future devs that see MediatR is configured and expect it to work. For more information on Notifications checkout
+<a href="https://github.com/jbogard/MediatR/wiki#notifications">their documentation</a>.</p>
+<p>The lines about behaviors</p>
+<pre><code class="language-csharp">cfg.For(typeof(IPipelineBehavior&lt;,&gt;))
+    .Add(typeof(RequestPreProcessorBehavior&lt;,&gt;));
+cfg.For(typeof(IPipelineBehavior&lt;,&gt;))
+    .Add(typeof(RequestPostProcessorBehavior&lt;,&gt;));
+</code></pre>
+<p>configure the MediatR pipeline. Like the notification handlers, we aren't using these
+<a href="https://github.com/jbogard/MediatR/wiki/Behaviors#built-in-behaviors">built-in behaviors</a> now, but I'll leave them for
+future devs to have less hurdles when implementing.</p>
+<p>The last two lines</p>
+<pre><code class="language-csharp">cfg.For&lt;IMediator&gt;().Use&lt;Mediator&gt;().Transient();
+cfg.For&lt;ServiceFactory&gt;().Use(ctx =&gt; ctx.GetInstance);
+</code></pre>
+<p>tell lamar to wire up requests for <code>IMediator</code> to an instance of <code>Mediator</code> and also wires up requests for MediatR's
+<code>ServiceFactory</code> to an instance of our container. With that MediatR knows about our container which in turn knows about
+our handlers.</p>
+<h2 id="lets-actually-send-in-a-command">Let's Actually Send in a Command</h2>
+<p>With all this in place, let's finally execute some commands. I'll add a few <code>Console.WriteLine</code> statements to my
+handlers so we can see them in action. For example, I'll add an a handler for <code>AddOptions</code> that prints out the path
+requested</p>
+<pre><code class="language-csharp">public class AddHandler : IRequestHandler&lt;AddOptions, int&gt;
+{
+    public Task&lt;int&gt; Handle(AddOptions request, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($&quot;Adding \&quot;{request.Path}\&quot;&quot;);
+        return Task.FromResult(0);
+    }
+}
+</code></pre>
+<p>Back in <code>Program.cs</code> we need to execute these commands. Step one is finding them dynamically. If you remember from way
+back at the start of the blog post, <code>CommandLineParser</code> took a list of generic options in to give us that strongly typed
+syntax. Thankfully, it still does things old school and accepts an array of <code>Type</code> too. All we need to do is find all
+the types that implement <code>IRequest&lt;int&gt;</code> and we can dynamically add them.</p>
+<pre><code class="language-csharp">var commands = typeof(Program)
+    .Assembly
+    .GetTypes()
+    .Where(t =&gt; t.GetInterfaces().Contains(typeof(IRequest&lt;int&gt;)))
+    .ToArray();
+</code></pre>
+<p>Now with our array of types we change our call to parse to simply</p>
+<pre><code class="language-csharp">var parserResult = Parser.Default.ParseArguments(args, commands);
+</code></pre>
+<p>With the untyped <code>ParseArguments</code> method, it will do two things depending on the <code>args</code> we send in. If it finds the
+arguments aren't valid it'll be of type <code>NotParsed&lt;object&gt;</code>. If it has a valid parsing, it'll return <code>Parsed&lt;object&gt;</code>
+with a property of <code>Value</code> matching our options. We then use that property value to send to <code>MediatR</code> for handling.</p>
+<p>I'll wrap this code up in a method named <code>GetVerb</code> that takes the command line args and returns the request. If we have
+an invalid argument we'll throw a custom exception named <code>CommandLineParsingException</code>.</p>
+<pre><code class="language-csharp">public static IRequest&lt;int&gt; GetVerb(string[] args)
+{
+    var commands = typeof(Program)
+        .Assembly
+        .GetTypes()
+        .Where(t =&gt; t.GetInterfaces().Contains(typeof(IRequest&lt;int&gt;)))
+        .ToArray();
+
+    var parserResult = Parser.Default.ParseArguments(args, commands);
+    if (parserResult is Parsed&lt;object&gt; parser &amp;&amp; parser.Value is IRequest&lt;int&gt; request)
+    {
+        return request;
+    }
+
+    throw new CommandLineParsingException(parserResult);
+}
+</code></pre>
+<p>We use C# 8 patterns matching to check for a properly parsed set of options that match one of our verbs.</p>
+<p>This leaves us with our <code>Main</code></p>
+<pre><code class="language-csharp">public static async Task&lt;int&gt; Main(string[] args)
+{
+    try
+    {
+        var command = GetVerb(args);
+
+        var mediator = BuildContainer().GetInstance&lt;IMediator&gt;();
+        return await mediator.Send(command);
+    }
+    catch (CommandLineParsingException e)
+    {
+        Console.WriteLine(HelpText.AutoBuild(e.ParserResult));
+        return await Task.FromResult(1);
+    }
+}
+</code></pre>
+<p>After we get our verb, we'll build our container, ask for an instance of <code>IMediator</code> and send our request in. If we
+built our container properly we should have handlers built that match our options. Since these handlers all return an
+integer we'll use that as the return code for our application and exit.</p>
+<p>We can now run our commands and see some output</p>
+<pre><code class="language-shell">CommandLineApp clone http://example.com
+</code></pre>
+<p>should output something like</p>
+<pre><code class="language-shell">Cloning &quot;http://example.com&quot;
+</code></pre>
+<p>Ok, that's cool. Let's revisit our issues and see how we are doing with those.</p>
+<h3 id="every-time-i-add-a-verb-i-need-to-remember-to-adjust-the-main-method-to-add-my-new-option">Every time I add a verb I need to remember to adjust the <code>Main</code> method to add my new option</h3>
+<p>To add a new verb we just need to add a new options that implements <code>IRequest&lt;int&gt;</code> and a corresponding
+<code>IRequestHandler</code>. Add those and it'll be wired up automatically.</p>
+<h3 id="id-like-to-keep-the-code-for-executing-my-verbs-close-to-my-verb-definition">I'd like to keep the code for executing my verbs close to my verb definition</h3>
+<p>Yup, this is an obvious win as long as you aren't super strict about the one class per file. Some work around this rule
+by making both the Request and Request Handler a nested class in a master one (e.g. a class named <code>Add</code> with child
+classes named <code>Options</code> and <code>Handler</code>)</p>
+<h3 id="handling-dependencies-could-be-better">Handling dependencies could be better</h3>
+<p>We really didn't touch on this yet. But because we are relying on an IoC container to build our handler this is a
+breeze. It'll work just like if you were writing an ASP.NET Controller. Say for example you wanted to use
+<code>System.IO.Abstraction</code> to abstract out file system access.</p>
+<p>We'd add this to our <code>BuildContainer</code> method</p>
+<pre><code class="language-csharp">cfg.For&lt;IFileSystem&gt;().Use&lt;FileSystem&gt;();
+</code></pre>
+<p>With this in place we can now use standard DI to get our instance of <code>IFileSystem</code> in our handler.</p>
+<pre><code class="language-csharp">public class AddHandler : IRequestHandler&lt;AddOptions, int&gt;
+{
+    private readonly IFileSystem _fileSystem;
+
+    public AddHandler(IFileSystem fileSystem)
+    {
+        _fileSystem = fileSystem;
+    }
+
+    public Task&lt;int&gt; Handle(AddOptions request, CancellationToken cancellationToken)
+    {
+        if (!_fileSystem.File.Exists(request.Path))
+        {
+            throw new PathForAddNotFoundException(request.Path);
+        }
+
+        Console.WriteLine($&quot;Adding \&quot;{request.Path}\&quot;&quot;);
+        return Task.FromResult(0);
+    }
+}
+</code></pre>
+<p>We can follow this pattern and move all our handler's dependencies into the container just like we would with an ASP.NET
+application.</p>
+<h3 id="id-like-to-be-able-to-test-my-verbs-without-needing-to-run-the-application">I'd like to be able to test my verbs without needing to run the application</h3>
+<p>With our execution moved into a consistent pattern unit testing now becomes a lot easier. Even easier now that we have
+also moved our dependencies out of the handler too. Now, for example, to test the AddHandler we can create an instance
+of it like any other class. For example, to test the above <code>AddHandler</code> we can use
+<code>System.IO.Abstractions.TestingHelpers</code> to mock a file system and verify we get a proper exception with an invalid path.</p>
+<pre><code class="language-csharp">public class AddVerbTests
+{
+    [Fact]
+    public async Task Add_throws_exception_with_invalid_path()
+    {
+        var mockFileSystem = new MockFileSystem(
+            new Dictionary&lt;string, MockFileData&gt; {
+                {&quot;output.txt&quot;, new MockFileData(&quot;my data&quot;)}
+            }
+        );
+
+        var addHandler = new AddHandler(mockFileSystem);
+
+        await Should.ThrowAsync&lt;PathForAddNotFoundException&gt;(async () =&gt;
+        {
+            await addHandler.Handle(new AddOptions() {Path = &quot;notfound.txt&quot;}, CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task Add_returns_with_success_for_valid_path()
+    {
+        var mockFileSystem = new MockFileSystem(
+            new Dictionary&lt;string, MockFileData&gt; {
+                {&quot;output.txt&quot;, new MockFileData(&quot;my data&quot;)}
+            }
+        );
+
+        var addHandler = new AddHandler(mockFileSystem);
+        await addHandler.Handle(new AddOptions() {Path = &quot;output.txt&quot;}, CancellationToken.None);
+    }
+}
+</code></pre>
+<p>We can also test our command line without executing a line of code.</p>
+<pre><code class="language-csharp">public class CommandLineParsingTests
+{
+    [Fact]
+    public void Can_map_commit_option()
+    {
+        var verb = Program.GetVerb(new[] {&quot;commit&quot;, &quot;-m&quot;, &quot;This is my commit message&quot;});
+        verb.ShouldBeOfType&lt;CommitOptions&gt;();
+        ((CommitOptions)verb).Message.ShouldBe(&quot;This is my commit message&quot;);
+    }
+
+    [Fact]
+    public void Invalid_command_line_parsing_fails()
+    {
+        Should.Throw&lt;CommandLineParsingException&gt;(() =&gt;
+        {
+            Program.GetVerb(new[] {&quot;test&quot;, &quot;http://example.com&quot;});
+        });
+    }
+}
+</code></pre>
+<p>By being able to test the syntax of your commands what options are being created you can quickly troubleshoot issues
+with command line syntax errors without needing to execute commands.</p>
+<h2 id="is-this-all-worth-it">Is This All Worth It?</h2>
+<p>Much like adding MediatR to an ASP.NET Core app, we need to weight the pros and cons of using it in a console app.</p>
+<h3 id="pros">Pros</h3>
+<ul>
+<li>Consistent coding structure. By using the mediator pattern we have a consistent structure to each of our commands
+from how they are defined all the way to how they are executed.</li>
+<li>Testability. With each verb in its own handler testing the code outside of <code>Program.Main</code> becomes much easier.</li>
+<li>Leverage existing code. I've added small command line apps that support larger ASP.NET Core apps. With so much
+infrastructure configuration being done via our container configuration with ASP.NET being able to have a shared
+container can sometimes prove quite valuable.</li>
+<li>Easy of maintenance. To add a new command we don't need to mess with the entry point of the application.</li>
+<li>Extensibility. Just like using MediatR in ASP.NET, using it in a console app allows new extensibility options. For
+example we could add <a href="https://fluentvalidation.net/">FluentValidation</a> as a behavior to have a consistent validation
+story. Or we could configure our DI container differently if a <code>--dry-run</code> parameter is passed.</li>
+</ul>
+<h3 id="cons">Cons</h3>
+<ul>
+<li>More complexity in starting a new project. Not gonna lie, I had to copy and paste from some code I wrote a while ago
+on how to pull a generic object out of the command line parser. Thankfully we only need to write this one.</li>
+<li>For simple apps dealing with an IoC container is just silly. Creating a new instance of a class or even just
+leveraging static methods is just fine for small console apps. No need for all this ceremony.</li>
+<li>Unfamiliar code structure. Those who haven't encountered MediatR struggle with figuring out how it all ties
+together. There is no right click and &quot;Go To Handler&quot; in Visual Studio that tells you what executes next, and stack
+traces can get out of control.</li>
+</ul>
+<p>All those points being equal, my breaking point for going this route is the addition of verbs to my console app. If our
+console app has one path (or a UI) then MediatR just gets in the way. But once we start growing and adding verbs the
+work at first pays off every time we add a new on.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2020/09/commandline-mediatr">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/MediatR">MediatR</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/commandlineparser">commandlineparser</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

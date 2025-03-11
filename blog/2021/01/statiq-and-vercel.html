@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2021-01-14T00:00:00.000">January 14, 2021</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Hosting Statiq Sites on Vercel</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p><a href="https://vercel.com">Vercel</a> (formerly Zeit) is a platform for hosting static sites and serverless functions. They provide a lot of services for free that make it perfect for hosting your developer blog:</p>
+<ul>
+<li>A seamless integration with Git for automated deployments</li>
+<li>Free SSL on custom domains</li>
+<li>Automatic creation of additional development deployments based on branching and pull requests</li>
+<li>Fast edge servers - no need for configuring any CDN here</li>
+</ul>
+<p>While most projects that they host are Next.js, Svelt, Nuxt.js or Gatsby sites, there's no reason we can't use it to host our <a href="https://statiq.dev">Statiq</a> sites as long as we can play within their sandbox properly.</p>
+<p>A few things we need to keep in mind before moving over our site:</p>
+<ul>
+<li>Vercel will run our deploy on Linux servers. This means casing matters. A big gotcha I ran into was casing of <code>_ViewStart</code> and <code>_ViewImports</code>. Make sure they are properly capitalized.</li>
+<li>Vercel will by default run <code>npm run build</code> to build our site</li>
+<li>Vercel will look in the <code>public</code> folder for the output rather than the default <code>output</code> folder of Statiq. Either we'll have to change that in a setting of your Vercel site, or tell Statiq the right folder for output.</li>
+<li>Vercel does not support clean URLs by default (e.g. <code>/tags</code> rather than <code>/tags.html</code>). We can adjust that easily though.</li>
+</ul>
+<p>Ok, given this knowledge I'm going to try and get the Statiq website hosted. The repository is <a href="https://github.com/statiqdev/statiqdev.github.io">https://github.com/statiqdev/statiqdev.github.io</a>. One gotcha is that because the Statiq docs are hosted on github pages, the main branch is currently set up as the content of the site. With Vercel we don't want that. Your <code>main</code> branch will be the code that generates your production site. <code>git reset develop --hard</code> while on the main branch will get things pointed in the right direction. If you don't do that we can still work with just the develop branch and ignore main, we just won't have a production site in Vercel.</p>
+<p>Let's tackle our bullet list of things to keep in mind. First, we are lucky because the casing is already correct for <code>_ViewImports</code> and <code>_ViewStart</code> for this project. So we can jump right to the second step.</p>
+<p>I'm sure that if I was smart enough I could write a bash script that installs dotnet and run it directly from that. But I'll typically be using npm anyways, so I'll stick to npm. Luckily we have a couple of npm packages ready for us with <a href="https://www.npmjs.com/package/dotnet-sdk-3.1">dotnet-sdk-3.1</a> and <a href="https://www.npmjs.com/package/dotnet-sdk-3.1">dotnet-sdk-cli-3.1</a>. To quickly get started we can run</p>
+<pre><code class="language-bash">npm init -y
+npm install dotnet-sdk-3.1 dotnet-sdk-cli-3.1
+</code></pre>
+<p>This will initialize npm with defaults and then install the packages for wrapping .NET 3.1 for our needs.</p>
+<p>With this in place, we need to add our <code>build</code> command to npm. Open up the newly created <code>package.json</code> and find the scripts. While I'm in here I'll one script for launching the preview along with the build command. Keep in mind that we need to output to the <code>public</code> folder too.</p>
+<p>With that in mind, our scripts section will now look like this</p>
+<pre><code class="language-json"> &quot;scripts&quot;: {
+    &quot;build&quot;: &quot;dotnet run -- -o public&quot;,
+    &quot;watch&quot;: &quot;dotnet run -- preview&quot;
+ },
+</code></pre>
+<p>The last step is making configuring Vercel to use the clean urls that Statiq will generate. Thankfully, this is just a <a href="https://vercel.com/docs/configuration#project/clean-urls">config toggle</a>. To do this we can create a <code>vercel.json</code> file in the root and add the following configuration to it</p>
+<pre><code class="language-json">{
+  &quot;cleanUrls&quot;: true
+}
+</code></pre>
+<p>With that in place, we can commit our changes and push.</p>
+<h2 id="setting-up-vercel">Setting up Vercel</h2>
+<p>There is a ton to do in Vercel, but that's for a later blog post. For now let's just get our site imported into Vercel. First, head to &lt;vercel.com&gt; and log in with GitHub credentials. With that done we can now import our recently created project.</p>
+<p><img src="/Content/Blog/media/2021-01-14-23-03-31.png" alt="import git repository into vercel" /></p>
+<p>Once you've selected your project that rest is just accepting the defaults. Once this completes, it should kick off a build of your site and show you the completed screen.</p>
+<p><img src="/Content/Blog/media/2021-01-14-23-00-48.png" alt="results of deployment in vercel" /></p>
+<p>My site is living at <a href="https://statiqdev-github-io.vercel.app/">https://statiqdev-github-io.vercel.app/</a> and you are welcome to check it out.</p>
+<p>From here you'll notice a few things. The build has multiple urls. It has a url for the commit, one for the branch name and also one that acts as the product site. You can also easily add custom domains to act as your production site and you'll see this pop up here.</p>
+<p>If you create a branch and push to it, it will create a new deployment separate from this one that acts as a development site. They all in this case point to the same build. Try and create a branch from main with a CSS change and push it up and you'll get a couple new URLs to use based off of the branch name and commit hash.</p>
+<p>The branching model is the killer feature for blogging for me. I have terrible spelling and grammar as you have surely noticed. By being able to create a branch per post I'm (theoretically) able to send it to a proof reader who can look it over on the site as it would be displayed in production as part of a pull request. GitHub comments can be used to review it, and Vercel keeps it all in sync. Finally, when I merge the PR (or schedule it) the post goes to main and Vercel builds and deploys the site.</p>
+<p>Magic.</p>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2021/01/statiq-and-vercel">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Vercel">Vercel</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Statiq">Statiq</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

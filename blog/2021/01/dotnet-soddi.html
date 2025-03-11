@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2021-01-17T00:00:00.000">January 17, 2021</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>DotNet Soddi</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>Whenever I get into learning a new technology around data access, there is always the issue of finding a good database to work against. Long gone are the days of Northwind. You need a database not with just a lot of rows, you need a database with a interesting and varied distribution of data. The databases I turn to are the <a href="https://archive.org/details/stackexchange">Stack Exchange archives</a>. These frequently updated archives contain anonymized exports from all the Stack Exchange sites, from the tiny <a href="https://sports.stackexchange.com/">Sports</a> all the way to the huge main site <a href="https://stackoverflow.com/">Stack Overflow</a>. With hundreds of sites to pick from, I can grab a fresh database of whatever size that matches my need. With sites ranging from 2mb to over 100gb of data you can find a database with real data for playing with that fits your size. The schema is simple, well defined and has a variety of real-world data making it perfect for playing with SQL Server indexing strategies, or testing out the latest Entity Framework version.</p>
+<p>The archives themselves are just huge xml files, ready to be used for whatever. For me, that means SQL Server. Getting these into your database server I've always relied on <a href="https://github.com/BrentOzarULTD/soddi">Soddi</a>. Originally written by Sky Sanders, and now maintained by Brent Ozar's team, it smooths out importing the 7z files into your database server. And it works well.</p>
+<p>But I tend to run into the same set of problems every time I want to grab one of these archives.</p>
+<ul>
+<li>For the larger sites, the download times are brutal over HTTP. Torrenting works best, but I typically don't have a torrent client running on my dev machines. And I so infrequently do need a client it seems whatever one I used last has been sold to some dodgy company.</li>
+<li>They are packed as 7z archives. Same as the previous issue, I typically don't have 7-zip installed on my dev machines as I don't really mess with archives that often. Installing 7-zip isn't a big deal, but one I'd like to avoid if possible.</li>
+<li>With the larger databases you need to full expand the archive out before importing it. You need well over 150gb of storage to import that Stack Overflow database</li>
+<li>The existing SODDI application is not terribly intuitive. You need to get your folder structure set up in a particular way. It never feels like I flip the right levers on the first try.</li>
+<li>When I'm messing with the SO databases, I'm usually doing some crazy things with the database so dropping and recreating it is a frequent task. Like to make the full import process quick and easy as possible.</li>
+</ul>
+<p>With that in mind (and after I read a couple of articles around creating dotnet tools) I decided I'd try and create a modern CLI version of SODDI.</p>
+<h2 id="dotnet-soddi">dotnet soddi</h2>
+<p><img src="/Content/Blog/media/2021-01-18-21-42-38.png" alt="soddi screenshot" /></p>
+<p>Because dotnet-soddi is a dotnet tool, you install it using the <code>dotnet tool install</code> command. As of right now, it's still in (very) pre-release so a version number will be needed e.g.</p>
+<pre><code class="language-bash">dotnet tool install --global dotnet-soddi --version 0.1.1
+</code></pre>
+<p>You can also clone and run it from it's repository at <a href="https://github.com/phil-scott-78/dotnet-soddi">https://github.com/phil-scott-78/dotnet-soddi</a>.</p>
+<p>Once installed there are four main commands</p>
+<ul>
+<li><code>list</code></li>
+<li><code>download</code></li>
+<li><code>torrent</code></li>
+<li><code>import</code></li>
+</ul>
+<p><code>list</code> will display all the archives available along with their file size. You can specific a filter to only include a partial list. E.g. <code>soddi list spa</code>, which will only include archives with spa in their name.</p>
+<p><code>download</code> will download the archive over HTTPS. This is preferred for smaller sized files (less than 100mb) so you don't need to worry about the overhead of bittorrent.</p>
+<p><code>torrent</code> use bittorrent to download the archives. For larger archives, especially things like math and the main site, this is almost needed. On my machine, I'll max out at 35mbps over http, but have seen the torrent download reach up to 600mbps depending on the other peers connected)</p>
+<p><code>import</code> is where the real magic happens.</p>
+<p>Import will take a given .7z file, and simultaneously extract and perform a bulk insert into SQL Server. No need for scratch space for the extracted files, it streams directly to your SQL Server. Not only keeping disk space requirements low, but it also keeps memory usage low. Even a 50gb import rarely reaches over 65mb of memory used on my machine.</p>
+<p>By default, import will expect the destination database to be created and empty with a name matching the site (e.g. <code>stackoverflow.com</code> or <code>math.stackexchange.com</code>). With many of these databases having large sizes, this allows you to fine tune the log and data locations before the import. If you are ok with blindly creating the DB in the default locations, the <code>-–dropAndCreate</code> option will take care of that for you. It won't check for disk space or anything ahead of time so use with caution.</p>
+<p>During this process, keys and indexes will be created as well as a helper table named PostTags. These can be turned off with a switch if so desired.</p>
+<h2 id="sample-workflow">Sample Workflow</h2>
+<ol>
+<li><code>soddi list spa</code> - this lists all archives containing the phrase &quot;spa&quot;</li>
+<li><code>soddi download space</code> - you can use either the full site name (space.stackexchange.com) or the short name to download. we'll use the short name, and it'll download a file whose name matches the site name.</li>
+<li><code>soddi import space.stackexchange.com.7z --dropAndCreate</code> - import the space.stackexchange.com.7z file we just downloaded. the <code>--dropAndCreate</code> option will drop any database named space.stackexchange.com and recreate it using your server's configured defaults. <code>soddi import -h</code> will give you more options for specifying a connectionstring and specifying a database name.</li>
+</ol>
+<p>Once the import is done, you'll have a local copy of the Stack Exchange database of your choice!</p>
+<h2 id="database-info">Database Info</h2>
+<p>If you've never worked with the Stack Exchange schema, here's a few helpful pieces of documentation</p>
+<ul>
+<li><a href="https://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede/2678#2678">Schema description</a></li>
+<li><a href="https://i.stack.imgur.com/AyIkW.png">Schema diagram</a></li>
+<li><a href="https://data.stackexchange.com/stackoverflow/queries">Sample queries</a></li>
+</ul>
+<h2 id="technical-notes">Technical Notes</h2>
+<p>A few technical notes on the app itself</p>
+<ul>
+<li>Uses <a href="https://github.com/spectresystems/spectre.console">Spectre.Console</a> for console rendering and CLI input.</li>
+<li>Uses <a href="https://github.com/adamhathcock/sharpcompress">SharpCompress</a> for extracting 7z files.</li>
+<li>Uses <a href="https://github.com/alanmcgovern/monotorrent">MonoTorrent</a> for torrent downloading.</li>
+<li>For bulk inserts, it creates the index and leaves them updating prior to the insertion. Typically you wouldn't do this for performance reasons, but with the decompression being a bottleneck, SQL Server has plenty of time to keep the indexes up to date.</li>
+<li>Decompression is single threaded, and extremely CPU bound. If someone can figure out a way to decompress on multiple threads, PRs are certainly welcomed.</li>
+</ul>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2021/01/dotnet-soddi">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Stack Overflow">Stack Overflow</a><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Soddi">Soddi</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>

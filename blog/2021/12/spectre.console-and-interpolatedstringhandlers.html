@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://esm.sh/@wooorm/starry-night@3/style/both">
+    <base href="/">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    </head>
+
+<body class="antialiased font-sans bg-primary-50 dark:bg-primary-950 transition-colors"><header class="sticky top-0 left-2 w-full backdrop-blur bg-primary-200 dark:bg-primary-900/70 border-b border-primary-900/20 dark:border-primary-50/10 shadow-md dark:shadow-lg py-2 md:py-4 z-50"><nav class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 flex  items-center"><img src="/Content/Blog/media/avatar.svg" alt="Avatar image" class="inline-block h-10 w-10 md:h-12 md:w-12 mr-4  rounded-full shadow-md bg-gradient-to-br from-accent-800 to-accent-500 dark:from-accent-500 dark:to-accent-300">
+        <h1><a class="font-extrabold text-2xl md:text-4xl text-primary-700 dark:text-primary-300" href="/">Thirty25</a></h1>
+        <div class="ml-auto flex items-center"><button aria-label="Toggle Dark Mode" class="mr-6 dark:text-yellow-300 stroke-1 opacity-80" onclick="swapTheme()"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></button>
+            <a class="text-primary-600 hover:text-primary-300 transition-all hover:scale-105" title="Blog source" href="https://github.com/phil-scott-78/thirty25-statiq"><svg width="2rem" height="2rem" class="fill-current" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path></svg></a></div></nav></header>
+
+        <main class="mx-auto max-w-5xl px-4 md:px-8 xl:px-0 mt-4 mb-4 md:mb-16"><article><div class="xl:divide-y  xl:divide-primary-700"><header class="pt-6 xl:pb-6"><div class="space-y-1 text-center"><dl class="space-y-10"><div><dt class="sr-only">Published on</dt>
+                        <dd class="text-base font-medium leading-6 text-primary-400"><time datetime="2021-12-18T00:00:00.000">December 18, 2021</time></dd></div></dl>
+                <div class="prose prose-stone dark:prose-invert mx-auto"><h1 class>Spectre.Console and String Interpolation</h1></div></div></header>
+        <div class="grid-rows-[auto_1fr] divide-y  pb-8 divide-primary-700 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0"><div class="divide-y  divide-primary-700 xl:col-span-3 xl:row-span-2 xl:pb-0"><div class="prose prose-stone dark:prose-invert mt-8 prose-sm md:prose-base lg:prose-lg max-w-full dark:font-light lg:leading-loose"><p>A common mistake when using <a href="https://spectreconsole.net/markup">markup</a> with Spectre.Console is forgetting to escape values when creating your markup strings. Take, for example, this seemingly safe call.</p>
+<pre><code class="language-csharp">var name = AnsiConsole.Ask&lt;string&gt;(&quot;What's your name?&quot;);
+AnsiConsole.MarkupLine($&quot;The value is [blue]{name}[/]&quot;);
+</code></pre>
+<p>This compiles just fine, this runs just fine. And everything is ok until someone enters their name as &quot;Mr. [&quot;.</p>
+<p>This results in this exception</p>
+<pre><code class="language-text">Unhandled exception. System.InvalidOperationException: Encountered unescaped '[' token at position 27
+   at Spectre.Console.MarkupTokenizer.MoveNext() in /_/src/Spectre.Console/Internal/Text/Markup/MarkupTokenizer.cs:line 118
+   at Spectre.Console.MarkupParser.Parse(String text, Style style) in /_/src/Spectre.Console/Internal/Text/Markup/MarkupParser.cs:line 23
+   at Spectre.Console.AnsiConsoleExtensions.Markup(IAnsiConsole console, String value) in /_/src/Spectre.Console/Extensions/AnsiConsoleExtensions.Markup.cs:line 41
+   at Spectre.Console.AnsiConsoleExtensions.MarkupLine(IAnsiConsole console, String value) in /_/src/Spectre.Console/Extensions/AnsiConsoleExtensions.Markup.cs:line 62
+   at Spectre.Console.AnsiConsole.MarkupLine(String value) in /_/src/Spectre.Console/AnsiConsole.Markup.cs:line 46
+   at Program.&lt;Main&gt;$(String[] args) in R:\thirty25\spectre-console-string-interpolation\src\StringInterpolation\Program.cs:line 4
+
+</code></pre>
+<p>Ouch. The proper way this code needs to be written is to escape all user supplied values. This involves replacing all <code>[</code> with <code>[[</code> and <code>]</code> with <code>]]</code>. To make this easy there is even a helper</p>
+<pre><code class="language-csharp">var name = AnsiConsole.Ask&lt;string&gt;(&quot;What's your name?&quot;);
+AnsiConsole.MarkupLine($&quot;The value is [blue]{name.EscapeMarkup()}[/]&quot;);
+</code></pre>
+<p>This, I'll admit, is annoying and easy to forget especially on longer lines. But modern problems have modern solutions! Because we are using string interpolation there are a couple of techniques we can use to tackle this. One is by using <code>FormattableString</code>.</p>
+<h2 id="formattablestring-to-the-rescue"><code>FormattableString</code> to the Rescue</h2>
+<p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.formattablestring?view=net-6.0"><code>FormattableString</code></a> has been around since C# 6. Instead of a <code>string</code> your method instead takes a <code>FormattableString</code> as the parameter telling the compiler you don't want it to do any magic but rather send the interpolated string right to your method. This results in all the format data to be passed rather than the results of the formatting.</p>
+<p>We can add a new method named <code>MarkupLineInterpolated</code> that accepts this parameter and auto-escape the string arguments. <code>FormattableString</code> exposes a method named <code>GetArguments</code> that contains an array of all the interpolated expression items, and a <code>Format</code> property containing the format string that defined the interpolated example. E.g. with the previous example <code>GetArguments()</code> returns an array with a single item of our string <code>name</code> and the <code>Format</code> property is set to <code>The value is [blue]{0}[/]</code>.</p>
+<p>Given these two properties we can take pass into <code>string.Format</code> our format string and a new array with all string values formatted.</p>
+<pre><code class="language-csharp">static class AnsiConsoleExtensions
+{
+    public static void MarkupLineInterpolated(this IAnsiConsole console, FormattableString formattableString)
+    {
+        var args = formattableString
+            .GetArguments()
+            .Select(i =&gt; i is string s ? s.EscapeMarkup() : i)
+            .ToArray();
+
+        console.MarkupLine(string.Format(formattableString.Format, args));
+    }
+}
+</code></pre>
+<p>Now when we call our method we can do so without worry about escaping our strings</p>
+<pre><code class="language-csharp">console.MarkupLineInterpolated($&quot;The value is [blue]{name}[/]&quot;);
+</code></pre>
+<p>Cédric Luthi has a quite <a href="https://github.com/spectreconsole/spectre.console/pull/564">nice implementation as a pull request</a> that breaks down all the different combinations including working with <code>IFormatProvider</code>. I recommend taking a look at his entire solution; it's quite well done.</p>
+<h2 id="the-c-10-and.net-6-solution">The C# 10 and .NET 6 Solution</h2>
+<p>Our <code>MarkupLineInterpolated</code> functions quite well, but there are a few things that could be better. It allocates quite a bit. We are creating a new array with new strings, then we are building a another string with <code>string.Format</code> with all the concerns of boxing before ultimately sending that to <code>MarkupLine</code>. Now, I'll be the first to admit that Spectre.Console isn't exactly in need of a high performance solution here. Bare with me though, we are gonna make it as fast as possible because, well, it sounds like fun.</p>
+<p>A feature introduced with C# 10 is <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-10.0/improved-interpolated-strings#the-handler-pattern">interpolated string handlers</a> and the handler pattern. Interpolated string handlers help guide the compiler to creating an optimized set of commands for working with the interpolated strings. What's great about them is that even if you don't know about them, chances are you have probably already lucked into using them if you are on C# 10. Every string interpolation usage will automatically use one named <code>DefaultInterpolatedStringHandler</code>. Just upgrading to the latest version of C# and .NET will give you a boast in speed. Stephen Toub has an excellent <a href="https://devblogs.microsoft.com/dotnet/string-interpolation-in-c-10-and-net-6/">blog post that breaks down all this magic</a> that I highly recommend reading. But I recommend reading it after working through our much simpler example because it gets technical quick. I assure you, I'll save getting complex for Stephen.</p>
+<h3 id="building-markupinterpolatedstringhandler">Building MarkupInterpolatedStringHandler</h3>
+<p>When the compiler encounters an interpolated string it'll, by default, use the aforementioned <code>DefaultInterpolatedStringHandler</code>. If we let the compiler know we have our own handler, we can override that behavior.</p>
+<p>Before we start, I got to warn you that the syntax for these handlers isn't exactly obvious. Remember the compiler is using this during build time so it'll have some nuances that don't match common C# patterns.</p>
+<p>To get started, we need to define our handler. The minimal example for this will be</p>
+<pre><code class="language-csharp">[InterpolatedStringHandler]
+public struct MarkupInterpolatedStringHandler
+{
+    public MarkupInterpolatedStringHandler(int literalLength, int formattedCount){
+    }
+}
+</code></pre>
+<p>The attribute marks our struct as the interpolated string handler. The constructor our struct must have these two parameters. <code>literalLength</code> is the number of literal characters in the interpolate string. <code>formattedCount</code> is the number of interpolated expressions. E.g. given the interpolated string</p>
+<pre><code class="language-csharp">var s = $&quot;My name is {name} and my age is {age}&quot;
+</code></pre>
+<p>then <code>literalLength</code> would be 26 and <code>formattedCount</code> would be 2. This data can be calculated at compile time so it's cheap to include for runtime usage. Fun fact, the default usage uses it to preallocate the buffer under the assumption that total length of the created string is definitely going to be <code>literalLength</code> characters long plus they estimate the average expression item is about 11 characters long. So we'll borrow that and use it to create a default sized <code>StringBuilder</code> instance.</p>
+<p>Finally we add a method named <code>ToStringAndClear</code> which is a common name that is used to finally build out the results of the handler. In our case that's calling <code>ToString</code> on our <code>StringBuilder</code> and returning the value.</p>
+<pre><code class="language-csharp">[InterpolatedStringHandler]
+public struct MarkupInterpolatedStringHandler
+{
+    private readonly StringBuilder _markupStringBuilder;
+
+    public MarkupInterpolatedStringHandler(int literalLength, int formattedCount, StringBuilder? stringBuilder = null)
+    {
+        _markupStringBuilder = new StringBuilder(literalLength + formattedCount * 11);
+    }
+
+    public string ToStringAndClear() =&gt; _markupStringBuilder.ToString();
+}
+</code></pre>
+<p>Our next step is to add the methods for building this up the string. This is a bit tricky because it is done by convention rather via something like an interface. We'll need at minimum two methods - one for adding the string literals and a second for adding the expression items.</p>
+<p>The syntax for these two methods is</p>
+<pre><code class="language-csharp">public void AppendLiteral(string s) =&gt; _markupStringBuilder.Append(s);
+public void AppendFormatted&lt;T&gt;(T value) =&gt; _markupStringBuilder.Append(value);
+</code></pre>
+<p>At this point, we have the bare minimum for the compiler to use our handler! It doesn't escape or even handle other simple cases like the default handler. But it's our handler and it's a start. Now we need to tell the compiler when to use it.</p>
+<p>We'll want to use it in place of <code>string</code> in a method parameter. To the best of my knowledge, that's the only way these can be used. For example, given a method</p>
+<pre><code class="language-csharp">void MarkupLine(string s)
+{
+    console.MarkupLine(s);
+}
+</code></pre>
+<p>we rewrite it to be</p>
+<pre><code class="language-csharp">void MarkupLineInterpolated(ref MarkupInterpolatedStringHandler handler)
+{
+    console.MarkupLine(handler.ToStringAndClear());
+}
+</code></pre>
+<p>If you set a breakpoint in your handler on and execute your application you'll see it being used. But let's expand it to actually escape our markup. To do so we need to expand our <code>AppendFormat</code> call.</p>
+<p>For our usage, it's really surprisingly easy. We just add this method</p>
+<pre><code class="language-csharp">public void AppendFormatted&lt;string s) =&gt; _markupStringBuilder.Append(s.EscapeMarkup());
+</code></pre>
+<p>The compiler will look at our expression item holes and when it encounters a string it'll call this method. For anything else it'll fall back to our generic call. If we wanted to do something special for <code>int</code> we could add</p>
+<pre><code class="language-csharp">public void AppendFormatted(int i) =&gt; _markupStringBuilder.Append(i);
+</code></pre>
+<p>There isn't a ton of documentation on how this works or best practices, so I highly recommend reading the source for <a href="https://github.com/dotnet/runtime/blob/v6.0.1/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/DefaultInterpolatedStringHandler.cs#L208"><code>DefaultInterpolatedStringHandler</code></a>. They break down the design decisions on which types they decided to handle because things could get out of control. For now though, we'll stick with our three methods giving us the the current handler</p>
+<pre><code class="language-csharp">[InterpolatedStringHandler]
+public struct MarkupInterpolatedStringHandler
+{
+    private readonly StringBuilder _markupStringBuilder;
+
+    public MarkupInterpolatedStringHandler(int literalLength, int formattedCount)
+    {
+        _markupStringBuilder = new StringBuilder();
+    }
+
+    public void AppendLiteral(string s) =&gt; _markupStringBuilder.Append(s);
+
+    // make sure to escape all strings.
+    public void AppendFormatted(string s) =&gt; _markupStringBuilder.Append(s.EscapeMarkup());
+
+    // anything other than a string will be handled by this catch all.
+    public void AppendFormatted&lt;T&gt;(T value) =&gt; _markupStringBuilder.Append($&quot;{value}&quot;);
+
+    public string ToStringAndClear() =&gt; _markupStringBuilder.ToString();
+
+}
+</code></pre>
+<p>So let's revisit the above <code>MarkupLine</code> call that uses our handler. We make a call to it by simply calling</p>
+<pre><code class="language-csharp">var name = &quot;Phil&quot;;
+var number = 42;
+var date = DateTime.Now;
+var badDataFormat = &quot;My info [&quot;;
+MarkupLineInterpolated($&quot;My name is {name}, my favorite number is {number}. Today is {date} and the data is {badDataFormat}&quot;);
+</code></pre>
+<p>Without our handler this would cause a runtime exception, but if you run it you'll notice it is escaped properly thanks to our handler! But even more importantly, let's look at the magic generated. If you use a tool like ILSpy or DotPeek to decompile the application, the results will be roughly</p>
+<pre><code class="language-csharp">string s1 = &quot;Phil&quot;;
+int num = 42;
+DateTime now = DateTime.Now;
+string s2 = &quot;My info [&quot;;
+MarkupInterpolatedStringHandler handler = new MarkupInterpolatedStringHandler(72, 4);
+handler.AppendLiteral(&quot;My name is [blue]&quot;);
+handler.AppendFormatted(s1);
+handler.AppendLiteral(&quot;[/], my favorite number is &quot;);
+handler.AppendFormatted&lt;int&gt;(num);
+handler.AppendLiteral(&quot;. Today is &quot;);
+handler.AppendFormatted&lt;DateTime&gt;(now);
+handler.AppendLiteral(&quot; and the data is &quot;);
+handler.AppendFormatted(s2);
+MarkupLineInterpolated(ref handler);
+
+static void MarkupLineInterpolated(ref MarkupInterpolatedStringHandler handler)
+{
+    AnsiConsole.MarkupLine(handler.ToStringAndClear());
+}
+</code></pre>
+<p>The compiler knows to use <code>MarkupInterpolatedStringHandler</code>. It creates a new instance of it and passes in the number of literal characters plus the number of expression item holes in our string. We aren't using them, but it's cool seeing them used. From there, you see that it has rewritten the code to use our handler rather than having to allocate new strings. Nice!</p>
+<h2 id="almost-too-easy">Almost Too Easy</h2>
+<p>If it feels like something is missing, then you are correct. Let's say we instead want to use a formatter on our expression item.</p>
+<pre><code class="language-csharp">MarkupLineInterpolated($&quot;Today is {date:f}.&quot;);
+</code></pre>
+<p>Compiling this we now get the error</p>
+<pre><code class="language-text">Program.cs(9, 40): [CS1739] The best overload for 'AppendFormatted' does not have a parameter named 'format'`
+</code></pre>
+<p>At least this is a compile error, and not failing silently. But this makes sense - we never wrote any code for handling formats. In fact, there is a lot of cases we didn't handle. <a href="https://github.com/dotnet/runtime/blob/v6.0.1/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/DefaultInterpolatedStringHandler.cs"><code>DefaultInterpolatedStringHandler</code></a> weights in at almost 700 lines and we are way, way behind that.</p>
+<p>With all the work and thought they've put into their implementation there is only one thing to do - toss our implementation out the door and wrap theirs.</p>
+<h2 id="standing-on-the-shoulders-of-greatness">Standing on the Shoulders of Greatness</h2>
+<p>Let's start a new handler named <code>WrappedMarkupInterpolatedHandler</code>. It'll have the same constructor with <code>literalLength</code> and <code>formattedCount</code>, but instead of creating an instance of a <code>StringBuilder</code> we'll instead build a new <code>DefaultInterpolatedStringHandler</code> which also takes <code>literalLength</code> and <code>formattedCount</code> as its constructor parameters.</p>
+<pre><code class="language-csharp">[InterpolatedStringHandler]
+public ref struct WrappedMarkupInterpolatedStringHandler
+{
+    private DefaultInterpolatedStringHandler _innerHandler;
+
+    public WrappedMarkupInterpolatedStringHandler(int literalLength, int formattedCount)
+    {
+        _innerHandler = new DefaultInterpolatedStringHandler(literalLength, formattedCount);
+    }
+
+    public string ToStringAndClear()
+    {
+        return _innerHandler.ToStringAndClear();
+    }
+}
+</code></pre>
+<p>With this in place we now need to wrap all their methods. The easiest way I know to do this is with ReSharper or JetBrains Rider and use their <a href="https://www.jetbrains.com/help/rider/Code_Generation__Delegating_Members.html">Generate Delegating Members</a> feature. You'll want to select all the methods of our <code>_innerHandler</code>.</p>
+<p><img src="generate-delegating-members.png" alt="delegate generating members" /></p>
+<p>After running this (or typing it out yourself) our new class should look something like</p>
+<pre><code class="language-csharp">
+[InterpolatedStringHandler]
+public ref struct WrappedMarkupInterpolatedStringHandler3
+{
+    private DefaultInterpolatedStringHandler _innerHandler;
+    public void AppendLiteral(string value)
+    {
+        _innerHandler.AppendLiteral(value);
+    }
+
+    public void AppendFormatted(ReadOnlySpan&lt;char&gt; value)
+    {
+        _innerHandler.AppendFormatted(value);
+    }
+
+    public void AppendFormatted(ReadOnlySpan&lt;char&gt; value, int alignment = 0, string? format = null)
+    {
+        _innerHandler.AppendFormatted(value, alignment, format);
+    }
+
+    public void AppendFormatted&lt;T&gt;(T value)
+    {
+        _innerHandler.AppendFormatted(value);
+    }
+
+    public void AppendFormatted&lt;T&gt;(T value, string? format)
+    {
+        _innerHandler.AppendFormatted(value, format);
+    }
+
+    public void AppendFormatted&lt;T&gt;(T value, int alignment)
+    {
+        _innerHandler.AppendFormatted(value, alignment);
+    }
+
+    public void AppendFormatted&lt;T&gt;(T value, int alignment, string? format)
+    {
+        _innerHandler.AppendFormatted(value, alignment, format);
+    }
+
+    public void AppendFormatted(object? value, int alignment = 0, string? format = null)
+    {
+        _innerHandler.AppendFormatted(value, alignment, format);
+    }
+
+    public void AppendFormatted(string? value)
+    {
+        _innerHandler.AppendFormatted(value);
+    }
+
+    public void AppendFormatted(string? value, int alignment = 0, string? format = null)
+    {
+        _innerHandler.AppendFormatted(value, alignment, format);
+    }
+
+    public string ToStringAndClear()
+    {
+        return _innerHandler.ToStringAndClear();
+    }
+
+    public WrappedMarkupInterpolatedStringHandler3(int literalLength, int formattedCount)
+    {
+        _innerHandler = new DefaultInterpolatedStringHandler(literalLength, formattedCount);
+    }
+}
+</code></pre>
+<p>So that's a significant amount of code that's been added. Thankfully we only need to touch a small bit of it. Our only focus is on text data, so we need to look for <code>AppendFormat</code> methods taking in <code>string</code> or <code>ReadOnlySpan&lt;char&gt;</code>. The later poses some problems though. Our built <code>MarkupEscape</code> relies on the built in <code>Replace</code> method which doesn't exist on a <code>ReadonlySpan&lt;char&gt;</code>. We are going to have to write our implementation ourselves. Luckily, this is a pretty easy task. All we need to do is scan the string and use double brackets anytime we encounter a single bracket. Our code for our custom escape method looks like</p>
+<pre><code class="language-csharp">private void AppendEscaped(ReadOnlySpan&lt;char&gt; text)
+{
+    if (text.Length == 0)
+    {
+        return;
+    }
+
+    var startPos = 0;
+    for (var i = 0; i &lt; text.Length; i++)
+    {
+        var c = text[i];
+        if (c is ']' or '[')
+        {
+            if (i != startPos)
+            {
+                // if we have any text that we haven't added since we started our last
+                // scan then add it now.
+                _innerHandler.AppendFormatted(text[startPos..i]);
+            }
+
+            // add the two brackets
+            _innerHandler.AppendFormatted(c);
+            _innerHandler.AppendFormatted(c);
+            startPos = i + 1;
+        }
+    }
+
+    // add whatever text we've been tracking since the last scan started.
+    _innerHandler.AppendFormatted(text[startPos..]);
+}
+</code></pre>
+<p>We can now use this for both the <code>string</code> and <code>ReadOnlySpan&lt;char&gt;</code> <code>AppendFormat</code> calls.</p>
+<pre><code class="language-csharp">public void AppendFormatted(string? value) =&gt; AppendEscaped(value);
+public void AppendFormatted(ReadOnlySpan&lt;char&gt; value) =&gt; AppendEscaped(value);
+</code></pre>
+<p>That leaves two other methods working with text data, both of which take an <code>alignment</code> and a <code>format</code>. Because these aren't typical calls, we can punt on these and do a bit of extra allocation using the traditional
+<code>EscapeMarkup</code> call before sending them to the inner handler for processing the alignment and format. If for whatever reason you are making a lot of calls with the alignment it might be worth rolling a custom <code>EscapeAppend</code> method to handle this situation in the future. But for now, we'll leave it as such</p>
+<pre><code class="language-csharp">public void AppendFormatted(string? value, int alignment = 0, string? format = null)
+{
+    _innerHandler.AppendFormatted(value.EscapeMarkup(), alignment, format);
+}
+
+public void AppendFormatted(ReadOnlySpan&lt;char&gt; value, int alignment = 0, string? format = null)
+{
+    AppendFormatted(value.ToString(), alignment, format);
+}
+</code></pre>
+<p>The rest we can leave as a direct call to the inner handler. Whew. So time to use it! Easy enough, we just need to change our original <code>MarkupLineInterpolated</code> to be</p>
+<pre><code class="language-csharp">void MarkupLineInterpolated(ref WrappedMarkupInterpolatedStringHandler handler)
+{
+    AnsiConsole.MarkupLine(handler.ToStringAndClear());
+}
+</code></pre>
+<p>That should be the only change in our logic we need. Recompiling will cause C# to use the new handler and emit a slightly different set of instructions</p>
+<pre><code class="language-csharp">DateTime now = DateTime.Now;
+WrappedMarkupInterpolatedStringHandler handler = new WrappedMarkupInterpolatedStringHandler(10, 1);
+handler.AppendLiteral(&quot;Today is &quot;);
+handler.AppendFormatted&lt;DateTime&gt;(now, &quot;f&quot;);
+handler.AppendLiteral(&quot;.&quot;);
+MarkupLineInterpolated(ref handler);
+</code></pre>
+<h2 id="measure-the-performance">Measure the Performance</h2>
+<p>All this is fine, but with all this work we should at least measure what we are doing. We have three competing algorithms</p>
+<ol>
+<li>Original, with manual calls to <code>EscapeMarkup()</code> for each string expression item.</li>
+<li><code>FormattableString</code>. The pre-C# 10 solution.</li>
+<li><code>WrappedMarkupInterpolatedStringHandler</code>. The new C# 10 solution.</li>
+</ol>
+<p>Now, each one of these methods are gonna be fast. Each are going to have minimal allocations for a single call. So to even see a difference we'll artificially run each method on 100 items generated with the <a href="https://github.com/bchavez/Bogus">Bogus</a> library. It not only allows us to see a bit of difference, but the extra calls also takes care of a few things that happen randomly between operations like detecting the current culture and other static calls that with multiple calls to the escape methods they end up being no more than noise.</p>
+<p>This gives us this benchmark</p>
+<pre><code class="language-csharp">
+[MemoryDiagnoser]
+public class SingleMarkupEscapeBenchmark
+{
+    private List&lt;FakeTestData&gt; _testData = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _testData = FakeTestData.DataFaker.Generate(100);
+    }
+
+    [Benchmark(Baseline = true)]
+    public string ClassicMarkup()
+    {
+        var sb = new StringBuilder();
+        foreach (var data in _testData)
+        {
+            var s = $&quot;My name is {data.Name.EscapeMarkup()} and I was hired on {data.HireData}. My favorite number is {data.FavoriteNumber}. My catch phrase is {data.Description.EscapeMarkup()} and my secret info is {data.ImportantInfo.EscapeMarkup()}&quot;;
+            sb.AppendLine(s);
+        }
+
+        return sb.ToString();
+    }
+
+    [Benchmark]
+    public string FormattableString()
+    {
+        var sb = new StringBuilder();
+        foreach (var data in _testData)
+        {
+            var s = EscapeHelpers.FormattableEscape($&quot;My name is {data.Name} and I was hired on {data.HireData}. My favorite number is {data.FavoriteNumber}. My catch phrase is {data.Description} and my secret info is {data.ImportantInfo}&quot;);
+            sb.AppendLine(s);
+        }
+
+        return sb.ToString();
+    }
+
+    [Benchmark]
+    public string WrappedInterpolatedStringHandler()
+    {
+        var sb = new StringBuilder();
+        foreach (var data in _testData)
+        {
+            var s = EscapeHelpers.WrappedMarkupInterpolatedEscape($&quot;My name is {data.Name} and I was hired on {data.HireData}. My favorite number is {data.FavoriteNumber}. My catch phrase is {data.Description} and my secret info is {data.ImportantInfo}&quot;);
+            sb.AppendLine(s);
+        }
+
+        return sb.ToString();
+    }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClassicMarkup</td>
+<td style="text-align: right;">45.60 us</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">211 KB</td>
+</tr>
+<tr>
+<td>FormattableString</td>
+<td style="text-align: right;">60.28 us</td>
+<td style="text-align: right;">1.32</td>
+<td style="text-align: right;">236 KB</td>
+</tr>
+<tr>
+<td>WrappedInterpolatedStringHandler</td>
+<td style="text-align: right;">36.42 us</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">171 KB</td>
+</tr>
+</tbody>
+</table>
+<p>Wow. Not only are we faster than calling <code>EscapeMarkup</code> manually, we are also allocation a half KB less per call. <code>FormattableString</code>, unfortunately, can't say it has a huge improvement but we knew we were sacrificing performance for developer productivity and safety. But with our custom handler we have both!</p>
+<p>Eagle eyed readers probably already noticed something with the benchmarks - I'm not calling <code>Append</code> directly but rather putting them in a string variable and then calling the append method. The reason? Because without it <code>ClassicMarkup</code> beats the pants off of us in allocated memory.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClassicMarkup</td>
+<td style="text-align: right;">38.86 us</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">157 KB</td>
+</tr>
+<tr>
+<td>FormattableString</td>
+<td style="text-align: right;">61.06 us</td>
+<td style="text-align: right;">1.57</td>
+<td style="text-align: right;">236 KB</td>
+</tr>
+<tr>
+<td>WrappedInterpolatedStringHandler</td>
+<td style="text-align: right;">36.30 us</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">171 KB</td>
+</tr>
+</tbody>
+</table>
+<p>How can they do this? Well, they have their own custom interpolated string handler specifically for being used within a <code>StringBuilder</code> named <a href="https://github.com/dotnet/runtime/blob/v6.0.1/src/libraries/System.Private.CoreLib/src/System/Text/StringBuilder.cs#L2630"><code>AppendInterpolatedStringHandler</code></a>. The advantage here is that rather than build the string and then add it to the <code>StringBuilder</code> they are able to go right at the <code>StringBuilder</code>. I'm forcing this optimization to be skipped by storing as a string first. Now, is calling escape markup in a <code>StringBuilder</code> common? Absolutely not. Is this something I can't let stand? You know it. Thankfully we are now also experts at leveraging the built-in handlers so this should be a breeze. Time to create a second handler named <code>WrappedAppendStringHandler</code></p>
+<h2 id="wrappedappendstringhandler"><code>WrappedAppendStringHandler</code></h2>
+<p>We'll start the same way we did previously with a simple constructor and initializing the inner handler. The one thing we don't need is the <code>ToStringAndClose</code>. Remember this is being used by a <code>StringBuilder</code> so the user won't directly use this handler to grab the string. In fact, since we don't own that <code>StringBuilder</code> we could introduce all kinds of problems if we did try to work with it directly.</p>
+<pre><code class="language-csharp">[InterpolatedStringHandler]
+public ref struct WrappedAppendStringHandler
+{
+    private StringBuilder.AppendInterpolatedStringHandler _innerHandler;
+
+    public WrappedAppendStringHandler(int literalLength, int formattedCount, StringBuilder sb)
+    {
+        _innerHandler = new StringBuilder.AppendInterpolatedStringHandler(literalLength, formattedCount, sb);
+    }
+}
+</code></pre>
+<p>The difference between the two is that our constructor now needs a third parameter, the <code>StringBuilder</code> that we need to pass to the inner handler to do its thing. We'll hold that thought and finish out our handler. Since we are delegating everything to the inner handler, we can simply copy and paste from our previous handler for the rest of the code. We'll even reuse our custom <code>AppendEscape</code> method.</p>
+<pre><code class="language-csharp">
+[InterpolatedStringHandler]
+public ref struct WrappedAppendStringHandler
+{
+    private StringBuilder.AppendInterpolatedStringHandler _innerHandler;
+
+    public WrappedAppendStringHandler(int literalLength, int formattedCount, StringBuilder sb)
+    {
+        _innerHandler = new StringBuilder.AppendInterpolatedStringHandler(literalLength, formattedCount, sb);
+    }
+
+    // delegate directly to inner handler
+    public void AppendLiteral(string value) =&gt;
+        _innerHandler.AppendLiteral(value);
+
+    public void AppendFormatted&lt;T&gt;(T value) =&gt;
+        _innerHandler.AppendFormatted(value);
+
+    public void AppendFormatted&lt;T&gt;(T value, string? format) =&gt;
+        _innerHandler.AppendFormatted(value, format);
+
+    public void AppendFormatted&lt;T&gt;(T value, int alignment) =&gt;
+        _innerHandler.AppendFormatted(value, alignment);
+
+    public void AppendFormatted&lt;T&gt;(T value, int alignment, string? format) =&gt;
+        _innerHandler.AppendFormatted(value, alignment, format);
+
+    public void AppendFormatted(object? value, int alignment = 0, string? format = null) =&gt;
+        _innerHandler.AppendFormatted(value, alignment, format);
+
+    // text data that we are going to escape before sending to the inner handler
+    public void AppendFormatted(string? value)
+    {
+        AppendEscaped(value);
+    }
+
+    public void AppendFormatted(string? value, int alignment = 0, string? format = null)
+    {
+        _innerHandler.AppendFormatted(value?.EscapeMarkup(), alignment, format);
+    }
+
+    public void AppendFormatted(ReadOnlySpan&lt;char&gt; value)
+    {
+        AppendEscaped(value);
+    }
+
+    public void AppendFormatted(ReadOnlySpan&lt;char&gt; value, int alignment = 0, string? format = null)
+    {
+        AppendFormatted(value.ToString(), alignment, format);
+    }
+
+
+    public void AppendFormatted(RawText rawText)
+    {
+        _innerHandler.AppendFormatted(rawText.Text);
+    }
+
+    public void AppendFormatted&lt;T&gt;(Styled&lt;T&gt; styledText)
+    {
+        _innerHandler.AppendFormatted('[');
+        _innerHandler.AppendFormatted(styledText.Style.ToMarkup());
+        _innerHandler.AppendFormatted(']');
+        AppendFormatted(styledText.Data);
+        _innerHandler.AppendFormatted(&quot;[/]&quot;);
+    }
+
+    private void AppendEscaped(ReadOnlySpan&lt;char&gt; text)
+    {
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        var startPos = 0;
+        for (var i = 0; i &lt; text.Length; i++)
+        {
+            var c = text[i];
+            if (c is ']' or '[')
+            {
+                if (i != startPos)
+                {
+                    _innerHandler.AppendFormatted(text[startPos..i]);
+                }
+
+                _innerHandler.AppendFormatted(c);
+                _innerHandler.AppendFormatted(c);
+                startPos = i + 1;
+            }
+        }
+
+        _innerHandler.AppendFormatted(text[startPos..]);
+    }
+}
+</code></pre>
+<p>Now, we just need to call this method. We'll create an extension method off of <code>StringBuilder</code> passing in the handler</p>
+<pre><code class="language-csharp">public static StringBuilder AppendEscapeMarkup(this StringBuilder stringBuilder, ref WrappedAppendStringHandler handler)
+{
+    return stringBuilder;
+}
+</code></pre>
+<p>This matches the pattern of a regular <code>StringBuilder</code> call returning the instance. We don't have to do anything directly with the handler as the C# compiler will handle it directly. Well, it would handle it directly if it compiled. Building our solution now gives us a new error</p>
+<pre><code class="language-text">  MarkupInStringBuilderBenchmark.cs(73, 17): [CS7036] There is no argument given that corresponds to the required formal parameter 'sb' of 'WrappedAppendStringHandler.WrappedAppendStringHandler(int, int, StringBuilder)'
+</code></pre>
+<p>Remember, we added a new parameter to our constructor for the <code>StringBuilder</code> to be used. But there is no magic in automatically wiring it up. We still need to tell the compiler how to do this manually. To do so, we use the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.interpolatedstringhandlerargumentattribute?view=net-6.0"><code>InterpolatedStringHandlerArgumentAttribute</code></a>. This attribute lets us tell the compiler match up the constructor parameters to the parameters of our method call. We add it to our handler and tell it to use the <code>stringBuilder</code> parameter as an argument. This changes our call to be</p>
+<pre><code class="language-csharp"> public static StringBuilder AppendEscapeMarkup(
+        this StringBuilder stringBuilder,
+        [InterpolatedStringHandlerArgument(&quot;stringBuilder&quot;)]
+        ref WrappedAppendStringHandler handler)
+    {
+        return stringBuilder;
+    }
+</code></pre>
+<p>With this added, we can now rebuild our project. Let's add a new method to test this out.</p>
+<pre><code class="language-csharp">var sb = new StringBuilder();
+
+foreach (var data in _testData)
+{
+    sb.AppendEscapeMarkup(
+        $&quot;My name is {data.Name} and I was hired on {data.HireData}. My favorite number is {data.FavoriteNumber}&quot;);
+    sb.AppendEscapeMarkup($&quot;My catch phrase is {data.Description} and my secret info is {data.ImportantInfo}&quot;);
+}
+
+return sb.ToString();
+</code></pre>
+<p>This matches the previous benchmark examples, but relies on our new <code>AppendEscapeMarkup</code>. Compiling this gives some new generated code.</p>
+<pre><code class="language-csharp">StringBuilder stringBuilder1 = new StringBuilder();
+foreach (FakeTestData fakeTestData in this._testData)
+{
+    StringBuilder sb = stringBuilder1;
+    StringBuilder stringBuilder2 = sb;
+    WrappedAppendStringHandler appendStringHandler = new WrappedAppendStringHandler(99, 5, sb);
+    appendStringHandler.AppendLiteral(&quot;My name is &quot;);
+    appendStringHandler.AppendFormatted(fakeTestData.Name);
+    appendStringHandler.AppendLiteral(&quot; and I was hired on &quot;);
+    appendStringHandler.AppendFormatted&lt;DateTime&gt;(fakeTestData.HireData);
+    appendStringHandler.AppendLiteral(&quot;. My favorite number is &quot;);
+    appendStringHandler.AppendFormatted&lt;int&gt;(fakeTestData.FavoriteNumber);
+    appendStringHandler.AppendLiteral(&quot;. My catch phrase is &quot;);
+    appendStringHandler.AppendFormatted(fakeTestData.Description);
+    appendStringHandler.AppendLiteral(&quot; and my secret info is &quot;);
+    appendStringHandler.AppendFormatted(fakeTestData.ImportantInfo);
+    ref WrappedAppendStringHandler local = ref appendStringHandler;
+    stringBuilder2.AppendEscapeMarkup(ref local);
+}
+return stringBuilder1.ToString();
+</code></pre>
+<p>You can see that we are instantiating the <code>StringBuilder</code> once. Within the loop we are building a new instance of of <code>WrappedAppendStringHandler</code> and passing in a reference to that <code>StringBuilder</code>. Then the rest of the code in turns calls our wrapper which passes it along to the inner handler.</p>
+<p>So how's the performance?</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Ratio</th>
+<th style="text-align: right;">Allocated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClassicMarkup</td>
+<td style="text-align: right;">38.59 us</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">157 KB</td>
+</tr>
+<tr>
+<td>FormattableString</td>
+<td style="text-align: right;">60.46 us</td>
+<td style="text-align: right;">1.57</td>
+<td style="text-align: right;">236 KB</td>
+</tr>
+<tr>
+<td>WrappedInterpolatedStringHandler</td>
+<td style="text-align: right;">36.13 us</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">171 KB</td>
+</tr>
+<tr>
+<td>WrappedStringBuilderHandler</td>
+<td style="text-align: right;">31.90 us</td>
+<td style="text-align: right;">0.83</td>
+<td style="text-align: right;">116 KB</td>
+</tr>
+</tbody>
+</table>
+<p>We are the champions. A significant drop in allocated memory all while keeping our performance top notch.</p>
+<h2 id="extending-our-handlers">Extending Our Handlers</h2>
+<p>Remember that the original reason we have started this madness is that we wanted the default behavior to be escaping string expression items. One thing we've missed is the ability to opt out. Take this example that would have worked with the default handling</p>
+<pre><code class="language-csharp">var name = &quot;Phil&quot;;
+var color = &quot;[blue]&quot;;
+
+MarkupLineInterpolated($&quot;My name is {color}{name}[/].&quot;);
+</code></pre>
+<p>Here we don't want to mark up this class if we encounter the color, but we still want to escape the name. The easiest way to handle this is to wrap the text we don't want to be escaped in a record.</p>
+<pre><code class="language-csharp">record RawText(string Text);
+
+var name = &quot;Phil&quot;;
+var color = &quot;[blue]&quot;;
+
+MarkupLineInterpolated($&quot;My name is {new RawText(color)}{name}[/].&quot;);
+</code></pre>
+<p>Remember that the compiler will use the best overload possible when calling the handler. This means if we add the following to our handler we can grab our implementation and handle its special case</p>
+<pre><code class="language-csharp">public void AppendFormatted(RawText rawText)
+{
+    _innerHandler.AppendFormatted(rawText.Text);
+}
+</code></pre>
+<p>Now when the compiler comes across a <code>RawText</code> instance in the interpolated string it'll call this method which won't escape the text. We get escaping by default but we can opt-out if needed. Total coverage.</p>
+<h2 id="what-about-overloads">What About Overloads?</h2>
+<p>One thing you'll notice is that we are using a new name, <code>MarkupLineInterpolated</code>, rather than an overload of <code>MarkupLine</code>. The reason is that, <a href="https://github.com/dotnet/roslyn/issues/46">by design</a>, the <code>string</code> version of the method takes precedence over the <code>FormattableString</code> and also our <code>MarkupInterpolatedStringHandler</code> . Another big problem here is that your code will compile and run just fine until someone enters a value and it isn't escaped. Ouch.</p>
+<p>There are hacks around this. For example, EF Core 3 uses a custom type named <a href="https://github.com/dotnet/efcore/blob/v3.1.22/src/EFCore.Relational/RawSqlString.cs"><code>RawSqlString</code></a> as a parameter rather than string due to the implicit conversion handling of the compiler which allows both a string and <code>FormattableString</code> to co-exist on an overload. You'll also notice this class is marked as <code>Obsolete</code>. Besides the cumbersome use, it can also introduce subtle issues.</p>
+<p>Take this call, for example, with our fictional version of <code>MarkupLine</code> that has <code>RawMarkupString</code> and <code>FormattableString</code> overrides. We've taken our previous example and added a new line with additional text.</p>
+<pre><code class="language-csharp">console.MarkupLine($&quot;The value is [blue]{name}[/]&quot; +
+                               Environment.NewLine +
+                               $&quot;My number is {Random.Shared.Next()}&quot;);
+</code></pre>
+<p>It looks innocent enough, but the compiler will convert this to a string THEN send it to our method due to the <code>Environment.NewLine</code> concatenation call. Now, without warning, we are no longer passing a <code>FormattableString</code> but rather a string! So even our overload with the implicit conversion hack no longer works and our expression items wouldn't be escaped. This is one reason I had to link to an older version of EF Core to show this example; this object could actually <a href="https://github.com/dotnet/efcore/issues/10080">introduce some very subtle SQL injection vulnerabilities</a>.</p>
+<p>By having this in a method that only takes <code>FormattableString</code> or an interpolated string handler we would get a compiler error if we had an implicit cast to a string, forcing us to rewrite our call.</p>
+<h2 id="further-reading">Further Reading</h2>
+<p>I surely didn't do the technical bits justice. Check out these resources for a deeper understanding.</p>
+<ul>
+<li><a href="https://devblogs.microsoft.com/dotnet/string-interpolation-in-c-10-and-net-6/">String Interpolation in C# 10 and .NET 6</a> by Stephen Toub.</li>
+<li><a href="https://www.meziantou.net/interpolated-strings-advanced-usages.htm">Interpolated strings: advanced usages</a> by Gérald Barré.</li>
+<li><a href="https://sergeyteplyakov.github.io/Blog/c%2310/2021/11/08/Dissecing-Interpolated-Strings-Improvements-In-CSharp-10.html">Dissecting Interpolated Strings Improvements in C# 10</a> by Sergey Teplyakov.</li>
+<li><a href="https://btburnett.com/csharp/2021/12/17/string-interpolation-trickery-and-magic-with-csharp-10-and-net-6">String Interpolation Trickery and Magic with C# 10 and .NET 6</a> by Brant Burnett.</li>
+</ul>
+</div>
+                <div class="pb-6 pt-6 text-sm text-primary-300"><a target="_blank" rel="noopener noreferrer" href="https://github.com/BlazorStatic/Thirty25.Web/tree/main/Content/Blog/2021/12/spectre.console-and-interpolatedstringhandlers">View on GitHub</a></div></div>
+            <footer><div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y"><div class="py-4 xl:py-8"><h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <div class="flex flex-wrap"><a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="tags/Spectre.Console">Spectre.Console</a></div></div></div>
+                <div class="pt-4 xl:pt-8"><a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href>← Back to the home</a></div></footer></div></div></article></main>
+
+        <footer></footer>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate></body>
+<script>
+    function swapTheme(){
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+    }
+</script>
+
+<script type="module">
+    import {
+        common,
+        createStarryNight
+    } from 'https://esm.sh/@wooorm/starry-night@3?bundle'
+    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+
+    const starryNight = await createStarryNight(common)
+    const prefix = 'language-'
+
+    const nodes = Array.from(document.body.querySelectorAll('code'))
+
+    for (const node of nodes) {
+        const className = Array.from(node.classList).find(function (d) {
+            return d.startsWith(prefix)
+        })
+        if (!className) continue
+        const scope = starryNight.flagToScope(className.slice(prefix.length))
+        if (!scope) continue
+        const tree = starryNight.highlight(node.textContent, scope)
+        node.replaceChildren(toDom(tree, {fragment: true}))
+    }
+</script></html>
