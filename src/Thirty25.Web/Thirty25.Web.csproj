@@ -12,80 +12,19 @@
     <PackageReference Include="BlazorStatic" Version="1.0.0-beta.14"/>
     <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.37" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Update="Content/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Content\Blog\media\avatar.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\commits.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\huge-commit.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\lambda-assert.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2022-05-30-02-19-19.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2022-05-30-02-28-36.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2022-05-30-02-34-53.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2021-01-14-23-00-48.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2021-01-14-23-03-31.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2021-01-18-21-42-38.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\generated-files-settings.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\quick-documentation.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\unused-classes.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\used-implicitly.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2021-12-12-21-13-58.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2021-12-12-21-28-41.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\full-loading.gif">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\generate-delegating-members.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2022-11-20-14-33-15.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\media\2022-11-20-14-34-02.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\Blog\2022\11\adventures-in-trimming.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
-
 
   <!-- to make hot reload work on .md files -->
   <ItemGroup>
-    <Watch Include="Content/**/*"/>
+    <Watch Include="Content/**/*" />
+    <CustomAdditionalCompileInputs  Include="Content/**/*"/>
+    <UpToDateCheckInput Include="@(CustomAdditionalCompileInputs)" />
+
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />

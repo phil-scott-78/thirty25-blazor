@@ -1,10 +1,10 @@
-# BlazorStatic Minimal Blog
+# Thirty25, Phil Scott's Blog
+
+## Based on BlazorStatic Minimal Blog
 
 A minimalistic blog template designed to get your Blazor-based blog up and running in no time. This project leverages
 the [BlazorStatic](https://github.com/tesar-tech/BlazorStatic) library to convert a Blazor app into a static site
 generator
-
-<img src=".Content/Blog/media/programming_bug.jpg"  width="200" >
 
 ## Features
 
@@ -23,5 +23,5 @@ generator
 
 ## Acknowledgements
 
-The theme for Thirty25.Web was heavily inspired
+The theme was heavily inspired
 by [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).

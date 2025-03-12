@@ -47,7 +47,7 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
             }.ToImmutableDictionary()
         };
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(300);
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(310);
 
         return new CssFramework(new CssFrameworkSettings()
             {
