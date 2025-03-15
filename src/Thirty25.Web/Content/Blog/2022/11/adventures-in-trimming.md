@@ -1,5 +1,5 @@
 ---
-title: Adventures in Trimmin2g
+title: Adventures in Trimming
 description: "Using .NET trimming to do some dumb stuff with Source Generators and Blazor"
 date: Nov 20 2022
 tags:

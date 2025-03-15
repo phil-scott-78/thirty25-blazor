@@ -1,3 +1,4 @@
+@using System.Collections.Immutable
 @using System.Globalization
 @using BlazorStatic
 @using BlazorStatic.Services
@@ -49,14 +50,13 @@
 
 
 @code {
-    List<Post<FrontMatter>> posts = new();
+    ImmutableList<Post<FrontMatter>> posts = ImmutableList<Post<FrontMatter>>.Empty;
 
-
-    [Parameter] public List<Post<FrontMatter>>? Posts { get; set; }
+    [Parameter] public ImmutableList<Post<FrontMatter>>? Posts { get; set; }
 
     protected override void OnInitialized()
     {
-        posts = Posts != null ? Posts.OrderBy(x => x.FrontMatter.Date).ToList() : blazorStaticContentService.Posts;
+        posts = Posts != null ? Posts.OrderBy(x => x.FrontMatter.Date).ToImmutableList() : blazorStaticContentService.Posts;
         base.OnInitialized();
     }
 

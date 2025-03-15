@@ -9,6 +9,7 @@ builder.WebHost.UseStaticWebAssets();
 builder.Services.AddBlazorStaticService(options =>
 {
     options.PagesToGenerate.Add(new PageToGenerate("/styles.css", "styles.css"));
+    options.HotReloadEnabled = true;
 });
 builder.Services.AddBlazorStaticContentService<FrontMatter>();
 builder.Services.AddRazorComponents();
@@ -17,14 +18,22 @@ builder.Services.AddSingleton<MonorailCssService>();
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.MapGet("/styles.css", async (MonorailCssService cssService) => Results.Content(await cssService.GetStyleSheet(), "text/css") );
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseAntiforgery();
-
 app.MapRazorComponents<App>();
+app.MapBlazorStaticAssets();
 
-app.UseBlazorStaticGenerator(shutdownApp: !app.Environment.IsDevelopment());
+if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
+{
+    await app.StartAsync();
+    await app.UseBlazorStaticGenerator();
+    await app.StopAsync();
+}
+else
+{
+    app.Run();    
+}
 
-app.Run();
 
 public static class WebsiteKeys
 {

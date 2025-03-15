@@ -1,8 +1,8 @@
 @page "/tags/{tagName}"
 @page "/tags"
+@using System.Collections.Immutable
 @using BlazorStatic
 @using BlazorStatic.Services
-@using System.Net
 @inject BlazorStaticContentService<FrontMatter> blazorStaticContentService
 
 @if (TagName == null)
@@ -40,12 +40,12 @@
 
     [Parameter] public string? TagName { get; set; }
 
-    List<Post<FrontMatter>>? posts;
+    ImmutableList<Post<FrontMatter>>? posts;
 
     protected override void OnInitialized()
     {
         if (string.IsNullOrWhiteSpace(TagName)) return;
-        posts = blazorStaticContentService.Posts.Where(x => x.FrontMatter.Tags.Contains(TagName)).ToList();
+        posts = blazorStaticContentService.Posts.Where(x => x.FrontMatter.Tags.Contains(TagName)).ToImmutableList();
     }
 
 }
