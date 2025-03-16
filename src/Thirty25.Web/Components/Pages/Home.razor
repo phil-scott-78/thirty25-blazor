@@ -1,0 +1,29 @@
+﻿@page "/"
+@using BlazorStatic.Models
+@using BlazorStatic.Services
+@using Thirty25.Web.Components.Layout
+@inject BlazorStaticContentService<FrontMatter> BlazorStaticContentService
+
+
+@if (_posts == null)
+{
+    <div>Posts not found 🤷</div>
+    return;
+}
+
+<div>
+    <PageHeader Title="Recent Posts">@WebsiteKeys.BlogLead </PageHeader>
+    <BlogPostsList Posts="_posts"/>
+</div>
+
+@code{
+    [Parameter] public string? FileName { get; set; }
+    private List<Post<FrontMatter>>? _posts;
+
+
+    protected override void OnInitialized()
+    {
+        _posts = BlazorStaticContentService.Posts.OrderByDescending(i => i.FrontMatter.Date).ToList();
+    }
+
+}

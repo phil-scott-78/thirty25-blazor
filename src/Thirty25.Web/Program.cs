@@ -1,23 +1,29 @@
 using BlazorStatic;
-using MonorailCss;
+using BlazorStatic.Models;
 using Thirty25.Web;
 using Thirty25.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseStaticWebAssets();
-builder.Services.AddBlazorStaticService(options =>
+builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions()
 {
-    options.PagesToGenerate.Add(new PageToGenerate("/styles.css", "styles.css"));
-    options.HotReloadEnabled = true;
+    BlogTitle = "Thirty25",
+    BlogDescription = "Quite exciting this computer magic",
+    BaseUrl = "https://thirty25.com",
+    HotReloadEnabled = true,
+    PagesToGenerate = [new PageToGenerate("/styles.css", "styles.css")]
 });
-builder.Services.AddBlazorStaticContentService<FrontMatter>();
+builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>()
+{
+    PageUrl = "blog"
+});
 builder.Services.AddRazorComponents();
 builder.Services.AddSingleton<MonorailCssService>();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
-app.MapGet("/styles.css", async (MonorailCssService cssService) => Results.Content(await cssService.GetStyleSheet(), "text/css") );
+app.MapGet("/styles.css", async (MonorailCssService cssService) => Results.Content(await cssService.GetStyleSheet(), "text/css"));
 app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
@@ -31,9 +37,8 @@ if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCas
 }
 else
 {
-    app.Run();    
+    app.Run();
 }
-
 
 public static class WebsiteKeys
 {

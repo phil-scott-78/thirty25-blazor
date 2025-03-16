@@ -1,0 +1,14 @@
+﻿@using BlazorStatic.Models
+
+<div class="space-y-10 divide-y divide-primary-300/25 dark:divide-primary-900/50">
+@foreach (var post in Posts)
+{
+    <div class="pt-8">
+        <BlogSummary Post="post"></BlogSummary>
+    </div>
+}
+</div>
+
+@code {
+    [Parameter] public required List<Post<FrontMatter>> Posts { get; set; }
+}

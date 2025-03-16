@@ -36,7 +36,7 @@ public static class ColorPaletteGenerator
         
         // Generate accent palette (30 degrees offset from primary)
         // We choose 30 degrees as it's a common complementary offset
-        var accentHue = (hue - 180) % 360;
+        var accentHue = (hue - 90) % 360;
         var accentPalette = GeneratePaletteFromHue(accentHue);
         
         return (primaryPalette, accentPalette);

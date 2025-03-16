@@ -4,114 +4,104 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Xml.Linq;
+using BlazorStatic.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 
 namespace BlazorStatic.Services;
 
 /// <summary>
-///     The BlazorStaticService is responsible for generating static pages for a Blazor application.
+///     Service responsible for generating static HTML pages from a Blazor application.
+///     This enables server-side rendered Blazor applications to be deployed as static websites.
 /// </summary>
-/// <param name="options"></param>
-/// <param name="helpers"></param>
-/// <param name="logger"></param>
+/// <param name="environment">The web hosting environment providing access to web root files</param>
+/// <param name="contentPostServiceCollection">Collection of content services providing pages to generate and content to copy</param>
+/// <param name="options">Configuration options for the static generation process</param>
+/// <param name="logger">Logger for diagnostic output</param>
 public class BlazorStaticService(
+    IWebHostEnvironment environment,
+    IEnumerable<IBlazorStaticContentService> contentPostServiceCollection,
     BlazorStaticOptions options,
-    BlazorStaticHelpers helpers,
     ILogger<BlazorStaticService> logger)
 {
-    private ImmutableList<PageToGenerate> _pagesToGenerate = ImmutableList<PageToGenerate>.Empty;
-    private ImmutableList<ContentToCopy> _contentToCopy = ImmutableList<ContentToCopy>.Empty;
 
     /// <summary>
-    ///     The BlazorStaticOptions used to configure the generation process.
+    ///     Generates static HTML pages for the Blazor application.
     /// </summary>
-    public BlazorStaticOptions Options => options;
-
-
-    /// <summary>
-    ///     Adds a page to the list of pages that will be generated as static HTML.
-    ///     This method appends the provided page to the internal immutable collection
-    ///     of pages that will be processed during the static generation phase.
-    /// </summary>
-    /// <param name="pageToGenerate">
-    ///     The page configuration containing the URL to fetch and the output file path
-    ///     where the static content will be saved.
-    /// </param>
-    public void AddPageToGenerate(PageToGenerate pageToGenerate)
-    {
-        _pagesToGenerate = _pagesToGenerate.Add(pageToGenerate);
-    }
-
-    /// <summary>
-    ///     Adds content to be copied to the output directory during the static generation process.
-    ///     This method appends the provided content to the internal immutable collection
-    ///     of content items that will be copied when the static site is generated.
-    /// </summary>
-    /// <param name="content">
-    ///     The content configuration containing the source path of the content to copy
-    ///     and the target path where it should be placed in the output directory.
-    /// </param>
-    public void AddContentToCopyToOutput(ContentToCopy content)
-    {
-        _contentToCopy = _contentToCopy.Add(content);
-    }
-
-    /// <summary>
-    ///     Generates static pages for the Blazor application. This method performs several key operations:
-    ///     - Invokes an optional pre-defined content action.
-    ///     - Conditionally generates non-parametrized Razor pages based on configuration.
-    ///     - Clears the existing output folder and creates a fresh one for new content.
-    ///     - Copies specified content to the output folder.
-    ///     - Uses an HttpClient to fetch and save the content of each configured page.
-    ///     The method respects the configuration provided in 'options', including the suppression of file generation,
-    ///     paths for content copying, and the list of pages to generate.
-    /// </summary>
-    /// <param name="appUrl">The base URL of the application, used for making HTTP requests to fetch page content.</param>
+    /// <param name="appUrl">The base URL of the running Blazor application, used for making HTTP requests to fetch page content</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no pages are available to generate</exception>
+    /// <remarks>
+    ///     This method performs several key operations:
+    ///     1. Collects pages to generate from all registered content services
+    ///     2. Optionally adds non-parametrized Razor pages based on configuration
+    ///     3. Executes any pre-generation actions defined in options
+    ///     4. Clears and recreates the output directory
+    ///     5. Generates a sitemap.xml file if configured
+    ///     6. Copies static content (wwwroot files, etc.) to the output directory
+    ///     7. Renders each page by making HTTP requests to the running application
+    ///     8. Saves each page as a static HTML file in the output directory
+    /// </remarks>
     internal async Task GenerateStaticPages(string appUrl)
     {
+        // Collect pages to generate from content services and options
+        var pagesToGenerate = contentPostServiceCollection
+            .Aggregate(ImmutableList<PageToGenerate>.Empty, (current, item) => current.AddRange(item.GetPagesToGenerate()));
+        
+        pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
+
+        // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
         {
-            AddPagesWithoutParameters();
+            pagesToGenerate = pagesToGenerate.AddRange(GetPagesWithoutParameters());
         }
 
-        foreach (var action in options.GetBeforeFilesGenerationActions())
+        pagesToGenerate = pagesToGenerate.AddRange([
+            new PageToGenerate("/sitemap.xml", "sitemap.xml"),
+            new PageToGenerate("/rss.xml", "rss.xml")
+        ]);
+        
+        // Execute pre-generation actions
+        foreach (var action in options.BeforeFilesGenerationActions)
         {
             await action.Invoke();
         }
 
-        if (options.SuppressFileGeneration)
-        {
-            return;
-        }
-
-        
-        
-        if (Directory.Exists(options.OutputFolderPath)) //clear output folder
+        // Clear and recreate output directory
+        if (Directory.Exists(options.OutputFolderPath))
         {
             Directory.Delete(options.OutputFolderPath, true);
         }
 
         Directory.CreateDirectory(options.OutputFolderPath);
+        
+        // Prepare paths to ignore during content copy
+        var ignoredPathsWithOutputFolder = options
+            .IgnoredPathsOnContentCopy
+            .Select(x => Path.Combine(options.OutputFolderPath, x))
+            .ToList();
+        
+        var contentToCopy = contentPostServiceCollection
+            .SelectMany(service => service.GetContentToCopy())
+            .Concat(GetStaticWebAssetsToOutput(environment.WebRootFileProvider, string.Empty))
+            .ToImmutableList();
 
-        //sitemap generation has to happen before copying the wwwroot files, because it outputs the sitemap there
-        if (Options.ShouldGenerateSitemap)
+       
+        // Copy all content to output directory
+        foreach (var pathToCopy in contentToCopy)
         {
-            await TryGenerateSitemap();
+            var targetPath = Path.Combine(options.OutputFolderPath, pathToCopy.TargetPath);
+            
+            logger.LogInformation("Copying {sourcePath} to {targetPath}", pathToCopy.SourcePath, targetPath);
+            CopyContent(pathToCopy.SourcePath, targetPath, ignoredPathsWithOutputFolder);
         }
 
-        var ignoredPathsWithOutputFolder = options.IgnoredPathsOnContentCopy
-            .Select(x => Path.Combine(options.OutputFolderPath, x)).ToList();
-        foreach (var pathToCopy in _contentToCopy)
-        {
-            logger.LogInformation("Copying {sourcePath} to {targetPath}", pathToCopy.SourcePath,
-                Path.Combine(options.OutputFolderPath, pathToCopy.TargetPath));
+        // Create HTTP client for fetching rendered pages
+        using HttpClient client = new();
+        client.BaseAddress = new Uri(appUrl);
 
-            helpers.CopyContent(pathToCopy.SourcePath, Path.Combine(options.OutputFolderPath, pathToCopy.TargetPath),
-                ignoredPathsWithOutputFolder);
-        }
-
-        HttpClient client = new() { BaseAddress = new Uri(appUrl) };
-
-        foreach (var page in _pagesToGenerate)
+        // Generate each page by making HTTP requests and saving the response
+        foreach (var page in pagesToGenerate)
         {
             logger.LogInformation("Generating {pageUrl} into {pageOutputFile}", page.Url, page.OutputFile);
             string content;
@@ -140,70 +130,128 @@ public class BlazorStaticService(
             await File.WriteAllTextAsync(outFilePath, content);
         }
     }
-
+    
     /// <summary>
-    ///     Generates an XML sitemap from the registered URLs. <br />
-    ///     !requires BlazorStaticOptions.SiteUrl to not be null!
-    ///     Otherwise, returns with warning
+    ///     Recursively collects all static web assets (files in wwwroot) that should be copied to the output directory.
     /// </summary>
-    private async Task TryGenerateSitemap()
+    /// <param name="fileProvider">File provider for accessing static web assets</param>
+    /// <param name="subPath">Current sub-path being processed</param>
+    /// <returns>Collection of content items to copy</returns>
+    private static IEnumerable<ContentToCopy> GetStaticWebAssetsToOutput(IFileProvider fileProvider, string subPath)
     {
-        if (string.IsNullOrWhiteSpace(Options.SiteUrl))
+        var contents = fileProvider.GetDirectoryContents(subPath);
+
+        foreach(var item in contents)
         {
-            logger.LogWarning("'BlazorStaticOptions.SiteUrl' is null or empty! Can't generate Sitemap." +
-                              " Either provide the site url or set 'BlazorStaticOptions.ShouldGenerateSitemap' to false");
-
-            return;
-        }
-
-        var xmlns = XNamespace.Get("http://www.sitemaps.org/schemas/sitemap/0.9");
-        List<XElement> xmlUrlList = [];
-
-        foreach (var page in _pagesToGenerate)
-        {
-            var pageUrl = Options.SiteUrl.TrimEnd('/') + EncodeUrl(page.Url);
-            List<XElement> xElements = [new(xmlns + "loc", pageUrl)];
-
-            // only add a <lastmod> node if the file is a post
-            if (page.AdditionalInfo?.LastMod != null)
+            var fullPath = $"{subPath}{item.Name}";
+            if(item.IsDirectory)
             {
-                xElements.Add(new XElement(xmlns + "lastmod", $"{page.AdditionalInfo.LastMod:yyyy-MM-dd}"));
+                foreach (var file in GetStaticWebAssetsToOutput(fileProvider, $"{fullPath}/"))
+                {
+                    yield return file;
+                }
             }
-
-            xmlUrlList.Add(new XElement(xmlns + "url", xElements));
-        }
-
-        XDocument xDocument = new(
-            new XDeclaration("1.0", "UTF-8", null),
-            new XElement(xmlns + "urlset", xmlUrlList)
-        );
-
-        const string sitemapFileName = "sitemap.xml";
-        var sitemapPath = Path.Combine(options.SitemapOutputFolderPath, sitemapFileName);
-        await File.WriteAllTextAsync(sitemapPath, xDocument.Declaration + xDocument.ToString());
-        logger.LogInformation("Sitemap generated into {pageOutputFile}", sitemapPath);
-        AddContentToCopyToOutput(new ContentToCopy(sitemapPath, sitemapFileName)); //it is not copied with wwwroot as
-        return;
-
-        static string EncodeUrl(string url)
-        {
-            var encodedUrl = HttpUtility.UrlEncode(url, Encoding.UTF8).Replace("%2f", "/");
-            return encodedUrl.StartsWith('/') ? encodedUrl : '/' + encodedUrl;
+            else
+            {
+                if(item.PhysicalPath is not null)
+                {
+                    yield return new ContentToCopy(item.PhysicalPath, fullPath);
+                }
+            }
         }
     }
 
     /// <summary>
-    ///     Registers razor pages that have no parameters to be generated as static pages.
-    ///     Page is defined by Route parameter: either `@page "Example"` or `@attribute [Route("Example")]`
+    ///     Discovers and returns all non-parametrized Razor pages that should be generated.
+    ///     Uses reflection to find routes defined in the entry assembly.
     /// </summary>
-    private void AddPagesWithoutParameters()
+    /// <returns>Collection of pages to generate</returns>
+    private IEnumerable<PageToGenerate> GetPagesWithoutParameters()
     {
         var entryAssembly = Assembly.GetEntryAssembly()!;
         var routesToGenerate = RoutesHelper.GetRoutesToRender(entryAssembly);
 
         foreach (var route in routesToGenerate)
         {
-            AddPageToGenerate(new PageToGenerate(route, Path.Combine(route, options.IndexPageHtml)));
+            yield return new PageToGenerate(route, Path.Combine(route, options.IndexPageHtml));
+        }
+    }
+    
+    /// <summary>
+    ///     Copies content from a source path to a target path, respecting the ignored paths list.
+    ///     Handles both files and directories recursively.
+    /// </summary>
+    /// <param name="sourcePath">Source path of file or directory to copy</param>
+    /// <param name="targetPath">Target path where content should be copied</param>
+    /// <param name="ignoredPaths">List of paths that should be excluded from copying</param>
+    private void CopyContent(string sourcePath, string targetPath, List<string> ignoredPaths)
+    {
+        if(ignoredPaths.Contains(targetPath))
+        {
+            return;
+        }
+
+        // Handle single file copy
+        if(File.Exists(sourcePath))
+        {
+            var dir = Path.GetDirectoryName(targetPath);
+            if(dir == null)
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(dir);
+            File.Copy(sourcePath, targetPath, true);
+            return;
+        }
+
+        // Validate source directory exists
+        if(!Directory.Exists(sourcePath))
+        {
+            logger.LogError("Source path ({sourcePath}) does not exist", sourcePath);
+            return;
+        }
+
+        // Create target directory if needed
+        if(!Directory.Exists(targetPath))
+        {
+            Directory.CreateDirectory(targetPath);
+        }
+
+        var ignoredPathsWithTarget = ignoredPaths.Select(x => Path.Combine(targetPath, x)).ToList();
+
+        // Create all subdirectories first (except ignored ones)
+        foreach(var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+        {
+            var newDirPath = ChangeRootFolder(dirPath);
+            if(ignoredPathsWithTarget.Contains(newDirPath))
+            {
+                continue;
+            }
+
+            Directory.CreateDirectory(newDirPath);
+        }
+
+        // Copy all files (except those in ignored paths)
+        foreach(var newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+        {
+            var newPathWithNewDir = ChangeRootFolder(newPath);
+            if(ignoredPathsWithTarget.Contains(newPathWithNewDir) 
+                || !Directory.Exists(Path.GetDirectoryName(newPathWithNewDir)))
+            {
+                continue;
+            }
+
+            File.Copy(newPath, newPathWithNewDir, true);
+        }
+
+        return;
+
+        // Helper function to transform path from source root to target root
+        string ChangeRootFolder(string dirPath)
+        {
+            var relativePath = dirPath[sourcePath.Length..].TrimStart(Path.DirectorySeparatorChar);
+            return Path.Combine(targetPath, relativePath);
         }
     }
 }

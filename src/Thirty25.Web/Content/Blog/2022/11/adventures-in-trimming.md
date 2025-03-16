@@ -17,7 +17,7 @@ For my use case I needed a couple of icons so the idea of multiple requests of o
 
 So, on the front end of things a Blazor component that simply wrote out the SVG is all I really need. But I also want the ability to use any of the thousand icons of Font Awesome from my library.
 
-## What if I relied on .NET trimming to keep it small?
+## What if I relied on .NET trimming to keep it small? 
 
 [Trimming in .NET](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained) uses build time analysis to figure out what parts of an assembly are being called and only keep those parts. With .NET 6, trimming moved out of experimental support to being fully supported.
 

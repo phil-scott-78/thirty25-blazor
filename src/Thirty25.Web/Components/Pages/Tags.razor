@@ -1,15 +1,15 @@
-@page "/tags/{tagName}"
+@page "/tags/{TagEncodedName}"
 @page "/tags"
-@using System.Collections.Immutable
-@using BlazorStatic
+@using BlazorStatic.Models
 @using BlazorStatic.Services
-@inject BlazorStaticContentService<FrontMatter> blazorStaticContentService
+@using Thirty25.Web.Components.Layout
+@inject BlazorStaticContentService<FrontMatter> BlogService
 
-@if (TagName == null)
+@if (TagEncodedName == null)
 {
-    <div class="flex flex-wrap justify-evenly gap-1">
+    <div class="flex flex-wrap justify-between gap-1">
         @{
-            var tagsWithCount = blazorStaticContentService.Posts
+            var tagsWithCount = BlogService.Posts
                 .SelectMany(x => x.Tags)
                 .GroupBy(x => x)
                 .Select(group => new { Tag = group.Key, Count = group.Count() })
@@ -17,35 +17,36 @@
 
             foreach(var tagGroup in tagsWithCount)
             {
-                <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="@($"{blazorStaticContentService.Options.Tags.TagsPageUrl}/{tagGroup.Tag.EncodedName}")">@tagGroup.Tag.Name</a>
+                <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="@tagGroup.Tag.NavigateUrl"> @tagGroup.Tag.Name (@tagGroup.Count) </a>
             }
         }
     </div>
     return;
 }
-
-
-<div class="divide-y divide-primary-700">
-    <div class="space-y-2 pb-8 pt-6 md:space-y-5">
-        <h1 class="font-sans md:leading-14 text-3xl font-extrabold leading-9 tracking-tight text-primary-100 sm:text-4xl sm:leading-10 md:text-6xl">@TagName</h1>
-        <p class="text-lg leading-7 text-primary-400">
-            Blog posts tagged by
-            <span class="text-primary-300">@TagName</span>
-        </p>
-    </div>
-    <PostsList Posts="posts"/>
+<div>
+    <PageHeader Title="@(_tag?.Name ?? TagEncodedName)">
+        Blog posts tagged by
+        <span class="text-primary-300">@(_tag?.Name ?? TagEncodedName)</span>
+    </PageHeader>
+    <BlogPostsList Posts="_posts"/>
 </div>
 
 @code {
 
-    [Parameter] public string? TagName { get; set; }
-
-    ImmutableList<Post<FrontMatter>>? posts;
+    [Parameter] public string? TagEncodedName { get; set; }
+    
+    private Tag? _tag;
+    private List<Post<FrontMatter>>? _posts;
 
     protected override void OnInitialized()
     {
-        if (string.IsNullOrWhiteSpace(TagName)) return;
-        posts = blazorStaticContentService.Posts.Where(x => x.FrontMatter.Tags.Contains(TagName)).ToImmutableList();
+        if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
+        _tag = BlogService.AllTags.FirstOrDefault(x=>x.Value.EncodedName == TagEncodedName).Value;
+        if (_tag == null) return;
+        _posts = BlogService.Posts
+            .Where(x => x.Tags.Any(c => c.EncodedName == TagEncodedName))
+            .ToList();
+
     }
 
 }

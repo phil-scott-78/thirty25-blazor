@@ -21,6 +21,7 @@
     <Watch Include="Content/**/*" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Content\Blog\2025\03\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>

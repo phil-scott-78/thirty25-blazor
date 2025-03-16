@@ -1,4 +1,4 @@
-﻿using BlazorStatic;
+﻿using BlazorStatic.Models;
 
 namespace Thirty25.Web;
 
@@ -17,5 +17,16 @@ public class FrontMatter : IFrontMatter, IFrontMatterWithTags
     /// <inheritdoc />
     public bool IsDraft { get; set; }
 
-    public List<string> Tags { get; set; } = new List<string>();
+    public List<string> Tags { get; set; } = [];
+    
+    public Metadata AsMetadata()
+    {
+        return new Metadata()
+        {
+            Title = Title,
+            Description = Description,
+            LastMod = Date,
+            RssItem = true
+        };
+    }
 }

@@ -7,8 +7,9 @@
 /// </summary>
 public class BlazorStaticFileWatcher : IDisposable
 {
-    private readonly Dictionary<string, FileSystemWatcher> _watchers = new();
+    private bool _disposed;
 
+    private readonly Dictionary<string, FileSystemWatcher> _watchers = new();
     private readonly List<Action> _updates = [];
 
     internal void Initialize(IEnumerable<string> contentToCopyList, Action onUpdate)
@@ -31,7 +32,8 @@ public class BlazorStaticFileWatcher : IDisposable
             {
                 var watcher = new FileSystemWatcher(directoryPath)
                 {
-                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.CreationTime,
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName |
+                                   NotifyFilters.CreationTime,
                     IncludeSubdirectories = true,
                     EnableRaisingEvents = true
                 };
@@ -53,29 +55,56 @@ public class BlazorStaticFileWatcher : IDisposable
 
     private void OnContentChanged(object sender, FileSystemEventArgs e)
     {
-        foreach(var update in _updates)
+        foreach (var update in _updates)
         {
             update.Invoke();
         }
-
     }
 
     private void OnContentRenamed(object sender, RenamedEventArgs e)
     {
-        foreach(var update in _updates)
+        foreach (var update in _updates)
         {
             update.Invoke();
-        }    }
+        }
+    }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Releases all resources used by this instance.
+    /// </summary>
     public void Dispose()
     {
-        foreach (var watcher in _watchers.Values)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources used by this instance and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
         {
-            watcher.EnableRaisingEvents = false;
-            watcher.Dispose();
+            // Dispose managed resources
+            foreach (var watcher in _watchers.Values)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+            }
+
+            _watchers.Clear();
         }
 
-        _watchers.Clear();
+        _disposed = true;
+    }
+
+    /// <summary>
+    /// Finalizer to ensure resources are cleaned up if Dispose is not called.
+    /// </summary>
+    ~BlazorStaticFileWatcher()
+    {
+        Dispose(false);
     }
 }

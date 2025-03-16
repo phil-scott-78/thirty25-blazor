@@ -1,5 +1,8 @@
-﻿using BlazorStatic.Services;
+﻿using System.Text;
+using BlazorStatic.Models;
+using BlazorStatic.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -28,18 +31,18 @@ public static class BlazorStaticExtensions
     /// The service handles parsing, loading, and providing content with the specified front matter format.
     /// </remarks>
     public static IServiceCollection AddBlazorStaticContentService<TFrontMatter>(this IServiceCollection services,
-        Action<BlazorStaticContentOptions<TFrontMatter>>? configureOptions = null)
+        Func<BlazorStaticContentOptions<TFrontMatter>>? configureOptions = null)
         where TFrontMatter : class, IFrontMatter, new()
     {
-        BlazorStaticContentOptions<TFrontMatter> options = new();
-        configureOptions?.Invoke(options);
+        var options = configureOptions?.Invoke() ?? new BlazorStaticContentOptions<TFrontMatter>();
         options.CheckOptions();
 
         services.AddSingleton(options);
         services.AddSingleton<BlazorStaticContentService<TFrontMatter>>();
-        
+        services.AddSingleton<SitemapRssService>();
+
         // also include their interface, we'll need these for loading all at once
-        services.AddSingleton<IContentPostService>(provider => provider.GetRequiredService<BlazorStaticContentService<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentService>(provider => provider.GetRequiredService<BlazorStaticContentService<TFrontMatter>>());
         services.AddSingleton<IBlazorStaticContentOptions>(provider => provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
         return services;
     }
@@ -60,15 +63,14 @@ public static class BlazorStaticExtensions
     /// Use this method in conjunction with UseBlazorStaticGenerator to complete the static site generation process.
     /// </remarks>
     public static IServiceCollection AddBlazorStaticService(this IServiceCollection services,
-        Action<BlazorStaticOptions>? configureOptions = null)
+        Func<BlazorStaticOptions> configureOptions)
     {
-        services.AddSingleton<BlazorStaticHelpers>();
-        var options = new BlazorStaticOptions();
-        configureOptions?.Invoke(options);
+        var options = configureOptions.Invoke();
 
         services.AddSingleton(options);
         services.AddSingleton<BlazorStaticService>();
         services.AddSingleton<BlazorStaticFileWatcher>();
+        services.AddSingleton<MarkdownService>();
 
         return services;
     }
@@ -106,7 +108,6 @@ public static class BlazorStaticExtensions
                 .TrimStart(Path.DirectorySeparatorChar)
                 .Replace("\\", "/");
 
-
             var realPath = Path.Combine(Directory.GetCurrentDirectory(), option.ContentPath, option.MediaFolderRelativeToContentPath);
             if(!Directory.Exists(realPath))
             {
@@ -120,9 +121,35 @@ public static class BlazorStaticExtensions
                     RequestPath = requestPath
                 });
             }
-
         }
+
+        app.MapBlazorStaticSitemapRss();
+    }
+    
+    /// <summary>
+    /// Adds sitemap.xml and RSS feed endpoints to the application.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    /// <returns>The web application for chaining.</returns>
+    public static WebApplication MapBlazorStaticSitemapRss(this WebApplication app)
+    {
+
+        // Map the sitemap.xml endpoint
+        app.MapGet("/sitemap.xml", (SitemapRssService service) =>
+        {
+            var sitemap = service.GenerateSitemap();
+            // Set content type and return the sitemap
+            return Task.FromResult(Results.Content(sitemap, "application/xml"));
+        });
         
+        // Map the rss.xml endpoint
+        app.MapGet("/rss.xml", (SitemapRssService service) =>
+        {
+            var rss = service.GenerateRssFeed();
+            return Task.FromResult(Results.Content(rss, "text/xml"));
+        });
+        
+        return app;
     }
 
     /// <summary>
@@ -143,42 +170,19 @@ public static class BlazorStaticExtensions
     public static async Task UseBlazorStaticGenerator(this WebApplication app)
     {
         var blazorStaticService = app.Services.GetRequiredService<BlazorStaticService>();
-        var blazorStaticContentService = app.Services.GetServices<IContentPostService>();
-        foreach (var contentService in blazorStaticContentService)
-        {
-            contentService.ParseAndAddPosts();
-        }
-
-        //adds wwwroot files (or any other files that has been added as static content) to the output
-        AddStaticWebAssetsToOutput(app.Environment.WebRootFileProvider, string.Empty, blazorStaticService);
-
         await blazorStaticService.GenerateStaticPages(app.Urls.First());
     }
-
-    /// <summary>
-    ///     Takes the provider, search it recursively and add all the files found.
-    /// </summary>
-    /// <param name="fileProvider"></param>
-    /// <param name="subPath"></param>
-    /// <param name="blazorStaticService"></param>
-    private static void AddStaticWebAssetsToOutput(IFileProvider fileProvider, string subPath, BlazorStaticService blazorStaticService)
+    
+    private static string GetBaseUrl(HttpContext context, BlazorStaticOptions options)
     {
-        var contents = fileProvider.GetDirectoryContents(subPath);
-
-        foreach(var item in contents)
+        // First, try to get it from options
+        if (!string.IsNullOrEmpty(options.BaseUrl))
         {
-            var fullPath = $"{subPath}{item.Name}";
-            if(item.IsDirectory)
-            {
-                AddStaticWebAssetsToOutput(fileProvider, $"{fullPath}/", blazorStaticService);
-            }
-            else
-            {
-                if(item.PhysicalPath is not null)
-                {
-                    blazorStaticService.AddContentToCopyToOutput(new ContentToCopy(item.PhysicalPath, fullPath));
-                }
-            }
+            return options.BaseUrl;
         }
+        
+        // Otherwise, derive it from the request
+        var request = context.Request;
+        return $"{request.Scheme}://{request.Host}";
     }
 }
