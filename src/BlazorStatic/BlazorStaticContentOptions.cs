@@ -1,16 +1,17 @@
-﻿using BlazorStatic.Models;
+﻿using System.Collections.Immutable;
+using BlazorStatic.Models;
 using BlazorStatic.Services;
 
 namespace BlazorStatic;
 
 internal interface IBlazorStaticContentOptions
 {
-    string ContentPath { get; set; }
-    string? MediaFolderRelativeToContentPath { get; set; }
+    string ContentPath { get; init; }
+    string? MediaFolderRelativeToContentPath { get; init; }
     string? MediaRequestPath { get; }
-    string PostFilePattern { get; set; }
-    string PageUrl { get; set; }
-    TagsOptions Tags { get; set; }
+    string PostFilePattern { get; init; }
+    string PageUrl { get; init; }
+    TagsOptions Tags { get; init; }
     void CheckOptions();
 }
 
@@ -26,7 +27,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// because that's where the app will look for the files.
     /// Default is Content/Blog where posts are stored.
     /// </summary>
-    public string ContentPath { get; set; } = Path.Combine("Content", "Blog");
+    public string ContentPath { get; init; } = Path.Combine("Content", "Blog");
 
     /// <summary>
     /// Folder in ContentPath where media files are stored.
@@ -34,7 +35,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Null in case of no media folder.
     /// Default is "media"
     /// </summary>
-    public string? MediaFolderRelativeToContentPath { get; set; } = Path.Combine( "media" );
+    public string? MediaFolderRelativeToContentPath { get; init; } = Path.Combine( "media" );
 
     /// <summary>
     /// URL path for media files for posts.
@@ -52,7 +53,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Pattern for blog post files in ContentPath.
     /// Default is
     /// </summary>
-    public string PostFilePattern { get; set; } = "*.md";
+    public string PostFilePattern { get; init; } = "*.md";
 
     /// <summary>
     /// Should correspond to page that keeps the list of content.
@@ -61,7 +62,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Useful for avoiding magic strings in .razor files.
     /// Default is "blog".
     /// </summary>
-    public string PageUrl { get; set; } = "blog";
+    public string PageUrl { get; init; } = "blog";
 
     /// <summary>
     /// Action to run after content is parsed and added to the collection.
@@ -72,12 +73,17 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// <summary>
     /// Gets or sets a hook to process the markdown files before they are rendered as HTML.
     /// </summary>
-    public Func<IServiceProvider, string, string> PreProcessMarkdown { get; set; } = (provider, s) => s;
+    public Func<IServiceProvider, string, string> PreProcessMarkdown { get; init; } = (provider, s) => s;
 
     /// <summary>
     /// Gets or sets a hook to process the front matter and html after markdown parsing and before it is passed to Razor.
     /// </summary>
-    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; set; } = (provider, frontMatter, html) => (frontMatter, html);
+    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } = (provider, frontMatter, html) => (frontMatter, html);
+
+    /// <summary>
+    /// Gets a list of excluded mapped routes from static content generation.
+    /// </summary>
+    public ImmutableList<string> ExcludeMapRoutes { get; init; } = [];
 
     /// <summary>
     /// Validates the configuration properties to ensure required fields are set correctly.
@@ -98,7 +104,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// <summary>
     /// Options related to tags
     /// </summary>
-    public TagsOptions Tags { get; set; } = new();
+    public TagsOptions Tags { get; init; } = new();
 }
 
 /// <summary>

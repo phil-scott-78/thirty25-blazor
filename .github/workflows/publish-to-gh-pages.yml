@@ -31,15 +31,11 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-
-      - name: Add Base HTML
-        uses: kannansuresh/ghaction-base-href-rewriter@v1.0.0
-        with:
-          base_href: '/thirty25-blazor/'
-          html_glob: '${{ env.WEBAPP_PATH }}Components/App.razor'
-          
+         
       - name: Run webapp and generate static files
-        run: dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
+        run: |
+          export BaseHref="/${{ github.event.repository.name }}/"
+          dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

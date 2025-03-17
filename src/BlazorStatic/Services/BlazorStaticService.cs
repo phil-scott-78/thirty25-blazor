@@ -5,7 +5,9 @@ using System.Text;
 using System.Web;
 using System.Xml.Linq;
 using BlazorStatic.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 
 namespace BlazorStatic.Services;
@@ -21,10 +23,10 @@ namespace BlazorStatic.Services;
 public class BlazorStaticService(
     IWebHostEnvironment environment,
     IEnumerable<IBlazorStaticContentService> contentPostServiceCollection,
+    EndpointDataSource  endpointDataSource,
     BlazorStaticOptions options,
     ILogger<BlazorStaticService> logger)
 {
-
     /// <summary>
     ///     Generates static HTML pages for the Blazor application.
     /// </summary>
@@ -49,6 +51,7 @@ public class BlazorStaticService(
             .Aggregate(ImmutableList<PageToGenerate>.Empty, (current, item) => current.AddRange(item.GetPagesToGenerate()));
         
         pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
+        pagesToGenerate = pagesToGenerate.AddRange(GetMappedRoutes());
 
         // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
@@ -130,7 +133,25 @@ public class BlazorStaticService(
             await File.WriteAllTextAsync(outFilePath, content);
         }
     }
-    
+
+    private IEnumerable<PageToGenerate> GetMappedRoutes()
+    {
+        var endpoints = endpointDataSource.Endpoints;
+            
+        var getRoutes = endpoints
+            .Where(e => e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("GET") == true)
+            .Select(e => new
+            {
+                Route = e.DisplayName,
+                Pattern = e is RouteEndpoint r ? r.RoutePattern.RawText : null,
+                Method = "GET",
+            })
+            .OrderBy(r => r.Pattern)
+            .ToList();
+        
+        yield break;
+    }
+
     /// <summary>
     ///     Recursively collects all static web assets (files in wwwroot) that should be copied to the output directory.
     /// </summary>
