@@ -49,7 +49,7 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
         };
 
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(194);
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(195);
 
         return new CssFramework(new CssFrameworkSettings()
             {
@@ -66,7 +66,6 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                 PluginSettings = new List<ISettings> { proseSettings },
                 Applies = new Dictionary<string, string> /* these are just for a custom starry-night theme using tailwind colors */
                 {
-                    { "body", "font-sans" },
                     { ".pl-c", "text-base-300/50" },
                     { ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-300" },  // comments, punctuation, selectors, tags
                     { ".pl-c1, .pl-en, .pl-entm", "text-blue-300" },  // boolean, number, constants, attributes, deleted

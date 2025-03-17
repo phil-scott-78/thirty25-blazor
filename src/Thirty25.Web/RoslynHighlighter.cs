@@ -1,9 +1,16 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Reflection.Metadata;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
+using Thirty25.Web;
+
+// this will give the highlighter service a callback to the ClearCache method
+// during any compilations that occur that would require the cache being cleared.
+[assembly: MetadataUpdateHandler(typeof(RoslynHighlighterService))]
 
 namespace Thirty25.Web;
 
@@ -12,11 +19,17 @@ internal partial class RoslynHighlighterService : IDisposable
     private readonly AdhocWorkspace _workspace;
     private readonly Project _project;
     private bool _disposed;
+    private static readonly ConcurrentDictionary<int, string> Cache = new();
 
     public RoslynHighlighterService()
     {
         _workspace = new AdhocWorkspace();
         _project = _workspace.CurrentSolution.AddProject("projectName", "assemblyName", LanguageNames.CSharp);
+    }
+    
+    internal static void ClearCache(Type[]? _)
+    {
+        Cache.Clear();
     }
 
     public string Highlight(string htmlCode)
@@ -35,9 +48,14 @@ internal partial class RoslynHighlighterService : IDisposable
             // HTML decode the content to get actual code
             var decodedContent = HttpUtility.HtmlDecode(codeContent);
 
-            // Highlight the code using your existing method
-            var highlightedCode = RunSync(() => HighlightContent(decodedContent, _project));
+            // Calculate a hash for the content to use as cache key
+            var contentHash = decodedContent.GetHashCode();
+            
 
+            var highlightedCode = Cache.GetOrAdd(contentHash, RunSync(() =>
+            {
+                return HighlightContent(decodedContent, _project);
+            }));
             // Remove language-csharp and replace with language-none so prism.js skips it
             return openingTagStart + "language-none" + openingTagEnd + highlightedCode + closingTags;
         });

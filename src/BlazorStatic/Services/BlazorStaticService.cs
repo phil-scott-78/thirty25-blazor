@@ -1,13 +1,8 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using System.Text;
-using System.Web;
-using System.Xml.Linq;
 using BlazorStatic.Models;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 
 namespace BlazorStatic.Services;
@@ -18,12 +13,13 @@ namespace BlazorStatic.Services;
 /// </summary>
 /// <param name="environment">The web hosting environment providing access to web root files</param>
 /// <param name="contentPostServiceCollection">Collection of content services providing pages to generate and content to copy</param>
+/// <param name="routeHelper">Service for discovering configured ASP.NET routes.</param>
 /// <param name="options">Configuration options for the static generation process</param>
 /// <param name="logger">Logger for diagnostic output</param>
 public class BlazorStaticService(
     IWebHostEnvironment environment,
     IEnumerable<IBlazorStaticContentService> contentPostServiceCollection,
-    EndpointDataSource  endpointDataSource,
+    RoutesHelperService routeHelper,
     BlazorStaticOptions options,
     ILogger<BlazorStaticService> logger)
 {
@@ -36,13 +32,14 @@ public class BlazorStaticService(
     /// <remarks>
     ///     This method performs several key operations:
     ///     1. Collects pages to generate from all registered content services
-    ///     2. Optionally adds non-parametrized Razor pages based on configuration
-    ///     3. Executes any pre-generation actions defined in options
-    ///     4. Clears and recreates the output directory
-    ///     5. Generates a sitemap.xml file if configured
-    ///     6. Copies static content (wwwroot files, etc.) to the output directory
-    ///     7. Renders each page by making HTTP requests to the running application
-    ///     8. Saves each page as a static HTML file in the output directory
+    ///     2. Optionally adds routes registered via MapGet based on configuration
+    ///     3. Optionally adds non-parametrized Razor pages based on configuration
+    ///     4. Executes any pre-generation actions defined in options
+    ///     5. Clears and recreates the output directory
+    ///     6. Generates a sitemap.xml file if configured
+    ///     7. Copies static content (wwwroot files, etc.) to the output directory
+    ///     8. Renders each page by making HTTP requests to the running application
+    ///     9. Saves each page as a static HTML file in the output directory
     /// </remarks>
     internal async Task GenerateStaticPages(string appUrl)
     {
@@ -51,18 +48,13 @@ public class BlazorStaticService(
             .Aggregate(ImmutableList<PageToGenerate>.Empty, (current, item) => current.AddRange(item.GetPagesToGenerate()));
         
         pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
-        pagesToGenerate = pagesToGenerate.AddRange(GetMappedRoutes());
+        pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
 
         // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
         {
             pagesToGenerate = pagesToGenerate.AddRange(GetPagesWithoutParameters());
         }
-
-        pagesToGenerate = pagesToGenerate.AddRange([
-            new PageToGenerate("/sitemap.xml", "sitemap.xml"),
-            new PageToGenerate("/rss.xml", "rss.xml")
-        ]);
         
         // Execute pre-generation actions
         foreach (var action in options.BeforeFilesGenerationActions)
@@ -134,23 +126,7 @@ public class BlazorStaticService(
         }
     }
 
-    private IEnumerable<PageToGenerate> GetMappedRoutes()
-    {
-        var endpoints = endpointDataSource.Endpoints;
-            
-        var getRoutes = endpoints
-            .Where(e => e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("GET") == true)
-            .Select(e => new
-            {
-                Route = e.DisplayName,
-                Pattern = e is RouteEndpoint r ? r.RoutePattern.RawText : null,
-                Method = "GET",
-            })
-            .OrderBy(r => r.Pattern)
-            .ToList();
-        
-        yield break;
-    }
+    
 
     /// <summary>
     ///     Recursively collects all static web assets (files in wwwroot) that should be copied to the output directory.
@@ -190,7 +166,7 @@ public class BlazorStaticService(
     private IEnumerable<PageToGenerate> GetPagesWithoutParameters()
     {
         var entryAssembly = Assembly.GetEntryAssembly()!;
-        var routesToGenerate = RoutesHelper.GetRoutesToRender(entryAssembly);
+        var routesToGenerate = routeHelper.GetRoutesToRender(entryAssembly);
 
         foreach (var route in routesToGenerate)
         {

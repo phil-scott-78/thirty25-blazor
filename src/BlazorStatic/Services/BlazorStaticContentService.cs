@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using BlazorStatic.Models;
 
 namespace BlazorStatic.Services;
@@ -163,7 +165,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     /// </remarks>
     private ImmutableList<Post<TFrontMatter>> ParseAndAddPosts()
     {
-        var posts = new List<Post<TFrontMatter>>();
+        var stopwatch = Stopwatch.StartNew();
+        
+        var posts = new ConcurrentBag<Post<TFrontMatter>>();
         var (files, absPostPath) = GetPostsPath();
 
         // Configure media paths if both source and request paths are provided
@@ -175,8 +179,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         // Determine if front matter supports tags
         var supportsTags = typeof(IFrontMatterWithTags).IsAssignableFrom(typeof(TFrontMatter));
 
-        // Process each markdown file
-        foreach (var file in files)
+        Parallel.ForEach(files, file =>
         {
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent) = _markdownService.ParseMarkdownFile<TFrontMatter>(file, mediaPaths, preProcessFile: Options.PreProcessMarkdown);
@@ -184,7 +187,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
             // Skip draft posts
             if (frontMatter.IsDraft)
             {
-                continue;
+                return;
             }
 
             // Apply any configured post-processing
@@ -205,7 +208,11 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
                 Tags = tags
             };
             posts.Add(post);
-        }
+        });
+        
+        stopwatch.Stop();
+        _logger.LogInformation("Posts and tagged rebuilt in {elapsed}", stopwatch.Elapsed);
+
 
         // Log warning if tag processing was expected but not possible
         if (!supportsTags && Options.Tags.AddTagPagesFromPosts)

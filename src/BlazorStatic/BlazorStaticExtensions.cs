@@ -71,6 +71,7 @@ public static class BlazorStaticExtensions
         services.AddSingleton<BlazorStaticService>();
         services.AddSingleton<BlazorStaticFileWatcher>();
         services.AddSingleton<MarkdownService>();
+        services.AddSingleton<RoutesHelperService>();
 
         return services;
     }
