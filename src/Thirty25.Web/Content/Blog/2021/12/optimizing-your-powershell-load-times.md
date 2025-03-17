@@ -2,7 +2,7 @@
 title: Optimizing Your PowerShell Load Times
 description: 'Speed up your time from launching PowerShell to seeing C:\'
 date: 2021-12-11
-tags: []
+tags: ["PowerShell"]
 ---
 
 Sometimes I just want to drop into my shell and get things done without a GUI or any other things slowing me down. I love PowerShell and Windows Terminal, but the idea I'm hoping into speedy power-mode is dashed when I sit and watch an empty screen load things up and a little message telling me how slow it is.
@@ -18,7 +18,7 @@ Not that PowerShell is at fault here. These performance issues are self-inflecte
 
 Each tool I can't live without, but each tool needs to be imported each time I launch a new shell. It's not the end of the world, but clicking that button and seeing a blank screen followed by this doesn't sit right with me
 
-```
+```powershell
 PowerShell 7.2.0
 Copyright (c) Microsoft Corporation.
 

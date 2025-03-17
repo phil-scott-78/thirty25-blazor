@@ -72,12 +72,12 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// <summary>
     /// Gets or sets a hook to process the markdown files before they are rendered as HTML.
     /// </summary>
-    public Func<string, string> PreProcessMarkdown { get; set; } = s => s;
+    public Func<IServiceProvider, string, string> PreProcessMarkdown { get; set; } = (provider, s) => s;
 
     /// <summary>
     /// Gets or sets a hook to process the front matter and html after markdown parsing and before it is passed to Razor.
     /// </summary>
-    public Func<TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; set; } = (frontMatter, html) => (frontMatter, html);
+    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; set; } = (provider, frontMatter, html) => (frontMatter, html);
 
     /// <summary>
     /// Validates the configuration properties to ensure required fields are set correctly.

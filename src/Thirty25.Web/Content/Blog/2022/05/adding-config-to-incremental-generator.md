@@ -3,8 +3,7 @@ title: Adding Configuration to an Incremental Generator
 description: Using AnalyzerConfigOptionsProvider and GlobalAnalyzerConfigFiles to configure an .NET Incremental Generator
 date: 2022-05-12
 tags:
-
-- Source Generators
+- Source Generator
 
 ---
 

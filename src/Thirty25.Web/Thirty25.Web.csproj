@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.2.0" />
     <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.37" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.13.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.13.0" />
   </ItemGroup>
   
   <ItemGroup>
@@ -21,7 +26,6 @@
     <Watch Include="Content/**/*" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\Blog\2025\03\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>

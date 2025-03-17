@@ -26,7 +26,7 @@
 <div>
     <PageHeader Title="@(_tag?.Name ?? TagEncodedName)">
         Blog posts tagged by
-        <span class="text-primary-300">@(_tag?.Name ?? TagEncodedName)</span>
+        <span class="text-primary-800 dark:text-primary-300">@(_tag?.Name ?? TagEncodedName)</span>
     </PageHeader>
     <BlogPostsList Posts="_posts"/>
 </div>
@@ -42,11 +42,15 @@
     {
         if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
         _tag = BlogService.AllTags.FirstOrDefault(x=>x.Value.EncodedName == TagEncodedName).Value;
-        if (_tag == null) return;
+        if (_tag == null)
+        {
+            return;
+        }
+        
         _posts = BlogService.Posts
             .Where(x => x.Tags.Any(c => c.EncodedName == TagEncodedName))
+            .OrderByDescending(i => i.FrontMatter.Date)
             .ToList();
 
     }
-
 }

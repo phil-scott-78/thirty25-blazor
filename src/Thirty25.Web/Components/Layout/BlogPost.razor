@@ -10,7 +10,7 @@
                 <dl class="space-y-10">
                     <div>
                         <dt class="sr-only">Published on</dt>
-                        <dd class="text-base font-medium leading-6 text-primary-400">
+                        <dd class="text-base font-medium leading-6 text-primary-800 dark:text-primary-400">
                             <time datetime="@Post.FrontMatter.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)">
                                 @Post.FrontMatter.Date.ToString("MMMM d, yyyy", new CultureInfo("en-US"))
                             </time>
@@ -31,11 +31,11 @@
             <footer>
                 <div class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y">
                     <div class="py-4 xl:py-8">
-                        <h2 class="text-xs uppercase tracking-wide text-primary-400">Tags</h2>
+                        <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">Tags</h2>
                         <div class="flex flex-wrap">
                             @foreach(var tag in Post.Tags)
                             {
-                                <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="@tag.NavigateUrl">@tag.Name</a>
+                                <a class="text-primary-900 dark:text-neutral-100 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="@tag.NavigateUrl">@tag.Name</a>
                             }
                         </div>
                     </div>

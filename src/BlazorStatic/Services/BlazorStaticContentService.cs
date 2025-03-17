@@ -19,6 +19,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     private bool _needsRefresh = true;
     private ImmutableList<Post<TFrontMatter>> _posts = ImmutableList<Post<TFrontMatter>>.Empty;
     private readonly MarkdownService _markdownService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<BlazorStaticContentService<TFrontMatter>> _logger;
     private readonly Lock _postPostsLock = new Lock();
 
@@ -29,6 +30,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     /// <param name="blazorStaticOptions">General BlazorStatic configuration options</param>
     /// <param name="blazorStaticFileWatcher">File watcher for hot-reload functionality</param>
     /// <param name="markdownService">Service used to parse and render markdown files</param>
+    /// <param name="serviceProvider">Service Provider used for callbacks.</param>
     /// <param name="logger">Logger for diagnostic information</param>
     /// <remarks>
     ///     If hot-reload is enabled in the blazorStaticOptions, this service will watch
@@ -38,10 +40,12 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         BlazorStaticOptions blazorStaticOptions,
         BlazorStaticFileWatcher blazorStaticFileWatcher,
         MarkdownService markdownService,
+        IServiceProvider serviceProvider,
         ILogger<BlazorStaticContentService<TFrontMatter>> logger)
     {
         Options = options;
         _markdownService = markdownService;
+        _serviceProvider = serviceProvider;
         _logger = logger;
 
         if (blazorStaticOptions.HotReloadEnabled)
@@ -184,7 +188,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
             }
 
             // Apply any configured post-processing
-            (frontMatter, htmlContent) = Options.PostProcessMarkdown(frontMatter, htmlContent);
+            (frontMatter, htmlContent) = Options.PostProcessMarkdown(_serviceProvider, frontMatter, htmlContent);
 
             // Process tags if supported
             var tags = supportsTags && frontMatter is IFrontMatterWithTags frontMatterWithTags

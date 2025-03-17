@@ -9,7 +9,6 @@
     
     @* ReSharper disable once Html.PathError - this is generated dynamically via MapGet *@
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://esm.sh/@@wooorm/starry-night@3/style/both">
 
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -22,7 +21,7 @@
 </head>
 
 <body class="antialiased font-sans bg-primary-50 dark:bg-neutral-900 transition-colors ">
-<div class="dark:bg-primary-950/50  pb-4 md:pb-16">
+<div class="dark:bg-primary-950/50 min-h-screen pb-4 md:pb-16">
     <Routes/>
 </div>
 </body>
@@ -43,9 +42,11 @@
         common,
         createStarryNight
     } from 'https://esm.sh/@@wooorm/starry-night@3?bundle'
+    import powershell from 'https://esm.sh/@@wooorm/starry-night@3/lang/source.powershell?bundle'
+
     import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
 
-    const starryNight = await createStarryNight(common)
+    const starryNight = await createStarryNight([...common, powershell])
     const prefix = 'language-'
 
     const nodes = Array.from(document.body.querySelectorAll('code'))

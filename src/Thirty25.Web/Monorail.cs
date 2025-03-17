@@ -33,23 +33,23 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                                 new CssDeclaration(CssProperties.FontWeight, "inherit"),
                                 new CssDeclaration(CssProperties.TextDecoration, "none"),
                                 new CssDeclaration(CssProperties.BorderBottomWidth, "1px"),
-                                new CssDeclaration(CssProperties.BorderBottomColor,
-                                    designSystem.Colors["primary"][ColorLevels._500].AsStringWithOpacity("75%"))
+                                new CssDeclaration(CssProperties.BorderBottomColor, designSystem.Colors["primary"][ColorLevels._500].AsStringWithOpacity("75%"))
                             ]),
                             new CssRuleSet("pre",
-                                [
-                                    new CssDeclaration(CssProperties.BorderRadius, "10px"),
-                                    new CssDeclaration(CssProperties.BorderColor, designSystem.Colors[ColorNames.Neutral][ColorLevels._700].AsStringWithOpacity("50%")),
-                                    new CssDeclaration(CssProperties.BorderWidth, "1px"),
-                                    new CssDeclaration(CssProperties.FontWeight, "300")
-                                ])
+                            [
+                                new CssDeclaration(CssProperties.BorderRadius, "10px"),
+                                new CssDeclaration(CssProperties.BorderColor, designSystem.Colors["base"][ColorLevels._700].AsStringWithOpacity("50%")),
+                                new CssDeclaration(CssProperties.BorderWidth, "1px"),
+                                new CssDeclaration(CssProperties.FontWeight, "300")
+                            ])
                         ]
                     }
                 }
             }.ToImmutableDictionary()
         };
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(24);
+
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(194);
 
         return new CssFramework(new CssFrameworkSettings()
             {
@@ -64,6 +64,18 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                         })
                 },
                 PluginSettings = new List<ISettings> { proseSettings },
+                Applies = new Dictionary<string, string> /* these are just for a custom starry-night theme using tailwind colors */
+                {
+                    { "body", "font-sans" },
+                    { ".pl-c", "text-base-300/50" },
+                    { ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-300" },  // comments, punctuation, selectors, tags
+                    { ".pl-c1, .pl-en, .pl-entm", "text-blue-300" },  // boolean, number, constants, attributes, deleted
+                    { ".pl-s, .pl-pse, .pl-smi, .pl-smp", "text-green-300" },  // strings, characters, attribute values, builtins, inserted
+                    { ".pl-kos, .pl-ent, .pl-v, .pl-sym, .pl-e, .pl-cce", "text-cyan-300" },  // operators, entities, urls, symbols, class names
+                    { ".pl-k, .pl-kd", "text-indigo-300" },  // atrules, keywords
+                    { ".pl-c1, .pl-en", "text-orange-300" },  // properties, functions
+                    { ".pl-sr, .pl-va", "text-red-300" },  // regex, important
+                }
             });
     }
 

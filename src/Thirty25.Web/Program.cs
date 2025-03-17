@@ -6,6 +6,7 @@ using Thirty25.Web.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseStaticWebAssets();
+builder.Services.AddSingleton<RoslynHighlighterService>();
 builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions()
 {
     BlogTitle = "Thirty25",
@@ -16,7 +17,12 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions()
 });
 builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>()
 {
-    PageUrl = "blog"
+    PageUrl = "blog",
+    PostProcessMarkdown = (serviceProvider, f, s) =>
+    {
+        var roslyn = serviceProvider.GetRequiredService<RoslynHighlighterService>();
+        return (f, roslyn.Highlight(s));
+    } 
 });
 builder.Services.AddRazorComponents();
 builder.Services.AddSingleton<MonorailCssService>();

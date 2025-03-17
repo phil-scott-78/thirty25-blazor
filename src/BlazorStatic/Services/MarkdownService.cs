@@ -8,22 +8,25 @@ using YamlDotNet.Serialization;
 namespace BlazorStatic.Services;
 
 /// <summary>
-/// 
+/// Service for processing Markdown files, including parsing content, extracting front matter,
+/// and converting Markdown to HTML for use in Blazor Static sites.
 /// </summary>
-/// <param name="options"></param>
-/// <param name="logger"></param>
-public class MarkdownService(BlazorStaticOptions options, ILogger<MarkdownService> logger)
+/// <param name="options">Configuration options for BlazorStatic, including Markdown pipeline settings.</param>
+/// <param name="logger">Logger instance for recording warnings and errors during Markdown processing.</param>
+/// <param name="serviceProvider">Service provider for resolving dependencies needed during preprocessing.</param>
+public class MarkdownService(BlazorStaticOptions options, ILogger<MarkdownService> logger, IServiceProvider serviceProvider)
 {
     /// <summary>
-    ///     Parses a markdown file and returns the HTML content.
-    ///     Uses the options.MarkdownPipeline to parse the markdown (set this in BlazorStaticOptions).
+    /// Parses a Markdown file and converts it to HTML.
     /// </summary>
-    /// <param name="filePath"></param>
+    /// <param name="filePath">Path to the Markdown file to be processed.</param>
     /// <param name="mediaPaths">
-    ///     If you need to change media paths of images, do it here.
-    ///     Used in internal parsing method. Translating "media/img.jpg" to "path/configured/by/useStaticFiles/img.jpg"
+    /// Optional tuple containing paths for image reference translation:
+    /// - Item1: Original media path prefix to be replaced (e.g., "media")
+    /// - Item2: New media path prefix (e.g., "path/configured/by/useStaticFiles")
+    /// This enables proper resolution of image references when content is served from a different location.
     /// </param>
-    /// <returns></returns>
+    /// <returns>HTML content generated from the Markdown file.</returns>
     public async Task<string> ParseMarkdownFile(string filePath,
         (string mediaPathToBeReplaced, string mediaPathNew)? mediaPaths = null)
     {
@@ -34,23 +37,37 @@ public class MarkdownService(BlazorStaticOptions options, ILogger<MarkdownServic
     }
 
     /// <summary>
-    ///     Parses a markdown file and returns the HTML content and the front matter.
+    /// Parses a Markdown file, extracts the YAML front matter into a strongly-typed object,
+    /// and converts the remaining content to HTML.
     /// </summary>
-    /// <param name="filePath"></param>
-    /// <param name="mediaPaths"></param>
-    /// <param name="yamlDeserializer"></param>
-    /// <param name="preProcessFile"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public (T frontMattestring, string htmlContent) ParseMarkdownFile<T>(string filePath,
+    /// <typeparam name="T">Type to deserialize the YAML front matter into. Must have a parameterless constructor.</typeparam>
+    /// <param name="filePath">Path to the Markdown file to be processed.</param>
+    /// <param name="mediaPaths">
+    /// Optional tuple for image path translation:
+    /// - Item1: Original media path prefix to be replaced
+    /// - Item2: New media path prefix
+    /// </param>
+    /// <param name="yamlDeserializer">
+    /// Custom YAML deserializer instance. If null, the one from BlazorStaticOptions will be used.
+    /// </param>
+    /// <param name="preProcessFile">
+    /// Optional function to preprocess the Markdown content before parsing.
+    /// Takes the service provider and raw file content as inputs and returns modified content.
+    /// </param>
+    /// <returns>
+    /// Tuple containing:
+    /// - The deserialized front matter of type T
+    /// - The HTML content generated from the Markdown (without the front matter)
+    /// </returns>
+    public (T frontMatter, string htmlContent) ParseMarkdownFile<T>(string filePath,
         (string mediaPathToBeReplaced, string mediaPathNew)? mediaPaths = null,
-        IDeserializer? yamlDeserializer = null, Func<string, string>? preProcessFile = null) where T : new()
+        IDeserializer? yamlDeserializer = null, Func<IServiceProvider, string, string>? preProcessFile = null) where T : new()
     {
         yamlDeserializer ??= options.FrontMatterDeserializer;
         var markdownContent = File.ReadAllText(filePath);
         if (preProcessFile != null)
         {
-            markdownContent = preProcessFile(markdownContent);
+            markdownContent = preProcessFile(serviceProvider, markdownContent);
         }
 
         var document = Markdown.Parse(markdownContent, options.MarkdownPipeline);
@@ -59,7 +76,7 @@ public class MarkdownService(BlazorStaticOptions options, ILogger<MarkdownServic
         T frontMatter;
         if (yamlBlock == null)
         {
-            //logger.LogWarning("No YAML front matter found in {file}. The default one will be used!", file);
+            // No front matter found, create default instance
             frontMatter = new T();
         }
         else
@@ -84,12 +101,23 @@ public class MarkdownService(BlazorStaticOptions options, ILogger<MarkdownServic
         return (frontMatter, htmlContent);
     }
 
-    //replace the image paths in the markdown content with the correct relative path
-    //e.g.: media/img1.jpg => Content/Blog/media/img1.jpg
-    //Look for BlazorStaticContentOptions.MediaFolderRelativeToContentPath, MediaFolderRelativeToContentPath and ContentPath
-    //this way the .md file can be edited with images in folder next to them, like users are used to.
-    private static string ReplaceImagePathsInMarkdown(string markdownContent,
-        (string originalPath, string newPath)? mediaPaths = null)
+    /// <summary>
+    /// Replaces media paths in Markdown content to ensure proper image resolution when content is served.
+    /// Handles both Markdown image syntax ![alt](path) and HTML img tags.
+    /// </summary>
+    /// <param name="markdownContent">The raw Markdown content to process.</param>
+    /// <param name="mediaPaths">
+    /// Optional tuple containing:
+    /// - originalPath: Path prefix to be replaced (e.g., "media")
+    /// - newPath: New path prefix to use instead (e.g., "Content/Blog/media")
+    /// </param>
+    /// <returns>Markdown content with updated image references.</returns>
+    /// <remarks>
+    /// This allows content authors to use relative paths in their Markdown files
+    /// (e.g., "media/img.jpg") while ensuring proper resolution when the content
+    /// is served from a different location in the site structure.
+    /// </remarks>
+    private static string ReplaceImagePathsInMarkdown(string markdownContent, (string originalPath, string newPath)? mediaPaths = null)
     {
         if (mediaPaths == null)
         {
