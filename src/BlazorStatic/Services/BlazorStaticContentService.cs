@@ -110,24 +110,21 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     /// </summary>
     public BlazorStaticContentOptions<TFrontMatter> Options { get; }
 
-
     /// <inheritdoc />
     IEnumerable<PageToGenerate> IBlazorStaticContentService.GetPagesToGenerate()
     {
         // Post pages - one for each blog post
         foreach (var post in Posts)
         {
-            yield return new PageToGenerate(
-                $"{Options.PageUrl}/{post.Url}",
-                Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html"), post.FrontMatter.AsMetadata());
+            var outputFile = Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
+            yield return new PageToGenerate($"{Options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
         }
 
         // Tag pages - one page for each unique tag
         foreach (var tag in AllTags.Values)
         {
-            yield return new PageToGenerate(
-                $"{Options.Tags.TagsPageUrl}/{tag.EncodedName}",
-                Path.Combine(Options.Tags.TagsPageUrl, $"{tag.EncodedName}.html"));
+            var outputFile = Path.Combine(Options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
+            yield return new PageToGenerate($"{Options.Tags.TagsPageUrl}/{tag.EncodedName}", outputFile);
         }
     }
 
@@ -146,7 +143,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     private ImmutableList<Post<TFrontMatter>> ParseAndAddPosts()
     {
         var stopwatch = Stopwatch.StartNew();
-        
+
         var posts = new ConcurrentBag<Post<TFrontMatter>>();
         var (files, absPostPath) = GetPostsPath();
 
@@ -163,8 +160,8 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         {
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent) = _markdownService.ParseMarkdownFile(
-                file, 
-                mediaPaths, 
+                file,
+                mediaPaths,
                 preProcessFile: Options.PreProcessMarkdown,
                 postProcessMarkdown:Options.PostProcessMarkdown
                 );
@@ -191,10 +188,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
             };
             posts.Add(post);
         });
-        
+
         stopwatch.Stop();
         _logger.LogInformation("Posts and tagged rebuilt in {elapsed}", stopwatch.Elapsed);
-
 
         // Log warning if tag processing was expected but not possible
         if (!supportsTags && Options.Tags.AddTagPagesFromPosts)

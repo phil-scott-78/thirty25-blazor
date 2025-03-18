@@ -104,7 +104,6 @@ internal class BlazorStaticService(
         foreach (var pathToCopy in contentToCopy)
         {
             var targetPath = Path.Combine(options.OutputFolderPath, pathToCopy.TargetPath);
-
             logger.LogInformation("Copying {sourcePath} to {targetPath}", pathToCopy.SourcePath, targetPath);
             CopyContent(pathToCopy.SourcePath, targetPath, ignoredPathsWithOutputFolder);
         }
@@ -200,7 +199,13 @@ internal class BlazorStaticService(
 
         foreach (var route in routesToGenerate)
         {
-            yield return new PageToGenerate(route, Path.Combine(route, options.IndexPageHtml));
+            var outputFile = Path.Combine(route, options.IndexPageHtml)!;
+            if (outputFile[0] == '/')
+            {
+                outputFile = outputFile[1..];
+            }
+            
+            yield return new PageToGenerate(route, outputFile);
         }
     }
 

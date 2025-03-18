@@ -85,11 +85,16 @@ internal class RoutesHelperService
                 // FallbackMetadata isn't public, so check by name
                 endpoint.Metadata.All(metadata => metadata.GetType().Name != "FallbackMetadata"))
             .Select(endpoint => endpoint.RoutePattern.RawText!);
-        
 
         foreach (var route in getRoutes)
         {
-            yield return new PageToGenerate(route, route);
+            var outputFile = route;
+            if (outputFile[0] == '/')
+            {
+                outputFile = outputFile[1..];
+            }
+
+            yield return new PageToGenerate(route, outputFile);
         }
     }
 }
