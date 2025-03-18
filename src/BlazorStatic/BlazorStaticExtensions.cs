@@ -68,7 +68,7 @@ public static class BlazorStaticExtensions
         var options = configureOptions.Invoke();
 
         services.AddSingleton(options);
-        services.AddSingleton<BlazorStaticService>();
+        services.AddSingleton<BlazorStaticOutputGenerationService>();
         services.AddSingleton<BlazorStaticFileWatcher>();
         services.AddSingleton<MarkdownService>();
         services.AddSingleton<RoutesHelperService>();
@@ -170,7 +170,7 @@ public static class BlazorStaticExtensions
     /// </remarks>
     public static async Task UseBlazorStaticGenerator(this WebApplication app)
     {
-        var blazorStaticService = app.Services.GetRequiredService<BlazorStaticService>();
+        var blazorStaticService = app.Services.GetRequiredService<BlazorStaticOutputGenerationService>();
         await blazorStaticService.GenerateStaticPages(app.Urls.First());
     }
 
