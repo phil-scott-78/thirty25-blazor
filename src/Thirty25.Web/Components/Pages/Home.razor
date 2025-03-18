@@ -1,9 +1,10 @@
 ﻿@page "/"
+@using BlazorStatic
 @using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
 @inject BlazorStaticContentService<FrontMatter> BlazorStaticContentService
-
+@inject BlazorStaticOptions BlazorStaticOptions
 
 @if (_posts == null)
 {
@@ -12,7 +13,7 @@
 }
 
 <div>
-    <PageHeader Title="Recent Posts">@WebsiteKeys.BlogLead </PageHeader>
+    <PageHeader Title="Recent Posts">@BlazorStaticOptions.BlogDescription</PageHeader>
     <BlogPostsList Posts="_posts"/>
 </div>
 

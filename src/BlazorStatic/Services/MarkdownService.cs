@@ -109,8 +109,7 @@ public class MarkdownService
         {
             // If the cached version is newer than or equal to the file's last modified time
             // and the media paths match, return the cached version
-            if (cachedEntry.LastModified >= fileLastModified && 
-                AreMediaPathsEqual(cachedEntry.MediaPath, mediaPaths))
+            if (cachedEntry.LastModified >= fileLastModified && AreMediaPathsEqual(cachedEntry.MediaPath, mediaPaths))
             {
                 _logger.LogDebug("Using cached version of {filePath}", filePath);
                 return ((T)cachedEntry.FrontMatter, cachedEntry.HtmlContent);
