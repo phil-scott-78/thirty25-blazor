@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using BlazorStatic.Models;
-using BlazorStatic.Services;
 
 namespace BlazorStatic;
 
@@ -144,7 +143,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// This function takes an IServiceProvider and the raw markdown string,
     /// and returns the processed markdown string.
     /// </remarks>
-    public Func<IServiceProvider, string, string> PreProcessMarkdown { get; init; } = (provider, s) => s;
+    public Func<IServiceProvider, string, string> PreProcessMarkdown { get; init; } = (_, s) => s;
 
     /// <summary>
     /// Gets or sets a hook to process the front matter and HTML after markdown parsing but before passing to Razor.
@@ -153,7 +152,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// This function takes an IServiceProvider, the parsed front matter, and the HTML content,
     /// and returns a tuple containing potentially modified versions of both.
     /// </remarks>
-    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } = (provider, frontMatter, html) => (frontMatter, html);
+    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } = (_, frontMatter, html) => (frontMatter, html);
 
     /// <summary>
     /// Gets a list of routes to exclude from static content generation.

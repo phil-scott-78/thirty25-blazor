@@ -1,5 +1,4 @@
-﻿using System.Text;
-using BlazorStatic.Models;
+﻿using BlazorStatic.Models;
 using BlazorStatic.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -204,18 +203,5 @@ public static class BlazorStaticExtensions
         {
             await app.RunAsync();
         }
-    }
-    
-    private static string GetBaseUrl(HttpContext context, BlazorStaticOptions options)
-    {
-        // First, try to get it from options
-        if (!string.IsNullOrEmpty(options.BaseUrl))
-        {
-            return options.BaseUrl;
-        }
-        
-        // Otherwise, derive it from the request
-        var request = context.Request;
-        return $"{request.Scheme}://{request.Host}";
     }
 }

@@ -44,20 +44,22 @@ internal partial class RoslynHighlighterService : IDisposable
             var openingTagEnd = match.Groups[2].Value;
             var codeContent = match.Groups[3].Value;
             var closingTags = match.Groups[4].Value;
-
-            // HTML decode the content to get actual code
-            var decodedContent = HttpUtility.HtmlDecode(codeContent);
-
+           
             // Calculate a hash for the content to use as cache key
-            var contentHash = decodedContent.GetHashCode();
+            var contentHash = codeContent.GetHashCode();
             
-
-            var highlightedCode = Cache.GetOrAdd(contentHash, RunSync(() =>
+            var highlightedCode = Cache.GetOrAdd(contentHash, _ =>
             {
-                return HighlightContent(decodedContent, _project);
-            }));
+                return RunSync(() =>
+                {
+                    // HTML decode the content to get actual code
+                    var decodedContent = HttpUtility.HtmlDecode(codeContent);
+                    return HighlightContent(decodedContent, _project);
+                });
+            });
+
             // Remove language-csharp and replace with language-none so prism.js skips it
-            return openingTagStart + "language-none" + openingTagEnd + highlightedCode + closingTags;
+            return $"{openingTagStart}language-none{openingTagEnd}{highlightedCode}{closingTags}";
         });
 
         return highlighted ? result : htmlCode;

@@ -1,8 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using BlazorStatic.Models;
-using BlazorStatic.Services;
 using Markdig;
 using Markdig.Extensions.Yaml;
 using Markdig.Syntax;
@@ -82,14 +80,22 @@ public class MarkdownService
     /// Optional function to preprocess the Markdown content before parsing.
     /// Takes the service provider and raw file content as inputs and returns modified content.
     /// </param>
+    /// <param name="postProcessMarkdown">
+    /// Optional function to postProcess the Markdown content before parsing.
+    /// Takes the service provider, frotnMatter and HTML content as inputs and returns modified content.
+    /// </param>
     /// <returns>
     /// Tuple containing:
     /// - The deserialized front matter of type T
     /// - The HTML content generated from the Markdown (without the front matter)
     /// </returns>
-    public (T frontMatter, string htmlContent) ParseMarkdownFile<T>(string filePath,
+    public (T frontMatter, string htmlContent) ParseMarkdownFile<T>(
+        string filePath,
         MediaPath? mediaPaths = null,
-        IDeserializer? yamlDeserializer = null, Func<IServiceProvider, string, string>? preProcessFile = null) where T : IFrontMatter, new()
+        IDeserializer? yamlDeserializer = null, 
+        Func<IServiceProvider, string, string>? preProcessFile = null,
+        Func<IServiceProvider, T, string, (T, string)>? postProcessMarkdown = null
+        ) where T : IFrontMatter, new()
     {
         // Check if file exists
         if (!File.Exists(filePath))
@@ -164,6 +170,11 @@ public class MarkdownService
         
         // Replace image paths if needed and convert to HTML
         var htmlContent = Markdown.ToHtml(ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, mediaPaths), _options.MarkdownPipeline);
+
+        if (postProcessMarkdown != null)
+        {
+            (frontMatter, htmlContent) = postProcessMarkdown.Invoke(_serviceProvider, frontMatter, htmlContent);    
+        }
         
         // Store the result in the cache
         MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, htmlContent, mediaPaths);
