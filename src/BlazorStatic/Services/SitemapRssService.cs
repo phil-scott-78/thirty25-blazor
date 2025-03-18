@@ -10,7 +10,7 @@ namespace BlazorStatic.Services;
 /// <summary>
 /// Service for generating sitemap.xml and RSS feed files for a BlazorStatic website.
 /// </summary>
-public class SitemapRssService
+internal class SitemapRssService
 {
     private readonly BlazorStaticOptions _options;
     private readonly IEnumerable<IBlazorStaticContentService> _contentServices;

@@ -33,18 +33,8 @@ app.MapGet("/styles.css", async (MonorailCssService cssService) => Results.Conte
 app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
-app.MapBlazorStaticAssets();
 
-if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
-{
-    await app.StartAsync();
-    await app.UseBlazorStaticGenerator();
-    await app.StopAsync();
-}
-else
-{
-    app.Run();
-}
+await app.RunOrBuildBlazorStaticSite(args);
 
 public static class WebsiteKeys
 {

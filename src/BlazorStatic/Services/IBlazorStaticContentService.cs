@@ -5,7 +5,7 @@ namespace BlazorStatic.Services;
 /// <summary>
 /// The BlazorStaticContentService is responsible for parsing and adding blog posts.
 /// </summary>
-public interface IBlazorStaticContentService
+internal interface IBlazorStaticContentService
 {
     /// <summary>
     ///     Gets the collection of pages that should be generated for this content.

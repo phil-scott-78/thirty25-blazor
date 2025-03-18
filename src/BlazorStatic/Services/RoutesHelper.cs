@@ -15,7 +15,7 @@ namespace BlazorStatic.Services;
 /// This code is adapted from: https://andrewlock.net/finding-all-routable-components-in-a-webassembly-app/
 /// with modifications to support static site generation needs.
 /// </remarks>
-public class RoutesHelperService
+internal class RoutesHelperService
 {
     private readonly EndpointDataSource _endpointDataSource;
 

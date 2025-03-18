@@ -7,92 +7,218 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace BlazorStatic;
 
 /// <summary>
-///     Configuration options for the BlazorStatic static site generation process.
+/// Configuration options for the BlazorStatic static site generation process.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class provides comprehensive configuration for controlling how BlazorStatic
+/// generates static websites from Blazor applications, including output paths,
+/// content processing, and generation behavior.
+/// </para>
+/// </remarks>
 public class BlazorStaticOptions
 {
     /// <summary>
-    /// The title of the blog. 
+    /// Gets or sets the title of the blog or website.
     /// </summary>
+    /// <remarks>
+    /// This value is typically used in page headers, metadata, and navigation elements.
+    /// </remarks>
     public required string BlogTitle { get; init; }
 
     /// <summary>
-    /// The leading or description of the blog.
+    /// Gets or sets the description or tagline of the blog or website.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This value is typically used in page metadata, headers, and in SEO-related contexts
+    /// such as social media previews and search engine results.
+    /// </para>
+    /// </remarks>
     public required string BlogDescription { get; init; }
 
     /// <summary>
-    /// Base URL for the published site (e.g., https://example.com)
-    /// Used for generating absolute URLs in sitemap and RSS feed
+    /// Gets or sets the base URL for the published site.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This value is used for generating absolute URLs in various contexts, including:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item><description>Sitemap.xml generation</description></item>
+    ///     <item><description>RSS/Atom feed URLs</description></item>
+    ///     <item><description>Open Graph and other social media metadata</description></item>
+    ///     <item><description>Canonical URL generation</description></item>
+    /// </list>
+    /// <para>
+    /// Example format: "https://example.com" (without a trailing slash)
+    /// </para>
+    /// </remarks>
     public required string BaseUrl { get; init; } 
     
     /// <summary>
-    ///     Specifies the output directory for generated static files.
-    ///     Path is relative to the project root.
+    /// Gets or sets the output directory path for generated static files.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This path is relative to the project root directory. All generated static content
+    /// will be placed in this directory during the build process.
+    /// </para>
+    /// <para>
+    /// Default value is "output".
+    /// </para>
+    /// </remarks>
     public string OutputFolderPath { get; init; } = "output";
 
     /// <summary>
-    ///     Defines the collection of pages that will be generated as static HTML files.
+    /// Gets or sets the collection of pages that will be generated as static HTML files.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This list allows you to explicitly define which routes should be pre-rendered
+    /// as static HTML files during the build process.
+    /// </para>
+    /// <para>
+    /// For pages with route parameters, you can specify the parameter values to use
+    /// when generating the static HTML.
+    /// </para>
+    /// </remarks>
     public ImmutableList<PageToGenerate> PagesToGenerate { get; init; } = [];
 
     /// <summary>
-    ///     When set to true, automatically includes non-parameterized Razor pages in the generation process.
-    ///     
-    ///     Examples:
-    ///     - Non-parameterized: @page "/about"
-    ///     - Parameterized: @page "/docs/{slug}"
+    /// Gets or sets whether to automatically include non-parameterized Razor pages in the generation process.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set to true, the system will automatically discover and generate static HTML
+    /// for all Razor pages that do not contain route parameters.
+    /// </para>
+    /// <para>
+    /// Examples of page types:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>Non-parameterized (will be included): @page "/about"</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Parameterized (will not be included): @page "/docs/{slug}"</description>
+    ///     </item>
+    /// </list>
+    /// <para>
+    /// Default value is true.
+    /// </para>
+    /// </remarks>
     public bool AddPagesWithoutParameters { get; init; } = true;
 
     /// <summary>
-    ///     Specifies the filename to use for index pages.
-    ///     For example, a route "@page "/blog"" will generate "blog/index.html".
+    /// Gets or sets the filename to use for index pages.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This setting controls the output filename for routes that represent directory indices.
+    /// </para>
+    /// <para>
+    /// For example, with the default value of "index.html":
+    /// </para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>A route "@page "/blog"" will generate a file at "blog/index.html"</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>A route "@page "/blog/about"" will generate a file at "blog/about/index.html"</description>
+    ///     </item>
+    /// </list>
+    /// <para>
+    /// Default value is "index.html".
+    /// </para>
+    /// </remarks>
     public string IndexPageHtml { get; init; } = "index.html";
 
     /// <summary>
-    ///     Specifies paths (files or directories) that should be excluded when copying content to the output folder.
-    ///     
-    ///     Paths are relative to the destination location in the output folder, not the source location.
-    ///     
-    ///     Example:
-    ///     To ignore "wwwroot/app.css" when copying "wwwroot" to the root of the output folder,
-    ///     add "app.css" to this list.
+    /// Gets or sets paths that should be excluded when copying content to the output folder.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This list contains file or directory paths that should be skipped during the content copy process.
+    /// Paths are specified relative to the destination location in the output folder, not the source location.
+    /// </para>
+    /// <para>
+    /// Example:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>
+    ///             To ignore "wwwroot/app.css" when copying "wwwroot" to the root of the output folder,
+    ///             add "app.css" to this list.
+    ///         </description>
+    ///     </item>
+    /// </list>
+    /// </remarks>
     public ImmutableList<string> IgnoredPathsOnContentCopy { get; init; } = [];
 
     /// <summary>
-    ///     Customizes the YAML deserializer used for parsing front matter in markdown files.
-    ///     
-    ///     By default, uses camel case naming convention and ignores unmatched properties.
+    /// Gets or sets the YAML deserializer used for parsing front matter in markdown files.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This deserializer converts YAML front matter sections in markdown files into
+    /// strongly-typed objects for use in templates and rendering.
+    /// </para>
+    /// <para>
+    /// The default configuration:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item><description>Uses camel case naming convention for property mapping</description></item>
+    ///     <item><description>Ignores properties in the YAML that don't have matching class properties</description></item>
+    /// </list>
+    /// <para>
+    /// You can customize this to use different naming conventions or handling strategies.
+    /// </para>
+    /// </remarks>
     public IDeserializer FrontMatterDeserializer { get; init; } = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .IgnoreUnmatchedProperties()
         .Build();
 
     /// <summary>
-    ///     Customizes the Markdown processing pipeline used for parsing markdown files.
-    ///     
-    ///     By default, includes advanced extensions and YAML front matter support.
+    /// Gets or sets the Markdown processing pipeline used for parsing markdown files.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This pipeline defines how markdown content is parsed and transformed into HTML.
+    /// </para>
+    /// <para>
+    /// The default configuration includes:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item><description>Advanced Markdig extensions (tables, footnotes, citations, etc.)</description></item>
+    ///     <item><description>YAML front matter support for metadata extraction</description></item>
+    /// </list>
+    /// <para>
+    /// You can customize this pipeline to add or remove markdown extensions as needed
+    /// for your specific content requirements.
+    /// </para>
+    /// </remarks>
     public MarkdownPipeline MarkdownPipeline { get; init; } = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UseYamlFrontMatter()
         .Build();
 
     /// <summary>
-    ///     Controls whether file change detection and hot-reloading are enabled for the Blazor app.
-    ///     When true, the app will automatically refresh when source files are modified.
+    /// Gets or sets whether file change detection and hot-reloading are enabled.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When true, the application will monitor source files for changes and
+    /// automatically refresh the browser when modifications are detected.
+    /// </para>
+    /// <para>
+    /// This setting primarily affects development experience and has no effect
+    /// on the final static output files.
+    /// </para>
+    /// <para>
+    /// Default value is true.
+    /// </para>
+    /// </remarks>
     public bool HotReloadEnabled { get; init; } = true;
-
-    /// <summary>
-    ///     Registers an asynchronous action to be executed before file generation begins.
-    ///     Multiple actions can be added and will be executed in the order they were registered.
-    /// </summary>
-    public ImmutableList<Func<Task>> BeforeFilesGenerationActions { get; init; } = [];
 }

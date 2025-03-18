@@ -16,7 +16,7 @@ namespace BlazorStatic.Services;
 /// <param name="routeHelper">Service for discovering configured ASP.NET routes.</param>
 /// <param name="options">Configuration options for the static generation process</param>
 /// <param name="logger">Logger for diagnostic output</param>
-public class BlazorStaticService(
+internal class BlazorStaticService(
     IWebHostEnvironment environment,
     IEnumerable<IBlazorStaticContentService> contentPostServiceCollection,
     RoutesHelperService routeHelper,
@@ -24,22 +24,41 @@ public class BlazorStaticService(
     ILogger<BlazorStaticService> logger)
 {
     /// <summary>
-    ///     Generates static HTML pages for the Blazor application.
+    /// Generates static HTML pages for the Blazor application.
     /// </summary>
     /// <param name="appUrl">The base URL of the running Blazor application, used for making HTTP requests to fetch page content</param>
     /// <returns>A task representing the asynchronous operation</returns>
     /// <exception cref="InvalidOperationException">Thrown when no pages are available to generate</exception>
     /// <remarks>
-    ///     This method performs several key operations:
-    ///     1. Collects pages to generate from all registered content services
-    ///     2. Optionally adds routes registered via MapGet based on configuration
-    ///     3. Optionally adds non-parametrized Razor pages based on configuration
-    ///     4. Executes any pre-generation actions defined in options
-    ///     5. Clears and recreates the output directory
-    ///     6. Generates a sitemap.xml file if configured
-    ///     7. Copies static content (wwwroot files, etc.) to the output directory
-    ///     8. Renders each page by making HTTP requests to the running application
-    ///     9. Saves each page as a static HTML file in the output directory
+    /// <para>
+    /// This method performs several key operations to generate static HTML files from a running Blazor application.
+    /// </para>
+    /// <list type="number">
+    ///     <item>
+    ///         <description>Collects pages to generate from all registered content services</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Optionally adds routes registered via MapGet based on configuration</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Optionally adds non-parametrized Razor pages based on configuration</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Clears and recreates the output directory</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Generates a sitemap.xml file if configured</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Copies static content (wwwroot files, etc.) to the output directory</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Renders each page by making HTTP requests to the running application</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Saves each page as a static HTML file in the output directory</description>
+    ///     </item>
+    /// </list>
     /// </remarks>
     internal async Task GenerateStaticPages(string appUrl)
     {
@@ -54,12 +73,6 @@ public class BlazorStaticService(
         if (options.AddPagesWithoutParameters)
         {
             pagesToGenerate = pagesToGenerate.AddRange(GetPagesWithoutParameters());
-        }
-        
-        // Execute pre-generation actions
-        foreach (var action in options.BeforeFilesGenerationActions)
-        {
-            await action.Invoke();
         }
 
         // Clear and recreate output directory
@@ -125,8 +138,6 @@ public class BlazorStaticService(
             await File.WriteAllTextAsync(outFilePath, content);
         }
     }
-
-    
 
     /// <summary>
     ///     Recursively collects all static web assets (files in wwwroot) that should be copied to the output directory.

@@ -116,7 +116,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
 
 
     /// <inheritdoc />
-    public IEnumerable<PageToGenerate> GetPagesToGenerate()
+    IEnumerable<PageToGenerate> IBlazorStaticContentService.GetPagesToGenerate()
     {
         // Post pages - one for each blog post
         foreach (var post in Posts)
@@ -136,7 +136,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     }
 
     /// <inheritdoc />
-    public IEnumerable<ContentToCopy> GetContentToCopy()
+    IEnumerable<ContentToCopy> IBlazorStaticContentService.GetContentToCopy()
     {
         if (Options.MediaFolderRelativeToContentPath == null)
         {
@@ -147,22 +147,6 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         yield return new ContentToCopy(pathWithMedia, pathWithMedia);
     }
 
-    /// <summary>
-    ///     Parses markdown files and creates Post objects for each valid file found.
-    ///     Extracts front matter, renders HTML content, and processes tags.
-    /// </summary>
-    /// <returns>
-    ///     An immutable list of Post objects representing all non-draft posts.
-    /// </returns>
-    /// <remarks>
-    ///     This method handles several key operations:
-    ///     1. Finds all markdown files in the configured content path
-    ///     2. Parses each file to extract front matter and convert content to HTML
-    ///     3. Skips draft posts based on the IsDraft property of the front matter
-    ///     4. Processes tags if the front matter implements IFrontMatterWithTags
-    ///     5. Builds a collection of Post objects with all required information
-    ///     6. Updates the AllTags dictionary with unique tags
-    /// </remarks>
     private ImmutableList<Post<TFrontMatter>> ParseAndAddPosts()
     {
         var stopwatch = Stopwatch.StartNew();
@@ -171,9 +155,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         var (files, absPostPath) = GetPostsPath();
 
         // Configure media paths if both source and request paths are provided
-        (string, string)? mediaPaths =
+        var mediaPaths =
             Options is { MediaFolderRelativeToContentPath: not null, MediaRequestPath: not null }
-                ? (Options.MediaFolderRelativeToContentPath, Options.MediaRequestPath)
+                ? new MediaPath(Options.MediaFolderRelativeToContentPath, Options.MediaRequestPath)
                 : null;
 
         // Determine if front matter supports tags

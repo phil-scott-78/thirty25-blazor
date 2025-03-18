@@ -4,128 +4,219 @@ using BlazorStatic.Services;
 
 namespace BlazorStatic;
 
+/// <summary>
+/// Defines the contract for Blazor Static content configuration options.
+/// </summary>
 internal interface IBlazorStaticContentOptions
 {
+    /// <summary>
+    /// Gets the path where content files are stored.
+    /// </summary>
     string ContentPath { get; init; }
+    
+    /// <summary>
+    /// Gets the relative path to the media folder from the content path.
+    /// </summary>
     string? MediaFolderRelativeToContentPath { get; init; }
+    
+    /// <summary>
+    /// Gets the request path for media files.
+    /// </summary>
     string? MediaRequestPath { get; }
+    
+    /// <summary>
+    /// Gets the file pattern used to identify post files.
+    /// </summary>
     string PostFilePattern { get; init; }
+    
+    /// <summary>
+    /// Gets the URL path component for the page that displays content.
+    /// </summary>
     string PageUrl { get; init; }
+    
+    /// <summary>
+    /// Gets the configuration options for tags.
+    /// </summary>
     TagsOptions Tags { get; init; }
-    void CheckOptions();
 }
 
 /// <summary>
-/// Options for configuring processing of md files with front matter.
+/// Provides configuration options for processing markdown files with front matter in Blazor Static sites.
 /// </summary>
-/// <typeparam name="TFrontMatter">Any front matter type that inherits from IFrontMatter </typeparam>
+/// <typeparam name="TFrontMatter">The type that represents the front matter data. Must implement IFrontMatter.</typeparam>
+/// <remarks>
+/// <para>
+/// This class defines how markdown content files are processed, where they're located,
+/// and how they're transformed before being rendered by Blazor components.
+/// </para>
+/// <para>
+/// The configuration includes paths for content and media files, processing hooks for
+/// both the markdown and the resulting HTML, and settings for tag-based navigation.
+/// </para>
+/// </remarks>
 public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOptions where TFrontMatter : class, IFrontMatter, new()
 {
     /// <summary>
-    /// Folder relative to project root where posts are stored.
-    /// Don't forget to copy the content to bin folder (use CopyToOutputDirectory in .csproj),
-    /// because that's where the app will look for the files.
-    /// Default is Content/Blog where posts are stored.
+    /// Gets or sets the folder path relative to the project root where content files are stored.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This path should be included in your build output. Configure your .csproj file
+    /// to use CopyToOutputDirectory for these files, as the application will look for them
+    /// in the bin folder at runtime.
+    /// </para>
+    /// <para>
+    /// Default value is "Content/Blog".
+    /// </para>
+    /// </remarks>
     public string ContentPath { get; init; } = Path.Combine("Content", "Blog");
 
     /// <summary>
-    /// Folder in ContentPath where media files are stored.
-    /// Important for app.UseStaticFiles targeting the correct folder.
-    /// Null in case of no media folder.
-    /// Default is "media"
+    /// Gets or sets the folder path within ContentPath where media files are stored.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This setting is important for configuring app.UseStaticFiles() to target the correct folder.
+    /// </para>
+    /// <para>
+    /// Set to null if no media folder is used. Default value is "media".
+    /// </para>
+    /// </remarks>
     public string? MediaFolderRelativeToContentPath { get; init; } = Path.Combine( "media" );
 
     /// <summary>
-    /// URL path for media files for posts.
-    /// Used in app.UseStaticFiles to target the correct folder
-    /// and in ParseAndAddPosts to generate correct URLs for images.
-    /// Changes ![alt](media/image.png) to ![alt](Content/Blog/media/image.png).
-    /// Leading slash / is necessary for RequestPath in app.UseStaticFiles,
-    /// and is removed in ParseAndAddPosts. Null in case of no media.
+    /// Gets the URL path for media files associated with posts.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This path is used in two ways:
+    /// </para>
+    /// <list type="bullet">
+    ///     <item>
+    ///         <description>In app.UseStaticFiles() to target the correct folder for serving media.</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             In ParseAndAddPosts to transform relative image paths in markdown.
+    ///             For example, ![alt](media/image.png) becomes ![alt](Content/Blog/media/image.png).
+    ///         </description>
+    ///     </item>
+    /// </list>
+    /// <para>
+    /// A leading slash is necessary for RequestPath in app.UseStaticFiles(),
+    /// and is automatically removed in ParseAndAddPosts. Returns null if MediaFolderRelativeToContentPath is null.
+    /// </para>
+    /// </remarks>
     public string? MediaRequestPath  => MediaFolderRelativeToContentPath is null
         ? null
         : Path.Combine(ContentPath, MediaFolderRelativeToContentPath).Replace(@"\", "/");
 
     /// <summary>
-    /// Pattern for blog post files in ContentPath.
-    /// Default is
+    /// Gets or sets the file pattern used to identify content files in the ContentPath.
     /// </summary>
+    /// <remarks>
+    /// Default value is "*.md" to match all markdown files.
+    /// </remarks>
     public string PostFilePattern { get; init; } = "*.md";
 
     /// <summary>
-    /// Should correspond to page that keeps the list of content.
-    /// For example: @page "/blog" -> PageUrl="blog".
-    /// This also serves as a generated folder name for the content.
-    /// Useful for avoiding magic strings in .razor files.
-    /// Default is "blog".
+    /// Gets or sets the URL path component for the page that displays the content.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This value should correspond to the route specified in your Blazor page.
+    /// For example, if your page is defined with @page "/blog", set PageUrl to "blog".
+    /// </para>
+    /// <para>
+    /// This value also serves as the generated folder name for static content.
+    /// Using this property in code helps avoid magic strings in .razor files.
+    /// </para>
+    /// <para>
+    /// Default value is "blog".
+    /// </para>
+    /// </remarks>
     public string PageUrl { get; init; } = "blog";
 
     /// <summary>
-    /// Action to run after content is parsed and added to the collection.
-    /// Useful for editing data in the posts, such as changing image paths.
+    /// Gets or sets a hook to process markdown content before it is rendered as HTML.
     /// </summary>
-    public Action<BlazorStaticService, BlazorStaticContentService<TFrontMatter>>? AfterContentParsedAndAddedAction { get; set; }
-
-    /// <summary>
-    /// Gets or sets a hook to process the markdown files before they are rendered as HTML.
-    /// </summary>
+    /// <remarks>
+    /// This function takes an IServiceProvider and the raw markdown string,
+    /// and returns the processed markdown string.
+    /// </remarks>
     public Func<IServiceProvider, string, string> PreProcessMarkdown { get; init; } = (provider, s) => s;
 
     /// <summary>
-    /// Gets or sets a hook to process the front matter and html after markdown parsing and before it is passed to Razor.
+    /// Gets or sets a hook to process the front matter and HTML after markdown parsing but before passing to Razor.
     /// </summary>
+    /// <remarks>
+    /// This function takes an IServiceProvider, the parsed front matter, and the HTML content,
+    /// and returns a tuple containing potentially modified versions of both.
+    /// </remarks>
     public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } = (provider, frontMatter, html) => (frontMatter, html);
 
     /// <summary>
-    /// Gets a list of excluded mapped routes from static content generation.
+    /// Gets a list of routes to exclude from static content generation.
     /// </summary>
+    /// <remarks>
+    /// Routes specified here will not be included in the generated static output.
+    /// </remarks>
     public ImmutableList<string> ExcludeMapRoutes { get; init; } = [];
 
     /// <summary>
-    /// Validates the configuration properties to ensure required fields are set correctly.
-    /// This validation is run when registering the service.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <see cref="ContentPath"/> or <see cref="PageUrl"/> are null or empty.
-    /// </exception>
-    public void CheckOptions()
-    {
-        if (string.IsNullOrWhiteSpace(ContentPath))
-            throw new InvalidOperationException("ContentPath must be set and cannot be null or empty.");
-
-        if (string.IsNullOrWhiteSpace(PageUrl))
-            throw new InvalidOperationException("PageUrl must be set and cannot be null or empty.");
-    }
-
-    /// <summary>
-    /// Options related to tags
+    /// Gets or sets the options related to tag functionality.
     /// </summary>
     public TagsOptions Tags { get; init; } = new();
 }
 
 /// <summary>
-/// Options related to tags
+/// Provides configuration options for tag-based content navigation.
 /// </summary>
+/// <remarks>
+/// Controls how tags are processed, displayed, and linked throughout the site.
+/// </remarks>
 public class TagsOptions
 {
     /// <summary>
-    ///     tag pages will be generated from all tags found in blog posts
+    /// Gets or sets whether tag pages should be automatically generated from tags found in blog posts.
     /// </summary>
-    public bool AddTagPagesFromPosts { get; set; } = true;
+    /// <remarks>
+    /// When true, the system will create dedicated pages for each unique tag found across all posts.
+    /// Default value is true.
+    /// </remarks>
+    public bool AddTagPagesFromPosts { get; init; } = true;
+    
     /// <summary>
-    ///     Should correspond to @page "/tags" (here in relative path: "tags")
-    ///     Useful for avoiding magic strings in .razor files
+    /// Gets or sets the URL path component for the page that displays all tags.
     /// </summary>
-    public string TagsPageUrl { get; set; } = "tags";
+    /// <remarks>
+    /// <para>
+    /// This value should correspond to the route specified in your Blazor page.
+    /// For example, if your tags page is defined with @page "/tags", set TagsPageUrl to "tags".
+    /// </para>
+    /// <para>
+    /// Using this property in code helps avoid magic strings in .razor files.
+    /// </para>
+    /// <para>
+    /// Default value is "tags".
+    /// </para>
+    /// </remarks>
+    public string TagsPageUrl { get; init; } = "tags";
 
     /// <summary>
-    /// Func to convert tag string to file-name/url.
-    /// Also don't forget to use the same encoder while creating tag links
+    /// Gets or sets the function used to encode tag strings into URL-friendly formats.
     /// </summary>
-    public Func<string, string> TagEncodeFunc { get; set; } = s => s.Slugify();
-
+    /// <remarks>
+    /// <para>
+    /// This function transforms a raw tag string into a format suitable for use in URLs and filenames.
+    /// </para>
+    /// <para>
+    /// Important: The same encoding function must be used consistently when creating tag links
+    /// throughout the application to ensure proper navigation.
+    /// </para>
+    /// <para>
+    /// Default implementation uses the Slugify() extension method to create URL-friendly strings.
+    /// </para>
+    /// </remarks>
+    public Func<string, string> TagEncodeFunc { get; init; } = s => s.Slugify();
 }

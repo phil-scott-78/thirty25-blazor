@@ -23,19 +23,19 @@ public static class BlazorStaticExtensions
     /// <param name="configureOptions">Optional action to customize the content service options. If not provided, default blog settings are used.</param>
     /// <returns>The updated service collection for method chaining.</returns>
     /// <remarks>
-    /// This method registers both concrete and interface implementations of the content service:
-    /// - BlazorStaticContentService&lt;TFrontMatter&gt; as a concrete implementation
-    /// - IContentPostService for general content post access
-    /// - IBlazorStaticContentOptions for configuration access
-    /// 
-    /// The service handles parsing, loading, and providing content with the specified front matter format.
+    /// <para>This method registers both concrete and interface implementations of the content service:</para>
+    /// <list type="bullet">
+    ///     <item><description>BlazorStaticContentService&lt;TFrontMatter&gt; as a concrete implementation</description></item>
+    ///     <item><description>IContentPostService for general content post access</description></item>
+    ///     <item><description>IBlazorStaticContentOptions for configuration access</description></item>
+    /// </list>
+    /// <para>The service handles parsing, loading, and providing content with the specified front matter format.</para>
     /// </remarks>
     public static IServiceCollection AddBlazorStaticContentService<TFrontMatter>(this IServiceCollection services,
         Func<BlazorStaticContentOptions<TFrontMatter>>? configureOptions = null)
         where TFrontMatter : class, IFrontMatter, new()
     {
         var options = configureOptions?.Invoke() ?? new BlazorStaticContentOptions<TFrontMatter>();
-        options.CheckOptions();
 
         services.AddSingleton(options);
         services.AddSingleton<BlazorStaticContentService<TFrontMatter>>();
@@ -54,13 +54,14 @@ public static class BlazorStaticExtensions
     /// <param name="configureOptions">Optional action to customize the static generation process.</param>
     /// <returns>The updated service collection for method chaining.</returns>
     /// <remarks>
-    /// This method registers several essential services for static site generation:
-    /// - BlazorStaticHelpers for utility functions
-    /// - BlazorStaticOptions for configuration
-    /// - BlazorStaticService for the main generation process
-    /// - BlazorStaticFileWatcher for monitoring file changes
-    /// 
-    /// Use this method in conjunction with UseBlazorStaticGenerator to complete the static site generation process.
+    /// <para>This method registers several essential services for static site generation:</para>
+    /// <list type="bullet">
+    ///     <item><description>BlazorStaticHelpers for utility functions</description></item>
+    ///     <item><description>BlazorStaticOptions for configuration</description></item>
+    ///     <item><description>BlazorStaticService for the main generation process</description></item>
+    ///     <item><description>BlazorStaticFileWatcher for monitoring file changes</description></item>
+    /// </list>
+    /// <para>Use this method in conjunction with UseBlazorStaticGenerator to complete the static site generation process.</para>
     /// </remarks>
     public static IServiceCollection AddBlazorStaticService(this IServiceCollection services,
         Func<BlazorStaticOptions> configureOptions)
@@ -81,14 +82,14 @@ public static class BlazorStaticExtensions
     /// </summary>
     /// <param name="app">The web application.</param>
     /// <remarks>
-    /// This method scans all registered IBlazorStaticContentOptions instances and sets up static file serving
-    /// for any configured media paths. For each valid configuration:
-    /// 
-    /// 1. Constructs a web-accessible request path from the MediaRequestPath
-    /// 2. Maps the physical media folder (ContentPath + MediaFolderRelativeToContentPath) to this request path
-    /// 3. Logs a warning if the configured media folder doesn't exist
-    /// 
-    /// This enables serving media files (images, documents, etc.) associated with your static content.
+    /// <para>This method scans all registered IBlazorStaticContentOptions instances and sets up static file serving
+    /// for any configured media paths. For each valid configuration:</para>
+    /// <list type="number">
+    ///     <item><description>Constructs a web-accessible request path from the MediaRequestPath</description></item>
+    ///     <item><description>Maps the physical media folder (ContentPath + MediaFolderRelativeToContentPath) to this request path</description></item>
+    ///     <item><description>Logs a warning if the configured media folder doesn't exist</description></item>
+    /// </list>
+    /// <para>This enables serving media files (images, documents, etc.) associated with your static content.</para>
     /// </remarks>
     public static void MapBlazorStaticAssets(this WebApplication app)
     {
@@ -159,19 +160,50 @@ public static class BlazorStaticExtensions
     /// <param name="app">The web application.</param>
     /// <returns>A Task representing the asynchronous generation operation.</returns>
     /// <remarks>
-    /// This method performs the complete static generation process:
-    /// 
-    /// 1. Loads and parses all content from registered content services
-    /// 2. Copies static web assets (from wwwroot and other static sources) to the output
-    /// 3. Renders and saves all application routes as static HTML
-    /// 
-    /// Call this method after configuring all required BlazorStatic services and during application startup.
-    /// The generation uses the first URL from the application's configured URLs list as the base address.
+    /// <para>This method performs the complete static generation process:</para>
+    /// <list type="number">
+    ///     <item><description>Loads and parses all content from registered content services</description></item>
+    ///     <item><description>Copies static web assets (from wwwroot and other static sources) to the output</description></item>
+    ///     <item><description>Renders and saves all application routes as static HTML</description></item>
+    /// </list>
+    /// <para>Call this method after configuring all required BlazorStatic services and during application startup.
+    /// The generation uses the first URL from the application's configured URLs list as the base address.</para>
     /// </remarks>
     public static async Task UseBlazorStaticGenerator(this WebApplication app)
     {
         var blazorStaticService = app.Services.GetRequiredService<BlazorStaticService>();
         await blazorStaticService.GenerateStaticPages(app.Urls.First());
+    }
+
+    /// <summary>
+    /// Conditionally runs the application or generates a static build based on command-line arguments.
+    /// </summary>
+    /// <param name="app">The web application.</param>
+    /// <param name="args">Command-line arguments passed to the application.</param>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// <para>This method provides a convenient way to toggle between development and build modes:</para>
+    /// <list type="bullet">
+    ///     <item><description>If the first argument is "build" (case-insensitive), the application starts, generates
+    ///     static files using <see cref="UseBlazorStaticGenerator"/>, and then stops</description></item>
+    ///     <item><description>Otherwise, the application runs normally with <see cref="WebApplication.RunAsync" /></description></item>
+    /// </list>
+    /// <para>In both scenarios, <see cref="MapBlazorStaticAssets"/> is called to configure static asset serving.</para>
+    /// </remarks>
+    public static async Task RunOrBuildBlazorStaticSite(this WebApplication app, string[] args)
+    {
+        app.MapBlazorStaticAssets();
+
+        if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
+        {
+            await app.StartAsync();
+            await app.UseBlazorStaticGenerator();
+            await app.StopAsync();
+        }
+        else
+        {
+            await app.RunAsync();
+        }
     }
     
     private static string GetBaseUrl(HttpContext context, BlazorStaticOptions options)
