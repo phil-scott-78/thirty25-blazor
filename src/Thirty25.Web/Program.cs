@@ -1,7 +1,8 @@
 using BlazorStatic;
-using BlazorStatic.Models;
 using Thirty25.Web;
 using Thirty25.Web.Components;
+using MonorailCssService = Thirty25.Web.BlogServices.MonorailCssService;
+using RoslynHighlighterService = Thirty25.Web.BlogServices.RoslynHighlighterService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +12,8 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions()
 {
     BlogTitle = "Thirty25",
     BlogDescription = "Quite exciting this computer magic",
-    BaseUrl = "https://thirty25.com",
+    BaseUrl = "https://thirty25.blog",
     HotReloadEnabled = true,
-    PagesToGenerate = [new PageToGenerate("/styles.css", "styles.css")]
 });
 builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>()
 {

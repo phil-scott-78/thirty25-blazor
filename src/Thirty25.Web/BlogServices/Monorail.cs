@@ -5,7 +5,7 @@ using MonorailCss.Css;
 using MonorailCss.Plugins;
 using MonorailCss.Plugins.Prose;
 
-namespace Thirty25.Web;
+namespace Thirty25.Web.BlogServices;
 
 internal partial class MonorailCssService(IWebHostEnvironment env)
 {

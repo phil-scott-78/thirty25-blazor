@@ -102,7 +102,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     /// </remarks>
     public ImmutableDictionary<string, Tag> AllTags => Posts
             .SelectMany(post => post.Tags)
-            .DistinctBy(tag => tag.Name)
+            .DistinctBy(tag => tag.EncodedName)
             .ToImmutableDictionary(tag => tag.Name);
 
     /// <summary>
@@ -119,7 +119,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         {
             yield return new PageToGenerate(
                 $"{Options.PageUrl}/{post.Url}",
-                Path.Combine(Options.PageUrl, $"{post.Url}.html"), post.FrontMatter.AsMetadata());
+                Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html"), post.FrontMatter.AsMetadata());
         }
 
         // Tag pages - one page for each unique tag

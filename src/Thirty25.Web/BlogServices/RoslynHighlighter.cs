@@ -6,13 +6,13 @@ using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
-using Thirty25.Web;
+using RoslynHighlighterService = Thirty25.Web.BlogServices.RoslynHighlighterService;
 
 // this will give the highlighter service a callback to the ClearCache method
 // during any compilations that occur that would require the cache being cleared.
 [assembly: MetadataUpdateHandler(typeof(RoslynHighlighterService))]
 
-namespace Thirty25.Web;
+namespace Thirty25.Web.BlogServices;
 
 internal partial class RoslynHighlighterService : IDisposable
 {
