@@ -13,11 +13,12 @@ namespace BlazorStatic.Services;
 /// Service for parsing and processing Markdown files with YAML front matter.
 /// Provides caching, HTML conversion, and image path transformation capabilities.
 /// </summary>
-public partial class MarkdownService
+public partial class MarkdownService: IDisposable
 {
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly BlazorStaticOptions _options;
+    private bool _disposed;
 
     // Cache to store processed markdown files
     private static readonly ConcurrentDictionary<string, CachedMarkdownEntry> MarkdownCache = new();
@@ -344,4 +345,27 @@ public partial class MarkdownService
 
     [GeneratedRegex(@"(?<!!)\[([^\]]*)\]\(([^)]+)\)")]
     private static partial Regex LinkRegex();
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
+        {
+            HotReloadManager.Unsubscribe(ClearCache);
+        }
+
+        _disposed = true;
+    }
+
+    ~MarkdownService()
+    {
+        Dispose(false);
+    }
 }

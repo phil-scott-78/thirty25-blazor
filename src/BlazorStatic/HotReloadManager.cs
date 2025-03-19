@@ -20,6 +20,11 @@ internal sealed class HotReloadManager
         UpdateCallbacks.Add(action);
     }
 
+    public static void Unsubscribe(Action action)
+    {
+        UpdateCallbacks.Remove(action);
+    }
+
     /// <summary>
     ///     Raises the Update event.
     /// </summary>

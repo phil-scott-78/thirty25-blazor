@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 ///     The type of front matter metadata used in content files.
 ///     Must implement IFrontMatter and have a parameterless constructor.
 /// </typeparam>
-public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentService
+public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentService, IDisposable
     where TFrontMatter : class, IFrontMatter, new()
 {
     private bool _needsRefresh = true;
@@ -23,6 +23,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     private readonly MarkdownService _markdownService;
     private readonly ILogger<BlazorStaticContentService<TFrontMatter>> _logger;
     private readonly Lock _postPostsLock = new Lock();
+    private bool _disposed;
 
     /// <summary>
     ///     Initializes a new instance of the BlazorStaticContentService.
@@ -45,6 +46,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         Options = options;
         _markdownService = markdownService;
         _logger = logger;
+
+        blazorStaticFileWatcher.Initialize([options.ContentPath], NeedsRefresh);
+        HotReloadManager.Subscribe(NeedsRefresh);
     }
 
     /// <summary>
@@ -95,9 +99,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     ///     which is referenced by all posts that use that tag.
     /// </remarks>
     public ImmutableDictionary<string, Tag> AllTags => Posts
-            .SelectMany(post => post.Tags)
-            .DistinctBy(tag => tag.EncodedName)
-            .ToImmutableDictionary(tag => tag.Name);
+        .SelectMany(post => post.Tags)
+        .DistinctBy(tag => tag.EncodedName)
+        .ToImmutableDictionary(tag => tag.Name);
 
     /// <summary>
     ///     Gets the configuration options used by this content service.
@@ -110,7 +114,8 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         // Post pages - one for each blog post
         foreach (var post in Posts)
         {
-            var outputFile = Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
+            var outputFile =
+                Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
             yield return new PageToGenerate($"{Options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
         }
 
@@ -146,8 +151,8 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
                 Options.ContentPath,
                 Options.PageUrl,
                 preProcessFile: Options.PreProcessMarkdown,
-                postProcessMarkdown:Options.PostProcessMarkdown
-                );
+                postProcessMarkdown: Options.PostProcessMarkdown
+            );
 
             // Skip draft posts
             if (frontMatter.IsDraft)
@@ -216,5 +221,30 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         // Get all files matching the pattern and return with the content path
         return (Directory.GetFiles(Options.ContentPath, Options.PostFilePattern, enumerationOptions),
             Options.ContentPath);
+    }
+
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
+        {
+            _markdownService.Dispose();
+            HotReloadManager.Unsubscribe(NeedsRefresh);
+        }
+
+        _disposed = true;
+    }
+
+    ~BlazorStaticContentService()
+    {
+        Dispose(false);
     }
 }
