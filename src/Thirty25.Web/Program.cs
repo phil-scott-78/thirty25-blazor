@@ -1,4 +1,5 @@
 using BlazorStatic;
+using Microsoft.AspNetCore.ResponseCompression;
 using Thirty25.Web;
 using Thirty25.Web.BlogServices;
 using Thirty25.Web.Components;
