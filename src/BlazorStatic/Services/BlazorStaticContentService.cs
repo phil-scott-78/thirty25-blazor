@@ -243,6 +243,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         _disposed = true;
     }
 
+    /// <summary>
+    /// Finalizer for the <see cref="BlazorStaticContentService{TFrontMatter}"/> class.
+    /// </summary>
     ~BlazorStaticContentService()
     {
         Dispose(false);

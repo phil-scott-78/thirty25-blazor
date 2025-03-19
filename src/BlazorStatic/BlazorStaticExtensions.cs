@@ -19,7 +19,7 @@ public static class BlazorStaticExtensions
     /// </summary>
     /// <typeparam name="TFrontMatter">The type used for post metadata. Must implement IFrontMatter.</typeparam>
     /// <param name="services">The application's service collection.</param>
-    /// <param name="configureOptions">Optional action to customize the content service options. If not provided, default blog settings are used.</param>
+    /// <param name="configureOptions">Action to customize the content service options.</param>
     /// <returns>The updated service collection for method chaining.</returns>
     /// <remarks>
     /// <para>This method registers both concrete and interface implementations of the content service:</para>
@@ -31,10 +31,10 @@ public static class BlazorStaticExtensions
     /// <para>The service handles parsing, loading, and providing content with the specified front matter format.</para>
     /// </remarks>
     public static IServiceCollection AddBlazorStaticContentService<TFrontMatter>(this IServiceCollection services,
-        Func<BlazorStaticContentOptions<TFrontMatter>>? configureOptions = null)
+        Func<BlazorStaticContentOptions<TFrontMatter>> configureOptions)
         where TFrontMatter : class, IFrontMatter, new()
     {
-        var options = configureOptions?.Invoke() ?? new BlazorStaticContentOptions<TFrontMatter>();
+        var options = configureOptions.Invoke();
 
         services.AddSingleton(options);
         services.AddSingleton<BlazorStaticContentService<TFrontMatter>>();

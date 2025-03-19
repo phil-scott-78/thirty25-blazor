@@ -93,7 +93,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// <remarks>
     /// Routes specified here will not be included in the generated static output.
     /// </remarks>
-    public ImmutableList<string> ExcludeMapRoutes { get; init; } = [];
+    public ImmutableList<string> ExcludedMapRoutes { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the options related to tag functionality.

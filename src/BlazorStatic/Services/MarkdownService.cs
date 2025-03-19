@@ -364,6 +364,9 @@ public partial class MarkdownService: IDisposable
         _disposed = true;
     }
 
+    /// <summary>
+    /// Finalizer for the <see cref="MarkdownService"/> class.
+    /// </summary>
     ~MarkdownService()
     {
         Dispose(false);
