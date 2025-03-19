@@ -10,22 +10,15 @@ using YamlDotNet.Serialization;
 namespace BlazorStatic.Services;
 
 /// <summary>
-/// Record to represent a media path transformation for images in markdown content
-/// </summary>
-/// <param name="MediaPathToBeReplaced">The original path prefix to be replaced</param>
-/// <param name="MediaPathNew">The new path prefix to use instead</param>
-public record MediaPath(string MediaPathToBeReplaced, string MediaPathNew);
-
-/// <summary>
 /// Service for parsing and processing Markdown files with YAML front matter.
 /// Provides caching, HTML conversion, and image path transformation capabilities.
 /// </summary>
-public class MarkdownService
+public partial class MarkdownService
 {
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly BlazorStaticOptions _options;
-    
+
     // Cache to store processed markdown files
     private static readonly ConcurrentDictionary<string, CachedMarkdownEntry> MarkdownCache = new();
 
@@ -44,8 +37,7 @@ public class MarkdownService
     private record CachedMarkdownEntry(
         DateTime LastModified,
         IFrontMatter FrontMatter,
-        string HtmlContent,
-        MediaPath? MediaPath);
+        string HtmlContent);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MarkdownService"/> class.
@@ -53,12 +45,13 @@ public class MarkdownService
     /// <param name="logger">Logger for recording operational information</param>
     /// <param name="serviceProvider">Service provider for dependency resolution</param>
     /// <param name="options">Options for configuring the markdown processing behavior</param>
-    public MarkdownService(ILogger<MarkdownService> logger, IServiceProvider serviceProvider, BlazorStaticOptions options)
+    public MarkdownService(ILogger<MarkdownService> logger, IServiceProvider serviceProvider,
+        BlazorStaticOptions options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
         _options = options;
-        
+
         HotReloadManager.Subscribe(ClearCache);
     }
 
@@ -68,11 +61,8 @@ public class MarkdownService
     /// </summary>
     /// <typeparam name="T">Type to deserialize the YAML front matter into. Must have a parameterless constructor.</typeparam>
     /// <param name="filePath">Path to the Markdown file to be processed.</param>
-    /// <param name="mediaPaths">
-    /// Optional media path transformations for image references:
-    /// - MediaPathToBeReplaced: Original media path prefix to be replaced
-    /// - MediaPathNew: New media path prefix to use instead
-    /// </param>
+    /// <param name="contentPathRoot">The root of the content for this markdown file.</param>
+    /// <param name="pageUrlRoot">The url root for this Markdown file.</param>
     /// <param name="yamlDeserializer">
     /// Custom YAML deserializer instance. If null, the one from BlazorStaticOptions will be used.
     /// </param>
@@ -91,11 +81,12 @@ public class MarkdownService
     /// </returns>
     public (T frontMatter, string htmlContent) ParseMarkdownFile<T>(
         string filePath,
-        MediaPath? mediaPaths = null,
-        IDeserializer? yamlDeserializer = null, 
+        string contentPathRoot,
+        string pageUrlRoot,
+        IDeserializer? yamlDeserializer = null,
         Func<IServiceProvider, string, string>? preProcessFile = null,
         Func<IServiceProvider, T, string, (T, string)>? postProcessMarkdown = null
-        ) where T : IFrontMatter, new()
+    ) where T : IFrontMatter, new()
     {
         // Check if file exists
         if (!File.Exists(filePath))
@@ -106,28 +97,28 @@ public class MarkdownService
 
         // Get file's last write time
         var fileLastModified = File.GetLastWriteTime(filePath);
-        
+
         // Create a cache key that includes the file path and media paths
-        var cacheKey = $"{filePath}_{mediaPaths?.MediaPathToBeReplaced ?? "null"}_{mediaPaths?.MediaPathNew ?? "null"}";
-        
+        var cacheKey = $"{filePath}_{contentPathRoot}_{pageUrlRoot}";
+
         // Check if the file is in the cache and is still valid
         if (MarkdownCache.TryGetValue(cacheKey, out var cachedEntry))
         {
             // If the cached version is newer than or equal to the file's last modified time
             // and the media paths match, return the cached version
-            if (cachedEntry.LastModified >= fileLastModified && AreMediaPathsEqual(cachedEntry.MediaPath, mediaPaths))
+            if (cachedEntry.LastModified >= fileLastModified)
             {
                 _logger.LogDebug("Using cached version of {filePath}", filePath);
                 return ((T)cachedEntry.FrontMatter, cachedEntry.HtmlContent);
             }
         }
-        
+
         // If not in cache or cache is invalid, process the file
         yamlDeserializer ??= _options.FrontMatterDeserializer;
-        
+
         // Read the file content
         var markdownContent = File.ReadAllText(filePath);
-        
+
         // Apply pre-processing if a preprocessor function was provided
         if (preProcessFile != null)
         {
@@ -167,85 +158,191 @@ public class MarkdownService
 
         // Extract content without front matter
         var contentWithoutFrontMatter = markdownContent[(yamlBlock == null ? 0 : yamlBlock.Span.End + 1)..];
-        
+
+        var replacedMarkdown = ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, filePath, contentPathRoot, pageUrlRoot);
         // Replace image paths if needed and convert to HTML
-        var htmlContent = Markdown.ToHtml(ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, mediaPaths), _options.MarkdownPipeline);
+        var htmlContent = Markdown.ToHtml(replacedMarkdown, _options.MarkdownPipeline);
 
         if (postProcessMarkdown != null)
         {
-            (frontMatter, htmlContent) = postProcessMarkdown.Invoke(_serviceProvider, frontMatter, htmlContent);    
+            (frontMatter, htmlContent) = postProcessMarkdown.Invoke(_serviceProvider, frontMatter, htmlContent);
         }
-        
+
         // Store the result in the cache
-        MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, htmlContent, mediaPaths);
-        
+        MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, htmlContent);
+
         _logger.LogDebug("Added/updated cache entry for {filePath}", filePath);
-        
+
         return (frontMatter, htmlContent);
     }
 
-    /// <summary>
-    /// Compares two media path objects for equality
-    /// </summary>
-    /// <param name="path1">First media path object</param>
-    /// <param name="path2">Second media path object</param>
-    /// <returns>True if both paths are equal or both are null, false otherwise</returns>
-    private static bool AreMediaPathsEqual(MediaPath? path1, MediaPath? path2)
-    {
-        if (path1 == null && path2 == null)
-            return true;
-            
-        if (path1 == null || path2 == null)
-            return false;
-            
-        return path1.Equals(path2);
-    }
 
     /// <summary>
-    /// Replaces media paths in Markdown content to ensure proper image resolution when content is served.
-    /// Handles both Markdown image syntax ![alt](path) and HTML img tags.
+    /// Replaces relative image and link paths in markdown content with absolute paths.
     /// </summary>
-    /// <param name="markdownContent">The raw Markdown content to process.</param>
-    /// <param name="mediaPaths">
-    /// Optional media path transformation containing:
-    /// - MediaPathToBeReplaced: Path prefix to be replaced (e.g., "media")
-    /// - MediaPathNew: New path prefix to use instead (e.g., "Content/Blog/media")
-    /// </param>
-    /// <returns>Markdown content with updated image references.</returns>
-    /// <remarks>
-    /// This allows content authors to use relative paths in their Markdown files
-    /// (e.g., "media/img.jpg") while ensuring proper resolution when the content
-    /// is served from a different location in the site structure.
-    /// </remarks>
-    private static string ReplaceImagePathsInMarkdown(string markdownContent, MediaPath? mediaPaths = null)
+    /// <param name="markdownContent">The markdown content to process.</param>
+    /// <param name="filePath">The file path of the markdown file being processed.</param>
+    /// <param name="contentPathRoot">The root path of content files.</param>
+    /// <param name="pageUrlRoot">The root URL for the web pages.</param>
+    /// <returns>The markdown content with replaced paths.</returns>
+    private string ReplaceImagePathsInMarkdown(string markdownContent, string filePath, string contentPathRoot,
+        string pageUrlRoot)
     {
-        // If no media path transformation is specified, return the content unchanged
-        if (mediaPaths == null)
+        if (string.IsNullOrEmpty(markdownContent))
         {
             return markdownContent;
         }
 
-        // Pattern for Markdown image syntax: ![alt text](path)
-        var markdownPattern = $"""
-                               !\[(.*?)\]\({mediaPaths.MediaPathToBeReplaced}\/(.*?)\)
-                               """;
-        var markdownReplacement = $"![$1]({mediaPaths.MediaPathNew}/$2)";
+        // Get the directory of the current markdown file relative to the content root
+        var fileDirectory = Path.GetDirectoryName(filePath);
+        if (string.IsNullOrEmpty(fileDirectory))
+        {
+            return markdownContent;
+        }
 
-        // Pattern for HTML img tag: <img src="path" .../>
-        var htmlPattern = $"""
-                           <img\s+[^>]*src\s*=\s*"{mediaPaths.MediaPathToBeReplaced}/(.*?)"
-                           """;
+        // Normalize paths to ensure consistent handling across platforms
+        contentPathRoot = NormalizePath(contentPathRoot);
+        fileDirectory = NormalizePath(fileDirectory);
 
-        var htmlReplacement = $"""
-                               <img src="{mediaPaths.MediaPathNew}/$1"
-                               """;
+        // Calculate the relative path from content root to file directory
+        string relativePath;
+        if (fileDirectory.StartsWith(contentPathRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = fileDirectory.Substring(contentPathRoot.Length)
+                .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+        else
+        {
+            _logger.LogWarning("File directory {FileDirectory} is not within content path root {ContentPathRoot}",
+                fileDirectory, contentPathRoot);
+            relativePath = string.Empty;
+        }
 
-        // First, replace the Markdown-style image paths
-        var modifiedMarkdown = Regex.Replace(markdownContent, markdownPattern, markdownReplacement);
+        // Combine the page URL root with the relative path to get the base URL for the current file
+        var baseUrl = CombineUrl(pageUrlRoot, relativePath);
 
-        // Then, replace the HTML-style image paths
-        modifiedMarkdown = Regex.Replace(modifiedMarkdown, htmlPattern, htmlReplacement);
 
-        return modifiedMarkdown;
+
+        // Replace image paths
+        markdownContent = ImageRegex().Replace(markdownContent, match =>
+        {
+            var altText = match.Groups[1].Value;
+            var imagePath = match.Groups[2].Value;
+
+            // Replace the path if it's not already absolute
+            var newPath = GetAbsolutePath(imagePath, baseUrl);
+
+            return $"![{altText}]({newPath})";
+        });
+
+        // Replace link paths
+        markdownContent = LinkRegex().Replace(markdownContent, match =>
+        {
+            var linkText = match.Groups[1].Value;
+            var linkPath = match.Groups[2].Value;
+
+            // Skip links that are not file paths (e.g., URLs, anchors)
+            if (IsExternalUrl(linkPath) || IsAnchorLink(linkPath) || ContainsQueryOrFragment(linkPath))
+            {
+                return match.Value;
+            }
+
+            // Replace the path if it's not already absolute
+            var newPath = GetAbsolutePath(linkPath, baseUrl);
+
+            return $"[{linkText}]({newPath})";
+        });
+
+        return markdownContent;
     }
+
+    private static bool IsExternalUrl(string path) =>
+        path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("tel:", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("ftp:", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsAnchorLink(string path) => path.StartsWith('#');
+
+    private static bool ContainsQueryOrFragment(string path) => !IsExternalUrl(path) && (path.Contains('?') || path.Contains('#'));
+
+    /// <summary>
+    /// Normalizes a file path by replacing backslashes with forward slashes and trimming trailing slashes.
+    /// </summary>
+    private static string NormalizePath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        // Replace backslashes with forward slashes for web compatibility
+        path = path.Replace('\\', '/');
+
+        // Trim trailing slashes
+        return path.TrimEnd('/');
+    }
+
+    private static string CombineUrl(params string[] segments)
+    {
+        if (segments.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var normalizedSegments = segments
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Select(s => s.Trim('/'))
+            .ToArray();
+
+        if (normalizedSegments.Length == 0)
+        {
+            return "/";
+        }
+
+        return "/" + string.Join("/", normalizedSegments);
+    }
+
+    private static string GetAbsolutePath(string relativePath, string baseUrl)
+    {
+        // If the path is already absolute, return it as is
+        if (relativePath.StartsWith('/'))
+        {
+            return relativePath;
+        }
+
+        // Handle relative paths that start with ../
+        if (!relativePath.StartsWith("../"))
+        {
+            // Regular relative path, just combine with base URL
+            return CombineUrl(baseUrl, relativePath);
+        }
+
+        var baseSegments = baseUrl.Split('/')
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+  
+        var relativeSegments = relativePath.Split('/').ToList();
+
+        // Count how many levels to go up
+        var levelsUp = 0;
+        while (relativeSegments.Count > 0 && relativeSegments[0] == "..")
+        {
+            levelsUp++;
+            relativeSegments.RemoveAt(0);
+        }
+
+        // Remove the appropriate number of segments from the base URL
+        baseSegments = baseSegments.Take(Math.Max(0, baseSegments.Count - levelsUp)).ToList();
+
+        // Combine the remaining base segments with the relative segments
+        var resultSegments = baseSegments.Concat(relativeSegments);
+        return $"/{string.Join("/", resultSegments)}";
+    }
+
+    [GeneratedRegex(@"!\[([^\]]*)\]\(([^)]+)\)")]
+    private static partial Regex ImageRegex();
+    [GeneratedRegex(@"(?<!!)\[([^\]]*)\]\(([^)]+)\)")]
+    private static partial Regex LinkRegex();
 }

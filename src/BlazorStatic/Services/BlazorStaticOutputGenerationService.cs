@@ -12,13 +12,13 @@ namespace BlazorStatic.Services;
 ///     This enables server-side rendered Blazor applications to be deployed as static websites.
 /// </summary>
 /// <param name="environment">The web hosting environment providing access to web root files</param>
-/// <param name="contentPostServiceCollection">Collection of content services providing pages to generate and content to copy</param>
+/// <param name="blazorStaticContentServiceCollection">Collection of content services providing pages to generate and content to copy</param>
 /// <param name="routeHelper">Service for discovering configured ASP.NET routes.</param>
 /// <param name="options">Configuration options for the static generation process</param>
 /// <param name="logger">Logger for diagnostic output</param>
 internal class BlazorStaticOutputGenerationService(
     IWebHostEnvironment environment,
-    IEnumerable<IBlazorStaticContentService> contentPostServiceCollection,
+    IEnumerable<IBlazorStaticContentService> blazorStaticContentServiceCollection,
     RoutesHelperService routeHelper,
     BlazorStaticOptions options,
     ILogger<BlazorStaticOutputGenerationService> logger)
@@ -63,18 +63,20 @@ internal class BlazorStaticOutputGenerationService(
     internal async Task GenerateStaticPages(string appUrl)
     {
         // Collect pages to generate from content services and options
-        var pagesToGenerate = contentPostServiceCollection
-            .Aggregate(ImmutableList<PageToGenerate>.Empty,
-                (current, item) => current.AddRange(item.GetPagesToGenerate()));
+        var pagesToGenerate = blazorStaticContentServiceCollection
+            .Aggregate(ImmutableList<PageToGenerate>.Empty, (current, item) => current.AddRange(item.GetPagesToGenerate()));
 
-        pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
+        // add pages that have been mapped via app.MapGet()
         pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
 
         // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
         {
-            pagesToGenerate = pagesToGenerate.AddRange(GetPagesWithoutParameters());
+            pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetRoutesToRender());
         }
+
+        // add explicitly defined pages to generate
+        pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
 
         // Clear and recreate output directory
         if (Directory.Exists(options.OutputFolderPath))
@@ -90,7 +92,8 @@ internal class BlazorStaticOutputGenerationService(
             .Select(x => Path.Combine(options.OutputFolderPath, x))
             .ToList();
 
-        var contentToCopy = contentPostServiceCollection
+        // get each BlazorStaticContentService<T>'s static content for copying 
+        var contentToCopy = blazorStaticContentServiceCollection
             .SelectMany(service => service.GetContentToCopy())
             .Concat(GetStaticWebAssetsToOutput(environment.WebRootFileProvider, string.Empty))
             .ToImmutableList();
@@ -119,11 +122,7 @@ internal class BlazorStaticOutputGenerationService(
             }
             catch (HttpRequestException ex)
             {
-                logger.LogWarning(
-                    "Failed to retrieve page at {pageUrl}. StatusCode:{statusCode}. Error: {exceptionMessage}",
-                    page.Url,
-                    ex.StatusCode, ex.Message);
-
+                logger.LogWarning("Failed to retrieve page at {pageUrl}. StatusCode:{statusCode}. Error: {exceptionMessage}", page.Url, ex.StatusCode, ex.Message);
                 continue;
             }
 
@@ -169,70 +168,80 @@ internal class BlazorStaticOutputGenerationService(
         }
     }
 
-    /// <summary>
-    ///     Discovers and returns all non-parametrized Razor pages that should be generated.
-    ///     Uses reflection to find routes defined in the entry assembly.
-    /// </summary>
-    /// <returns>Collection of pages to generate</returns>
-    private IEnumerable<PageToGenerate> GetPagesWithoutParameters()
-    {
-        var entryAssembly = Assembly.GetEntryAssembly()!;
-        var routesToGenerate = routeHelper.GetRoutesToRender(entryAssembly);
 
-        foreach (var route in routesToGenerate)
-        {
-            yield return new PageToGenerate(route, Path.Combine(route, options.IndexPageHtml));
-        }
-    }
 
     /// <summary>
-    ///     Copies content from a source path to a target path, respecting the ignored paths list.
-    ///     Handles both files and directories recursively.
+    /// Copies content from a source path to a target path, respecting a list of ignored paths.
+    /// Handles both single file and directory copying.
     /// </summary>
-    /// <param name="sourcePath">Source path of file or directory to copy</param>
-    /// <param name="targetPath">Target path where content should be copied</param>
-    /// <param name="ignoredPaths">List of paths that should be excluded from copying</param>
+    /// <param name="sourcePath">The source file or directory path</param>
+    /// <param name="targetPath">The target file or directory path</param>
+    /// <param name="ignoredPaths">List of paths to ignore during copying</param>
     private void CopyContent(string sourcePath, string targetPath, List<string> ignoredPaths)
     {
+        // Check if target is in ignored paths
         if (ignoredPaths.Contains(targetPath))
         {
             return;
         }
 
-        // Handle single file copy
-        if (File.Exists(sourcePath))
+        try
         {
-            var dir = Path.GetDirectoryName(targetPath);
-            if (dir == null)
+            // Handle single file copy
+            if (File.Exists(sourcePath))
             {
+                CopySingleFile(sourcePath, targetPath);
                 return;
             }
 
-            Directory.CreateDirectory(dir);
-            File.Copy(sourcePath, targetPath, true);
+            // Handle directory copy
+            if (!Directory.Exists(sourcePath))
+            {
+                logger.LogError("Source path '{SourcePath}' does not exist", sourcePath);
+                return;
+            }
+
+            CopyDirectory(sourcePath, targetPath, ignoredPaths);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error copying from '{SourcePath}' to '{TargetPath}'", sourcePath, targetPath);
+        }
+    }
+
+    /// <summary>
+    /// Copies a single file, creating the target directory if needed
+    /// </summary>
+    private void CopySingleFile(string sourceFile, string targetFile)
+    {
+        var targetDir = Path.GetDirectoryName(targetFile);
+        if (string.IsNullOrEmpty(targetDir))
+        {
+            logger.LogError("Invalid target path '{TargetFile}'", targetFile);
             return;
         }
 
-        // Validate source directory exists
-        if (!Directory.Exists(sourcePath))
-        {
-            logger.LogError("Source path ({sourcePath}) does not exist", sourcePath);
-            return;
-        }
+        Directory.CreateDirectory(targetDir);
+        File.Copy(sourceFile, targetFile, overwrite: true);
+    }
 
-        // Create target directory if needed
-        if (!Directory.Exists(targetPath))
-        {
-            Directory.CreateDirectory(targetPath);
-        }
+    /// <summary>
+    /// Copies a directory and its contents to the target location, respecting ignored paths
+    /// </summary>
+    private static void CopyDirectory(string sourceDir, string targetDir, List<string> ignoredPaths)
+    {
+        // Create target directory
+        Directory.CreateDirectory(targetDir);
 
-        var ignoredPathsWithTarget = ignoredPaths.Select(x => Path.Combine(targetPath, x)).ToList();
+        // Transform ignored paths to be relative to the target
+        var ignoredTargetPaths = ignoredPaths
+            .ConvertAll(path => Path.Combine(targetDir, path));
 
         // Create all subdirectories first (except ignored ones)
-        foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+        foreach (var dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories))
         {
-            var newDirPath = ChangeRootFolder(dirPath);
-            if (ignoredPathsWithTarget.Contains(newDirPath))
+            var newDirPath = GetTargetPath(dirPath, sourceDir, targetDir);
+            if (ignoredTargetPaths.Contains(newDirPath))
             {
                 continue;
             }
@@ -241,25 +250,24 @@ internal class BlazorStaticOutputGenerationService(
         }
 
         // Copy all files (except those in ignored paths)
-        foreach (var newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+        foreach (var filePath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
         {
-            var newPathWithNewDir = ChangeRootFolder(newPath);
-            if (ignoredPathsWithTarget.Contains(newPathWithNewDir)
-                || !Directory.Exists(Path.GetDirectoryName(newPathWithNewDir)))
+            var targetFilePath = GetTargetPath(filePath, sourceDir, targetDir);
+
+            // Skip if file path is ignored or parent directory doesn't exist
+            var targetFileDir = Path.GetDirectoryName(targetFilePath);
+            if (ignoredTargetPaths.Contains(targetFilePath) || !Directory.Exists(targetFileDir))
             {
                 continue;
             }
 
-            File.Copy(newPath, newPathWithNewDir, true);
+            File.Copy(filePath, targetFilePath, overwrite: true);
         }
+    }
 
-        return;
-
-        // Helper function to transform path from source root to target root
-        string ChangeRootFolder(string dirPath)
-        {
-            var relativePath = dirPath[sourcePath.Length..].TrimStart(Path.DirectorySeparatorChar);
-            return Path.Combine(targetPath, relativePath);
-        }
+    private static string GetTargetPath(string sourcePath, string sourceDir, string targetDir)
+    {
+        var relativePath = sourcePath[sourceDir.Length..].TrimStart(Path.DirectorySeparatorChar);
+        return Path.Combine(targetDir, relativePath);
     }
 }

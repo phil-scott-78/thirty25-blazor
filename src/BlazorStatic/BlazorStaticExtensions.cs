@@ -41,8 +41,10 @@ public static class BlazorStaticExtensions
         services.AddSingleton<SitemapRssService>();
 
         // also include their interface, we'll need these for loading all at once
-        services.AddSingleton<IBlazorStaticContentService>(provider => provider.GetRequiredService<BlazorStaticContentService<TFrontMatter>>());
-        services.AddSingleton<IBlazorStaticContentOptions>(provider => provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentService>(provider =>
+            provider.GetRequiredService<BlazorStaticContentService<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentOptions>(provider =>
+            provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
         return services;
     }
 
@@ -90,51 +92,36 @@ public static class BlazorStaticExtensions
     /// </list>
     /// <para>This enables serving media files (images, documents, etc.) associated with your static content.</para>
     /// </remarks>
-    public static void MapBlazorStaticAssets(this WebApplication app)
+    private static void MapBlazorStaticAssets(this WebApplication app)
     {
         var optionList = app.Services.GetServices<IBlazorStaticContentOptions>().ToList();
         if (optionList.Count == 0)
         {
-            throw new InvalidOperationException("No BlazorStaticContentServices registered. Call AddBlazorStaticContentService<TFrontMatter> first.");
+            throw new InvalidOperationException(
+                "No BlazorStaticContentServices registered. Call AddBlazorStaticContentService<TFrontMatter> first.");
         }
-        
+
         foreach (var option in optionList)
         {
-            if (option.MediaRequestPath is null || option.MediaFolderRelativeToContentPath is null)
+            var combine = Path.Combine(Directory.GetCurrentDirectory(), option.ContentPath);
+            app.UseStaticFiles(new StaticFileOptions
             {
-                continue;
-            }
-            
-            var requestPath = "/" + Path.GetFullPath(option.MediaRequestPath)[Directory.GetCurrentDirectory().Length..]
-                .TrimStart(Path.DirectorySeparatorChar)
-                .Replace("\\", "/");
-
-            var realPath = Path.Combine(Directory.GetCurrentDirectory(), option.ContentPath, option.MediaFolderRelativeToContentPath);
-            if(!Directory.Exists(realPath))
-            {
-                app.Logger.LogWarning("folder for media path ({Folder}) doesn't exist", realPath);
-            }
-            else
-            {
-                app.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new PhysicalFileProvider(realPath),
-                    RequestPath = requestPath
-                });
-            }
+                FileProvider = new PhysicalFileProvider(combine),
+                RequestPath = "/" + option.PageUrl,
+                ServeUnknownFileTypes = true,
+            });
         }
 
         app.MapBlazorStaticSitemapRss();
     }
-    
+
     /// <summary>
     /// Adds sitemap.xml and RSS feed endpoints to the application.
     /// </summary>
     /// <param name="app">The web application.</param>
     /// <returns>The web application for chaining.</returns>
-    public static WebApplication MapBlazorStaticSitemapRss(this WebApplication app)
+    private static WebApplication MapBlazorStaticSitemapRss(this WebApplication app)
     {
-
         // Map the sitemap.xml endpoint
         app.MapGet("/sitemap.xml", (SitemapRssService service) =>
         {
@@ -142,14 +129,14 @@ public static class BlazorStaticExtensions
             // Set content type and return the sitemap
             return Task.FromResult(Results.Content(sitemap, "application/xml"));
         });
-        
+
         // Map the rss.xml endpoint
         app.MapGet("/rss.xml", (SitemapRssService service) =>
         {
             var rss = service.GenerateRssFeed();
             return Task.FromResult(Results.Content(rss, "text/xml"));
         });
-        
+
         return app;
     }
 

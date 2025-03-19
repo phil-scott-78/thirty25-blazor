@@ -8,14 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseStaticWebAssets();
 builder.Services.AddSingleton<RoslynHighlighterService>();
-builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions()
+builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
 {
     BlogTitle = "Thirty25",
     BlogDescription = "Quite exciting this computer magic",
-    BaseUrl = "https://thirty25.blog",
-    HotReloadEnabled = true,
+    BaseUrl = "https://thirty25.blog"
 });
-builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>()
+builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>
 {
     PageUrl = "blog",
     PostProcessMarkdown = (serviceProvider, f, s) =>

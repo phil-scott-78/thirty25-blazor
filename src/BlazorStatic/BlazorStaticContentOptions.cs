@@ -14,16 +14,6 @@ internal interface IBlazorStaticContentOptions
     string ContentPath { get; init; }
     
     /// <summary>
-    /// Gets the relative path to the media folder from the content path.
-    /// </summary>
-    string? MediaFolderRelativeToContentPath { get; init; }
-    
-    /// <summary>
-    /// Gets the request path for media files.
-    /// </summary>
-    string? MediaRequestPath { get; }
-    
-    /// <summary>
     /// Gets the file pattern used to identify post files.
     /// </summary>
     string PostFilePattern { get; init; }
@@ -69,46 +59,6 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// </para>
     /// </remarks>
     public string ContentPath { get; init; } = Path.Combine("Content", "Blog");
-
-    /// <summary>
-    /// Gets or sets the folder path within ContentPath where media files are stored.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This setting is important for configuring app.UseStaticFiles() to target the correct folder.
-    /// </para>
-    /// <para>
-    /// Set to null if no media folder is used. Default value is "media".
-    /// </para>
-    /// </remarks>
-    public string? MediaFolderRelativeToContentPath { get; init; } = Path.Combine( "media" );
-
-    /// <summary>
-    /// Gets the URL path for media files associated with posts.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This path is used in two ways:
-    /// </para>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>In app.UseStaticFiles() to target the correct folder for serving media.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>
-    ///             In ParseAndAddPosts to transform relative image paths in markdown.
-    ///             For example, ![alt](media/image.png) becomes ![alt](Content/Blog/media/image.png).
-    ///         </description>
-    ///     </item>
-    /// </list>
-    /// <para>
-    /// A leading slash is necessary for RequestPath in app.UseStaticFiles(),
-    /// and is automatically removed in ParseAndAddPosts. Returns null if MediaFolderRelativeToContentPath is null.
-    /// </para>
-    /// </remarks>
-    public string? MediaRequestPath  => MediaFolderRelativeToContentPath is null
-        ? null
-        : Path.Combine(ContentPath, MediaFolderRelativeToContentPath).Replace(@"\", "/");
 
     /// <summary>
     /// Gets or sets the file pattern used to identify content files in the ContentPath.

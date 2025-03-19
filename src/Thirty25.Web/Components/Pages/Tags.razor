@@ -1,12 +1,15 @@
 @page "/tags/{TagEncodedName}"
 @page "/tags"
+@using BlazorStatic
 @using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
 @inject BlazorStaticContentService<FrontMatter> BlogService
+@inject BlazorStaticOptions BlazorStaticOptions
 
 @if (TagEncodedName == null)
 {
+    <PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
     <div class="flex flex-wrap justify-between gap-1">
         @{
             var tagsWithCount = BlogService.Posts
@@ -23,6 +26,7 @@
     </div>
     return;
 }
+<PageTitle>@BlazorStaticOptions.BlogTitle - @(_tag?.Name ?? TagEncodedName)</PageTitle>
 <div>
     <PageHeader Title="@(_tag?.Name ?? TagEncodedName)">
         Blog posts tagged by

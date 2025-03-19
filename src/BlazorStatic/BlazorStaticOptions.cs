@@ -203,22 +203,4 @@ public class BlazorStaticOptions
         .UseAdvancedExtensions()
         .UseYamlFrontMatter()
         .Build();
-
-    /// <summary>
-    /// Gets or sets whether file change detection and hot-reloading are enabled.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// When true, the application will monitor source files for changes and
-    /// automatically refresh the browser when modifications are detected.
-    /// </para>
-    /// <para>
-    /// This setting primarily affects development experience and has no effect
-    /// on the final static output files.
-    /// </para>
-    /// <para>
-    /// Default value is true.
-    /// </para>
-    /// </remarks>
-    public bool HotReloadEnabled { get; init; } = true;
 }

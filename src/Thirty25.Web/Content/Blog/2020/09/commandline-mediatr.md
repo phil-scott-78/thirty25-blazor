@@ -1,5 +1,5 @@
 ---
-title: Command Line Verbs and MediatR
+Title: Command Line Verbs and MediatR
 description: Using MediatR to process parsed command line verbs
 date: 2020-09-09
 tags:

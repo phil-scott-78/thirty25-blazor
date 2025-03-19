@@ -1,5 +1,5 @@
 ---
-title: Better Tagging of EF Core Queries with .NET 6
+Title: Better Tagging of EF Core Queries with .NET 6
 description: How to add tags to your EF Core queries, and how to automatically give those tags better info.
 date: 2021-12-10
 tags:

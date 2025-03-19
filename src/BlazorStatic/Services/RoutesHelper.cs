@@ -18,14 +18,17 @@ namespace BlazorStatic.Services;
 internal class RoutesHelperService
 {
     private readonly EndpointDataSource _endpointDataSource;
+    private readonly BlazorStaticOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RoutesHelperService"/> class.
     /// </summary>
     /// <param name="endpointDataSource">The endpoint data source to extract route information from.</param>
-    public RoutesHelperService(EndpointDataSource endpointDataSource)
+    /// <param name="options">The BlazorStaticOptions defined for the site.</param>
+    public RoutesHelperService(EndpointDataSource endpointDataSource, BlazorStaticOptions options)
     {
         _endpointDataSource = endpointDataSource;
+        _options = options;
     }
 
     /// <summary>
@@ -38,18 +41,21 @@ internal class RoutesHelperService
     /// - Have a <see cref="RouteAttribute"/>
     /// - Don't have route parameters (no '{parameter}' in route template)
     /// </remarks>
-    public List<string> GetRoutesToRender(Assembly assembly)
+    public IEnumerable<PageToGenerate> GetRoutesToRender(Assembly? assembly = null)
     {
+        assembly ??= Assembly.GetEntryAssembly()!;
+
         // Get all the components whose base class is ComponentBase
         var components = assembly
             .ExportedTypes
             .Where(t => t.IsSubclassOf(typeof(ComponentBase)));
 
         // get all the routes that don't contain parameters
-        List<string> routes = components
+        var routes = components
             .Select(GetRouteFromComponent)
             .Where(route => route is not null)
-            .ToList()!; // Previous null check guarantees no nulls
+            .Select(i => i!)
+            .Select(route => new PageToGenerate(route, Path.Combine(route, _options.IndexPageHtml)));
 
         return routes;
     }

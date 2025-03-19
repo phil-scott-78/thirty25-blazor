@@ -17,7 +17,7 @@ For my use case I needed a couple of icons so the idea of multiple requests of o
 
 So, on the front end of things a Blazor component that simply wrote out the SVG is all I really need. But I also want the ability to use any of the thousand icons of Font Awesome from my library.
 
-## What if I relied on .NET trimming to keep it small? 
+## What if I relied on .NET trimming to keep it small?
 
 [Trimming in .NET](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained) uses build time analysis to figure out what parts of an assembly are being called and only keep those parts. With .NET 6, trimming moved out of experimental support to being fully supported.
 
@@ -88,7 +88,7 @@ The item will provide intellisense for all the available icons and we'll have a 
 
 The problem is when I go to compile, I now have a 4mb dll that contains every one of those methods.
 
-![all the icons](Content/Blog/media/2022-11-20-14-33-15.png)
+![all the icons](2022-11-20-14-33-15.png)
 
 Ouch.
 
@@ -112,4 +112,4 @@ dotnet publish -c Release
 
 the output of our library is much different. It goes from 4mb down to 9kb! No third party javascript, no external fonts - just pure C# writing out the icons as a SVG.
 
-![only what we used](Content/Blog/media/2022-11-20-14-34-02.png)
+![only what we used](2022-11-20-14-34-02.png)

@@ -62,11 +62,11 @@ With that in place, we can commit our changes and push.
 
 There is a ton to do in Vercel, but that's for a later blog post. For now let's just get our site imported into Vercel. First, head to <vercel.com> and log in with GitHub credentials. With that done we can now import our recently created project.
 
-![import git repository into vercel](Content/Blog/media/2021-01-14-23-03-31.png)
+![import git repository into vercel](2021-01-14-23-03-31.png)
 
 Once you've selected your project that rest is just accepting the defaults. Once this completes, it should kick off a build of your site and show you the completed screen.
 
-![results of deployment in vercel](Content/Blog/media/2021-01-14-23-00-48.png)
+![results of deployment in vercel](2021-01-14-23-00-48.png)
 
 My site is living at <https://statiqdev-github-io.vercel.app/> and you are welcome to check it out.
 

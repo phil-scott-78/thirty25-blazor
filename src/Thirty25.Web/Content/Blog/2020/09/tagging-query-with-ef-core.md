@@ -1,5 +1,5 @@
 ---
-title: Better Tagging of EF Core Queries
+Title: Better Tagging of EF Core Queries
 description: How to add tags to your EF Core queries, and how to automatically give those tags better info.
 date: 2020-09-02
 tags:

@@ -45,12 +45,6 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         Options = options;
         _markdownService = markdownService;
         _logger = logger;
-
-        if (blazorStaticOptions.HotReloadEnabled)
-        {
-            blazorStaticFileWatcher.Initialize([options.ContentPath], NeedsRefresh);
-            HotReloadManager.Subscribe(NeedsRefresh);
-        }
     }
 
     /// <summary>
@@ -131,13 +125,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     /// <inheritdoc />
     IEnumerable<ContentToCopy> IBlazorStaticContentService.GetContentToCopy()
     {
-        if (Options.MediaFolderRelativeToContentPath == null)
-        {
-            yield break;
-        }
-
-        var pathWithMedia = Path.Combine(Options.ContentPath, Options.MediaFolderRelativeToContentPath);
-        yield return new ContentToCopy(pathWithMedia, pathWithMedia);
+        yield return new ContentToCopy(Options.ContentPath, Options.PageUrl);
     }
 
     private ImmutableList<Post<TFrontMatter>> ParseAndAddPosts()
@@ -147,12 +135,6 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         var posts = new ConcurrentBag<Post<TFrontMatter>>();
         var (files, absPostPath) = GetPostsPath();
 
-        // Configure media paths if both source and request paths are provided
-        var mediaPaths =
-            Options is { MediaFolderRelativeToContentPath: not null, MediaRequestPath: not null }
-                ? new MediaPath(Options.MediaFolderRelativeToContentPath, Options.MediaRequestPath)
-                : null;
-
         // Determine if front matter supports tags
         var supportsTags = typeof(IFrontMatterWithTags).IsAssignableFrom(typeof(TFrontMatter));
 
@@ -161,7 +143,8 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent) = _markdownService.ParseMarkdownFile(
                 file,
-                mediaPaths,
+                Options.ContentPath,
+                Options.PageUrl,
                 preProcessFile: Options.PreProcessMarkdown,
                 postProcessMarkdown:Options.PostProcessMarkdown
                 );
@@ -217,7 +200,7 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     {
         var relativePathWithFileName = Path.GetRelativePath(absoluteContentPath, file);
         return Path.Combine(Path.GetDirectoryName(relativePathWithFileName)!,
-                Path.GetFileNameWithoutExtension(relativePathWithFileName))
+                Path.GetFileNameWithoutExtension(relativePathWithFileName).Slugify())
             .Replace("\\", "/");
     }
 

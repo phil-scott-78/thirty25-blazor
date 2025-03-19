@@ -1,7 +1,9 @@
-﻿@page "/blog/{*fileName}"
+﻿@page "/blog/{*fileName:nonfile}"
+@using BlazorStatic
 @using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
+@inject BlazorStaticOptions Options
 @inject BlazorStaticContentService<FrontMatter> BlazorStaticContentService
 
 @* Show specific post by filename param *@
@@ -10,7 +12,7 @@
     <div>Post not found 🤷</div>
     return;
 }
-
+<PageTitle>@Options.BlogTitle - @_post.FrontMatter.Title</PageTitle>
 <BlogPost Post="_post"/>
 
 @code{
