@@ -78,20 +78,6 @@ public static class BlazorStaticExtensions
         return services;
     }
 
-    /// <summary>
-    /// Configures the application to serve media files defined in BlazorStatic content options.
-    /// </summary>
-    /// <param name="app">The web application.</param>
-    /// <remarks>
-    /// <para>This method scans all registered IBlazorStaticContentOptions instances and sets up static file serving
-    /// for any configured media paths. For each valid configuration:</para>
-    /// <list type="number">
-    ///     <item><description>Constructs a web-accessible request path from the MediaRequestPath</description></item>
-    ///     <item><description>Maps the physical media folder (ContentPath + MediaFolderRelativeToContentPath) to this request path</description></item>
-    ///     <item><description>Logs a warning if the configured media folder doesn't exist</description></item>
-    /// </list>
-    /// <para>This enables serving media files (images, documents, etc.) associated with your static content.</para>
-    /// </remarks>
     private static void MapBlazorStaticAssets(this WebApplication app)
     {
         var optionList = app.Services.GetServices<IBlazorStaticContentOptions>().ToList();

@@ -98,14 +98,14 @@ public partial class MarkdownService
         // Get file's last write time
         var fileLastModified = File.GetLastWriteTime(filePath);
 
-        // Create a cache key that includes the file path and media paths
+        // Create a cache key that includes the file path, path root and page url root.
+        // changes to those *should* wipe the cache regardless, but just in case
         var cacheKey = $"{filePath}_{contentPathRoot}_{pageUrlRoot}";
 
         // Check if the file is in the cache and is still valid
         if (MarkdownCache.TryGetValue(cacheKey, out var cachedEntry))
         {
             // If the cached version is newer than or equal to the file's last modified time
-            // and the media paths match, return the cached version
             if (cachedEntry.LastModified >= fileLastModified)
             {
                 _logger.LogDebug("Using cached version of {filePath}", filePath);

@@ -12,17 +12,17 @@ internal interface IBlazorStaticContentOptions
     /// Gets the path where content files are stored.
     /// </summary>
     string ContentPath { get; init; }
-    
+
     /// <summary>
     /// Gets the file pattern used to identify post files.
     /// </summary>
     string PostFilePattern { get; init; }
-    
+
     /// <summary>
     /// Gets the URL path component for the page that displays content.
     /// </summary>
     string PageUrl { get; init; }
-    
+
     /// <summary>
     /// Gets the configuration options for tags.
     /// </summary>
@@ -38,22 +38,14 @@ internal interface IBlazorStaticContentOptions
 /// This class defines how markdown content files are processed, where they're located,
 /// and how they're transformed before being rendered by Blazor components.
 /// </para>
-/// <para>
-/// The configuration includes paths for content and media files, processing hooks for
-/// both the markdown and the resulting HTML, and settings for tag-based navigation.
-/// </para>
 /// </remarks>
-public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOptions where TFrontMatter : class, IFrontMatter, new()
+public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOptions
+    where TFrontMatter : class, IFrontMatter, new()
 {
     /// <summary>
     /// Gets or sets the folder path relative to the project root where content files are stored.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This path should be included in your build output. Configure your .csproj file
-    /// to use CopyToOutputDirectory for these files, as the application will look for them
-    /// in the bin folder at runtime.
-    /// </para>
     /// <para>
     /// Default value is "Content/Blog".
     /// </para>
@@ -102,7 +94,8 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// This function takes an IServiceProvider, the parsed front matter, and the HTML content,
     /// and returns a tuple containing potentially modified versions of both.
     /// </remarks>
-    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } = (_, frontMatter, html) => (frontMatter, html);
+    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } =
+        (_, frontMatter, html) => (frontMatter, html);
 
     /// <summary>
     /// Gets a list of routes to exclude from static content generation.
@@ -134,7 +127,7 @@ public class TagsOptions
     /// Default value is true.
     /// </remarks>
     public bool AddTagPagesFromPosts { get; init; } = true;
-    
+
     /// <summary>
     /// Gets or sets the URL path component for the page that displays all tags.
     /// </summary>
