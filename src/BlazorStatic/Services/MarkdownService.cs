@@ -159,7 +159,8 @@ public partial class MarkdownService
         // Extract content without front matter
         var contentWithoutFrontMatter = markdownContent[(yamlBlock == null ? 0 : yamlBlock.Span.End + 1)..];
 
-        var replacedMarkdown = ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, filePath, contentPathRoot, pageUrlRoot);
+        var replacedMarkdown =
+            ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, filePath, contentPathRoot, pageUrlRoot);
         // Replace image paths if needed and convert to HTML
         var htmlContent = Markdown.ToHtml(replacedMarkdown, _options.MarkdownPipeline);
 
@@ -188,10 +189,7 @@ public partial class MarkdownService
     private string ReplaceImagePathsInMarkdown(string markdownContent, string filePath, string contentPathRoot,
         string pageUrlRoot)
     {
-        if (string.IsNullOrEmpty(markdownContent))
-        {
-            return markdownContent;
-        }
+        if (string.IsNullOrEmpty(markdownContent)) return markdownContent;
 
         // Get the directory of the current markdown file relative to the content root
         var fileDirectory = Path.GetDirectoryName(filePath);
@@ -220,7 +218,6 @@ public partial class MarkdownService
 
         // Combine the page URL root with the relative path to get the base URL for the current file
         var baseUrl = CombineUrl(pageUrlRoot, relativePath);
-
 
 
         // Replace image paths
@@ -265,7 +262,8 @@ public partial class MarkdownService
 
     private static bool IsAnchorLink(string path) => path.StartsWith('#');
 
-    private static bool ContainsQueryOrFragment(string path) => !IsExternalUrl(path) && (path.Contains('?') || path.Contains('#'));
+    private static bool ContainsQueryOrFragment(string path) =>
+        !IsExternalUrl(path) && (path.Contains('?') || path.Contains('#'));
 
     /// <summary>
     /// Normalizes a file path by replacing backslashes with forward slashes and trimming trailing slashes.
@@ -301,7 +299,7 @@ public partial class MarkdownService
             return "/";
         }
 
-        return "/" + string.Join("/", normalizedSegments);
+        return string.Join("/", normalizedSegments);
     }
 
     private static string GetAbsolutePath(string relativePath, string baseUrl)
@@ -322,7 +320,7 @@ public partial class MarkdownService
         var baseSegments = baseUrl.Split('/')
             .Where(s => !string.IsNullOrEmpty(s))
             .ToList();
-  
+
         var relativeSegments = relativePath.Split('/').ToList();
 
         // Count how many levels to go up
@@ -338,11 +336,12 @@ public partial class MarkdownService
 
         // Combine the remaining base segments with the relative segments
         var resultSegments = baseSegments.Concat(relativeSegments);
-        return $"/{string.Join("/", resultSegments)}";
+        return string.Join("/", resultSegments);
     }
 
     [GeneratedRegex(@"!\[([^\]]*)\]\(([^)]+)\)")]
     private static partial Regex ImageRegex();
+
     [GeneratedRegex(@"(?<!!)\[([^\]]*)\]\(([^)]+)\)")]
     private static partial Regex LinkRegex();
 }
