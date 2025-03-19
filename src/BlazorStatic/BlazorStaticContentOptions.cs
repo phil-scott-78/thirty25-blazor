@@ -14,19 +14,9 @@ internal interface IBlazorStaticContentOptions
     string ContentPath { get; init; }
 
     /// <summary>
-    /// Gets the file pattern used to identify post files.
-    /// </summary>
-    string PostFilePattern { get; init; }
-
-    /// <summary>
     /// Gets the URL path component for the page that displays content.
     /// </summary>
     string PageUrl { get; init; }
-
-    /// <summary>
-    /// Gets the configuration options for tags.
-    /// </summary>
-    TagsOptions Tags { get; init; }
 }
 
 /// <summary>
