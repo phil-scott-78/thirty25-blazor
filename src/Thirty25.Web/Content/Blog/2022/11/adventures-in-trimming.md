@@ -11,7 +11,7 @@ repository: https://github.com/phil-scott-78/Icons
 
 When it comes to using icons with Blazor there are lots of existing options out there. But they all seem to do one thing - wrap up the entirety of Font Awesome or some equivalent library. You get every icon with every style plus many times you also need to bring in a supporting javascript, CSS and maybe even a few fonts. Most of these JS libraries are written in such a way that something like webpack is going to minimize the JS that's included, but we don't have that luxury without some serious hacking about when it comes to Blazor.
 
-## I wonder how I can keep my requests small?
+## I wonder how I can keep my requests small? 
 
 For my use case I needed a couple of icons so the idea of multiple requests of over 400kb didn't sit well with me so I went down a different route. I really only need the content of the icon - ultimately it is just an svg element. I don't need javascript, and I don't really need CSS either - I have my own CSS framework that can add color or sizing to an HTML element.
 
@@ -48,6 +48,10 @@ namespace App
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
+            var s = """
+                    Hey there
+                    """;
+            
             var viewBox = Item.ViewBox;
             var content = Item.Content;
 

@@ -4,7 +4,7 @@
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
 @inject BlazorStaticOptions Options
-@inject BlazorStaticContentService<FrontMatter> BlazorStaticContentService
+@inject BlazorStaticMarkdownContentService<FrontMatter> BlazorStaticMarkdownContentService
 
 @* Show specific post by filename param *@
 @if (_post == null)
@@ -21,6 +21,6 @@
 
     protected override void OnInitialized()
     {
-        _post = BlazorStaticContentService.Posts.FirstOrDefault(x => x.Url == FileName);
+        _post = BlazorStaticMarkdownContentService.GetPostByUrlOrDefault(FileName);
     }
 }

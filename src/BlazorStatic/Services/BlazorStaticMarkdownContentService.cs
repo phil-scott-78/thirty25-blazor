@@ -15,21 +15,18 @@ using Microsoft.Extensions.Logging;
 ///     The type of front matter metadata used in content files.
 ///     Must implement IFrontMatter and have a parameterless constructor.
 /// </typeparam>
-public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentService, IDisposable
+public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticContentService, IDisposable
     where TFrontMatter : class, IFrontMatter, new()
 {
-    private bool _needsRefresh = true;
-    private ImmutableList<Post<TFrontMatter>> _posts = ImmutableList<Post<TFrontMatter>>.Empty;
+    private readonly LazyPopulatedDictionary<string, Post<TFrontMatter>> _postCache;
     private readonly MarkdownService _markdownService;
-    private readonly ILogger<BlazorStaticContentService<TFrontMatter>> _logger;
-    private readonly Lock _postPostsLock = new Lock();
+    private readonly ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> _logger;
     private bool _disposed;
 
     /// <summary>
     ///     Initializes a new instance of the BlazorStaticContentService.
     /// </summary>
     /// <param name="options">Configuration options specific to content handling</param>
-    /// <param name="blazorStaticOptions">General BlazorStatic configuration options</param>
     /// <param name="blazorStaticFileWatcher">File watcher for hot-reload functionality</param>
     /// <param name="markdownService">Service used to parse and render markdown files</param>
     /// <param name="logger">Logger for diagnostic information</param>
@@ -37,15 +34,15 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     ///     If hot-reload is enabled in the blazorStaticOptions, this service will watch
     ///     the content directory for changes and automatically refresh posts when needed.
     /// </remarks>
-    public BlazorStaticContentService(BlazorStaticContentOptions<TFrontMatter> options,
-        BlazorStaticOptions blazorStaticOptions,
+    public BlazorStaticMarkdownContentService(BlazorStaticContentOptions<TFrontMatter> options,
         BlazorStaticFileWatcher blazorStaticFileWatcher,
         MarkdownService markdownService,
-        ILogger<BlazorStaticContentService<TFrontMatter>> logger)
+        ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> logger)
     {
         Options = options;
         _markdownService = markdownService;
         _logger = logger;
+        _postCache = new LazyPopulatedDictionary<string, Post<TFrontMatter>>(ParseAndAddPosts);
 
         blazorStaticFileWatcher.Initialize([options.ContentPath], NeedsRefresh);
         HotReloadManager.Subscribe(NeedsRefresh);
@@ -55,53 +52,54 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     ///     Marks the posts collection as needing a refresh.
     ///     This is called when content files change and during hot-reload events.
     /// </summary>
-    private void NeedsRefresh()
+    private void NeedsRefresh() => _postCache.Invalidate();
+
+    /// <summary>
+    ///     Gets a post by its URL, or returns null if not found.
+    /// </summary>
+    /// <param name="url">The URL identifier of the post to retrieve</param>
+    /// <returns>The post with the matching URL, or null if no post matches the URL</returns>
+    /// <remarks>
+    ///     This method uses the backing <see cref="LazyPopulatedDictionary{TKey, TValue}"/> which 
+    ///     locks and repopulates its contents when accessed after invalidation. If <see cref="NeedsRefresh"/>
+    ///     has been called, the next access will trigger thread-safe repopulation of all posts.
+    /// </remarks>
+    public Post<TFrontMatter>? GetPostByUrlOrDefault(string url)
     {
-        lock (_postPostsLock)
-        {
-            _needsRefresh = true;
-        }
+        return _postCache.GetValueOrDefault(url);
     }
 
     /// <summary>
-    ///     Gets the collection of processed blog posts with their HTML content and front matter.
-    ///     Automatically refreshes the collection if content files have changed.
+    ///     Gets an immutable list of all posts.
     /// </summary>
+    /// <returns>An immutable list containing all parsed and processed posts</returns>
     /// <remarks>
-    ///     This property is thread-safe and will only refresh the posts when necessary.
-    ///     The collection is stored as an immutable list to prevent unintended modifications.
+    ///     Accessing this method will ensure the posts cache is initialized. If <see cref="NeedsRefresh"/> 
+    ///     has been called to invalidate the cache, this method will trigger a thread-safe repopulation
+    ///     of all posts by acquiring a write lock, clearing existing data, and reprocessing all markdown files.
     /// </remarks>
-    public ImmutableList<Post<TFrontMatter>> Posts
+    public ImmutableList<Post<TFrontMatter>> GetAllPosts()
     {
-        get
-        {
-            lock (_postPostsLock)
-            {
-                if (!_needsRefresh)
-                {
-                    return _posts;
-                }
-
-                _posts = ParseAndAddPosts();
-                _needsRefresh = false;
-                return _posts;
-            }
-        }
+        return _postCache.Values.ToImmutableList();
     }
 
     /// <summary>
-    ///     A dictionary of all unique tags found across all posts.
-    ///     The key is the tag name, and the value is a Tag object with both the original
-    ///     name and an encoded version suitable for use in URLs.
+    ///     Gets a tag by its encoded name, or returns null if not found.
     /// </summary>
+    /// <param name="encodedName">The encoded name of the tag to retrieve</param>
+    /// <returns>The tag with the matching encoded name, or null if no tag matches</returns>
     /// <remarks>
-    ///     This dictionary ensures that each tag has exactly one Tag object instance,
-    ///     which is referenced by all posts that use that tag.
+    ///     This method accesses the post cache, which may trigger a thread-safe repopulation
+    ///     if the cache has been invalidated via <see cref="NeedsRefresh"/>. During repopulation,
+    ///     the backing <see cref="LazyPopulatedDictionary{TKey, TValue}"/> acquires a write lock,
+    ///     clears existing data, and rebuilds all posts and their associated tags before returning results.
     /// </remarks>
-    public ImmutableDictionary<string, Tag> AllTags => Posts
-        .SelectMany(post => post.Tags)
-        .DistinctBy(tag => tag.EncodedName)
-        .ToImmutableDictionary(tag => tag.Name);
+    public Tag? GetTagByEncodedNameOrDefault(string encodedName)
+    {
+        return _postCache.Values
+            .SelectMany(post => post.Tags)
+            .FirstOrDefault(i => i.EncodedName == encodedName);
+    }
 
     /// <summary>
     ///     Gets the configuration options used by this content service.
@@ -112,15 +110,20 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     IEnumerable<PageToGenerate> IBlazorStaticContentService.GetPagesToGenerate()
     {
         // Post pages - one for each blog post
-        foreach (var post in Posts)
+        var allPosts = GetAllPosts();
+        foreach (var post in allPosts)
         {
             var outputFile =
                 Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
             yield return new PageToGenerate($"{Options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
         }
 
+        var allTags = allPosts
+            .SelectMany(post => post.Tags)
+            .DistinctBy(tag => tag.EncodedName);
+
         // Tag pages - one page for each unique tag
-        foreach (var tag in AllTags.Values)
+        foreach (var tag in allTags)
         {
             var outputFile = Path.Combine(Options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
             yield return new PageToGenerate($"{Options.Tags.TagsPageUrl}/{tag.EncodedName}", outputFile);
@@ -133,15 +136,12 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
         yield return new ContentToCopy(Options.ContentPath, Options.PageUrl);
     }
 
-    private ImmutableList<Post<TFrontMatter>> ParseAndAddPosts()
+    private ConcurrentDictionary<string, Post<TFrontMatter>> ParseAndAddPosts()
     {
         var stopwatch = Stopwatch.StartNew();
 
-        var posts = new ConcurrentBag<Post<TFrontMatter>>();
         var (files, absPostPath) = GetPostsPath();
-
-        // Determine if front matter supports tags
-        var supportsTags = typeof(IFrontMatterWithTags).IsAssignableFrom(typeof(TFrontMatter));
+        var results = new ConcurrentDictionary<string, Post<TFrontMatter>>();
 
         Parallel.ForEach(files, file =>
         {
@@ -157,11 +157,11 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
             // Skip draft posts
             if (frontMatter.IsDraft)
             {
-                return;
+                return; // 'continue' in a parallel loop becomes 'return'
             }
 
             // Process tags if supported
-            var tags = supportsTags && frontMatter is IFrontMatterWithTags frontMatterWithTags
+            var tags = frontMatter is IFrontMatterWithTags frontMatterWithTags
                 ? frontMatterWithTags.Tags.Select(BuildTag).ToImmutableList()
                 : [];
 
@@ -174,20 +174,15 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
                 HtmlContent = htmlContent,
                 Tags = tags
             };
-            posts.Add(post);
+
+            // Add to concurrent dictionary instead of yield returning
+            results.TryAdd(post.Url, post);
         });
 
         stopwatch.Stop();
         _logger.LogInformation("Posts and tagged rebuilt in {elapsed}", stopwatch.Elapsed);
 
-        // Log warning if tag processing was expected but not possible
-        if (!supportsTags && Options.Tags.AddTagPagesFromPosts)
-        {
-            _logger.LogWarning(
-                "BlazorStaticContentOptions.Tags.AddTagPagesFromPosts is true, but the used FrontMatter does not inherit from IFrontMatterWithTags. No tags were processed.");
-        }
-
-        return posts.ToImmutableList();
+        return results;
     }
 
     private Tag BuildTag(string tagName)
@@ -244,9 +239,9 @@ public class BlazorStaticContentService<TFrontMatter> : IBlazorStaticContentServ
     }
 
     /// <summary>
-    /// Finalizer for the <see cref="BlazorStaticContentService{TFrontMatter}"/> class.
+    /// Finalizer for the <see cref="BlazorStaticMarkdownContentService{TFrontMatter}"/> class.
     /// </summary>
-    ~BlazorStaticContentService()
+    ~BlazorStaticMarkdownContentService()
     {
         Dispose(false);
     }

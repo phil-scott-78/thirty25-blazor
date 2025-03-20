@@ -1,0 +1,44 @@
+﻿@page "/tags/{TagEncodedName}"
+@using BlazorStatic
+@using BlazorStatic.Models
+@using BlazorStatic.Services
+@using Thirty25.Web.Components.Layout
+@inject BlazorStaticMarkdownContentService<FrontMatter> BlogService
+@inject BlazorStaticOptions BlazorStaticOptions
+
+@if (_tag == null)
+{
+    <div>Unknown tag</div>
+    return;
+}
+
+<PageTitle>@BlazorStaticOptions.BlogTitle - @(_tag.Name)</PageTitle>
+<div>
+    <PageHeader Title="@(_tag.Name)">
+        Blog posts tagged by <span class="text-primary-800 dark:text-primary-300">@(_tag.Name)</span>
+    </PageHeader>
+    <BlogPostsList Posts="_posts"/>
+</div>
+
+@code {
+
+    [Parameter] public required string TagEncodedName { get; set; }
+
+    private BlazorStatic.Models.Tag? _tag;
+    private List<Post<FrontMatter>>? _posts;
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
+        _tag = BlogService.GetTagByEncodedNameOrDefault(TagEncodedName);
+        if (_tag == null)
+        {
+            return;
+        }
+
+        _posts = BlogService.GetAllPosts()
+            .Where(x => x.Tags.Any(c => c.EncodedName == TagEncodedName))
+            .OrderByDescending(i => i.FrontMatter.Date)
+            .ToList();
+    }
+}

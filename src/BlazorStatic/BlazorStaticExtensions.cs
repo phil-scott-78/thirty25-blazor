@@ -37,14 +37,12 @@ public static class BlazorStaticExtensions
         var options = configureOptions.Invoke();
 
         services.AddSingleton(options);
-        services.AddSingleton<BlazorStaticContentService<TFrontMatter>>();
+        services.AddSingleton<BlazorStaticMarkdownContentService<TFrontMatter>>();
         services.AddSingleton<SitemapRssService>();
 
         // also include their interface, we'll need these for loading all at once
-        services.AddSingleton<IBlazorStaticContentService>(provider =>
-            provider.GetRequiredService<BlazorStaticContentService<TFrontMatter>>());
-        services.AddSingleton<IBlazorStaticContentOptions>(provider =>
-            provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentService>(provider => provider.GetRequiredService<BlazorStaticMarkdownContentService<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentOptions>(provider => provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
         return services;
     }
 

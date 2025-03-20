@@ -3,7 +3,7 @@
 @using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticContentService<FrontMatter> BlazorStaticContentService
+@inject BlazorStaticMarkdownContentService<FrontMatter> BlazorStaticMarkdownContentService
 @inject BlazorStaticOptions BlazorStaticOptions
 
 @if (_posts == null)
@@ -25,7 +25,7 @@
 
     protected override void OnInitialized()
     {
-        _posts = BlazorStaticContentService.Posts.OrderByDescending(i => i.FrontMatter.Date).ToList();
+        _posts = BlazorStaticMarkdownContentService.GetAllPosts().OrderByDescending(i => i.FrontMatter.Date).ToList();
     }
 
 }

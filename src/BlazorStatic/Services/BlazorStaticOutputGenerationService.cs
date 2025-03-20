@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 using BlazorStatic.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;

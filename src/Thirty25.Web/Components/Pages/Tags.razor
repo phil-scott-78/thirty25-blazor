@@ -1,60 +1,36 @@
-@page "/tags/{TagEncodedName}"
 @page "/tags"
 @using BlazorStatic
 @using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticContentService<FrontMatter> BlogService
+@inject BlazorStaticMarkdownContentService<FrontMatter> BlogService
 @inject BlazorStaticOptions BlazorStaticOptions
 
-@if (TagEncodedName == null)
-{
-    <PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
-    <div class="flex flex-wrap justify-between gap-1">
-        @{
-            var tagsWithCount = BlogService.Posts
-                .SelectMany(x => x.Tags)
-                .GroupBy(x => x)
-                .Select(group => new { Tag = group.Key, Count = group.Count() })
-                .OrderByDescending(x => x.Count);
 
-            foreach(var tagGroup in tagsWithCount)
-            {
-                <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase" href="@tagGroup.Tag.NavigateUrl"> @tagGroup.Tag.Name (@tagGroup.Count) </a>
-            }
+<PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
+<PageHeader Title="All Tags"></PageHeader>
+
+<div class="flex flex-wrap justify-between gap-1">
+    @{
+        var tagsWithCount = BlogService.GetAllPosts()
+            .SelectMany(x => x.Tags)
+            .GroupBy(x => x)
+            .Select(group => new { Tag = group.Key, Count = group.Count() })
+            .OrderByDescending(x => x.Count);
+
+        foreach (var tagGroup in tagsWithCount)
+        {
+            <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
+               href="@tagGroup.Tag.NavigateUrl"> @tagGroup.Tag.Name (@tagGroup.Count) </a>
         }
-    </div>
-    return;
-}
-<PageTitle>@BlazorStaticOptions.BlogTitle - @(_tag?.Name ?? TagEncodedName)</PageTitle>
-<div>
-    <PageHeader Title="@(_tag?.Name ?? TagEncodedName)">
-        Blog posts tagged by
-        <span class="text-primary-800 dark:text-primary-300">@(_tag?.Name ?? TagEncodedName)</span>
-    </PageHeader>
-    <BlogPostsList Posts="_posts"/>
+    }
 </div>
+
 
 @code {
 
-    [Parameter] public string? TagEncodedName { get; set; }
-    
-    private Tag? _tag;
-    private List<Post<FrontMatter>>? _posts;
-
     protected override void OnInitialized()
     {
-        if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
-        _tag = BlogService.AllTags.FirstOrDefault(x=>x.Value.EncodedName == TagEncodedName).Value;
-        if (_tag == null)
-        {
-            return;
-        }
-        
-        _posts = BlogService.Posts
-            .Where(x => x.Tags.Any(c => c.EncodedName == TagEncodedName))
-            .OrderByDescending(i => i.FrontMatter.Date)
-            .ToList();
-
     }
+
 }
