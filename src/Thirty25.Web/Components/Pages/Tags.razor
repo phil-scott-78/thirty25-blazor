@@ -1,6 +1,6 @@
 @page "/tags"
+@using System.Collections.Immutable
 @using BlazorStatic
-@using BlazorStatic.Models
 @using BlazorStatic.Services
 @using Thirty25.Web.Components.Layout
 @inject BlazorStaticMarkdownContentService<FrontMatter> BlogService
@@ -10,15 +10,15 @@
 <PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
 <PageHeader Title="All Tags"></PageHeader>
 
+@if (TagsWithCount == null)
+{
+    <div>No tags?</div>
+    return;
+}
+
 <div class="flex flex-wrap justify-between gap-1">
     @{
-        var tagsWithCount = BlogService.GetAllPosts()
-            .SelectMany(x => x.Tags)
-            .GroupBy(x => x)
-            .Select(group => new { Tag = group.Key, Count = group.Count() })
-            .OrderByDescending(x => x.Count);
-
-        foreach (var tagGroup in tagsWithCount)
+        foreach (var tagGroup in TagsWithCount)
         {
             <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
                href="@tagGroup.Tag.NavigateUrl"> @tagGroup.Tag.Name (@tagGroup.Count) </a>
@@ -28,9 +28,17 @@
 
 
 @code {
+    private ImmutableList<(BlazorStatic.Models.Tag Tag, int Count)>? TagsWithCount;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        TagsWithCount = (await BlogService.GetAllPostsAsync())
+            .SelectMany(x => x.Tags)
+            .GroupBy(x => x)
+            .Select(group => (group.Key, group.Count()))
+            .OrderByDescending(x => x.Item2)
+            .ToImmutableList();
+
     }
 
 }

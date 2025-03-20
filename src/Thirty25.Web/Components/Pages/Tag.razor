@@ -28,10 +28,10 @@
     private BlazorStatic.Models.Tag? _tag;
     private ImmutableList<Post<FrontMatter>>? _posts;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
-        var tagAndPosts = BlogService.GetTagByEncodedNameOrDefault(TagEncodedName);
+        var tagAndPosts = await BlogService.GetTagByEncodedNameOrDefault(TagEncodedName);
         if (tagAndPosts == null)
         {
             return;

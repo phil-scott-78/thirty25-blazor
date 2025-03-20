@@ -19,7 +19,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     where TFrontMatter : class, IFrontMatter, new()
 {
     private readonly BlazorStaticContentOptions<TFrontMatter> _options;
-    private readonly LazyPopulatedDictionary<string, Post<TFrontMatter>> _postCache;
+    private readonly ThreadSafePopulatedCache<string, Post<TFrontMatter>> _postCache;
     private readonly MarkdownService _markdownService;
     private readonly ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> _logger;
     private bool _disposed;
@@ -43,7 +43,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         _options = options;
         _markdownService = markdownService;
         _logger = logger;
-        _postCache = new LazyPopulatedDictionary<string, Post<TFrontMatter>>(ParseAndAddPosts);
+        _postCache = new ThreadSafePopulatedCache<string, Post<TFrontMatter>>(async () => await ParseAndAddPosts());
 
         blazorStaticFileWatcher.Initialize([options.ContentPath], NeedsRefresh);
         HotReloadManager.Subscribe(NeedsRefresh);
@@ -61,13 +61,13 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// <param name="url">The URL identifier of the post to retrieve</param>
     /// <returns>The post with the matching URL, or null if no post matches the URL</returns>
     /// <remarks>
-    ///     This method uses the backing <see cref="LazyPopulatedDictionary{TKey, TValue}"/> which 
+    ///     This method uses the backing <see cref="ThreadSafePopulatedCache{TKey,TValue}"/> which 
     ///     locks and repopulates its contents when accessed after invalidation. If <see cref="NeedsRefresh"/>
     ///     has been called, the next access will trigger thread-safe repopulation of all posts.
     /// </remarks>
-    public Post<TFrontMatter>? GetPostByUrlOrDefault(string url)
+    public async Task<Post<TFrontMatter>?> GetPostByUrlOrDefault(string url)
     {
-        return _postCache.GetValueOrDefault(url);
+        return await _postCache.TryGetValueAsync(url) is (true, var post) ? post : null;
     }
 
     /// <summary>
@@ -79,9 +79,9 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     ///     has been called to invalidate the cache, this method will trigger a thread-safe repopulation
     ///     of all posts by acquiring a write lock, clearing existing data, and reprocessing all markdown files.
     /// </remarks>
-    public ImmutableList<Post<TFrontMatter>> GetAllPosts()
+    public async Task<ImmutableList<Post<TFrontMatter>>> GetAllPostsAsync()
     {
-        return _postCache.Values.ToImmutableList();
+        return await _postCache.GetValuesAsync();
     }
 
     /// <summary>
@@ -92,46 +92,58 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// <remarks>
     ///     This method accesses the post cache, which may trigger a thread-safe repopulation
     ///     if the cache has been invalidated via <see cref="NeedsRefresh"/>. During repopulation,
-    ///     the backing <see cref="LazyPopulatedDictionary{TKey, TValue}"/> acquires a write lock,
+    ///     the backing <see cref="ThreadSafePopulatedCache{TKey,TValue}"/> acquires a write lock,
     ///     clears existing data, and rebuilds all posts and their associated tags before returning results.
     /// </remarks>
-    public (Tag Tag, ImmutableList<Post<TFrontMatter>> Posts)? GetTagByEncodedNameOrDefault(string encodedName)
+    public async Task<(Tag Tag, ImmutableList<Post<TFrontMatter>> Posts)?> GetTagByEncodedNameOrDefault(
+        string encodedName)
     {
-        var posts = _postCache.Values
+        var allPosts = await GetAllPostsAsync();
+        var postsForTag = allPosts
             .Where(x => x.Tags.Any(c => c.EncodedName == encodedName))
             .ToImmutableList();
 
-        if (posts.Count == 0) return null;
+        if (postsForTag.Count == 0) return null;
 
-        var tag = posts[0].Tags.First(i => i.EncodedName == encodedName);
+        var tag = postsForTag[0].Tags.First(i => i.EncodedName == encodedName);
 
-        return (tag, posts);
+        return (tag, postsForTag);
     }
 
 
-
     /// <inheritdoc />
-    IEnumerable<PageToGenerate> IBlazorStaticContentService.GetPagesToGenerate()
+    async Task<IEnumerable<PageToGenerate>> IBlazorStaticContentService.GetPagesToGenerate()
     {
+        var pageToGenerates = new List<PageToGenerate>();
+
         // Post pages - one for each blog post
-        var allPosts = GetAllPosts();
+        var allPosts = await GetAllPostsAsync();
+
+        // Generate pages for each blog post
         foreach (var post in allPosts)
         {
-            var outputFile =
-                Path.Combine(_options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
-            yield return new PageToGenerate($"{_options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
+            var relativePath = post.Url.Replace('/', Path.DirectorySeparatorChar);
+            var outputFile = Path.Combine(_options.PageUrl, $"{relativePath}.html");
+            var pageUrl = $"{_options.PageUrl}/{post.Url}";
+
+            pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile, post.FrontMatter.AsMetadata()));
         }
 
+        // Extract all unique tags from posts
         var allTags = allPosts
             .SelectMany(post => post.Tags)
             .DistinctBy(tag => tag.EncodedName);
 
-        // Tag pages - one page for each unique tag
+        // Generate tag pages - one for each unique tag
         foreach (var tag in allTags)
         {
             var outputFile = Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
-            yield return new PageToGenerate($"{_options.Tags.TagsPageUrl}/{tag.EncodedName}", outputFile);
+            var pageUrl = $"{_options.Tags.TagsPageUrl}/{tag.EncodedName}";
+
+            pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile));
         }
+
+        return pageToGenerates;
     }
 
     /// <inheritdoc />
@@ -140,17 +152,17 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         yield return new ContentToCopy(_options.ContentPath, _options.PageUrl);
     }
 
-    private ConcurrentDictionary<string, Post<TFrontMatter>> ParseAndAddPosts()
+    private async Task<IEnumerable<KeyValuePair<string, Post<TFrontMatter>>>> ParseAndAddPosts()
     {
         var stopwatch = Stopwatch.StartNew();
 
         var (files, absPostPath) = GetPostsPath();
         var results = new ConcurrentDictionary<string, Post<TFrontMatter>>();
 
-        Parallel.ForEach(files, file =>
+        await Parallel.ForEachAsync(files, async (file, _) =>
         {
             // Parse markdown and extract front matter
-            var (frontMatter, htmlContent) = _markdownService.ParseMarkdownFile(
+            var (frontMatter, htmlContent) = await _markdownService.ParseMarkdownFileAsync(
                 file,
                 _options.ContentPath,
                 _options.PageUrl,

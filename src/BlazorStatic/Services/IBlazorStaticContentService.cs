@@ -15,7 +15,7 @@ internal interface IBlazorStaticContentService
     ///     An enumerable of PageToGenerate objects, each representing a page that
     ///     should be processed by the BlazorStaticService.
     /// </returns>
-    IEnumerable<PageToGenerate> GetPagesToGenerate();
+    Task<IEnumerable<PageToGenerate>> GetPagesToGenerate();
     
 
     /// <summary>

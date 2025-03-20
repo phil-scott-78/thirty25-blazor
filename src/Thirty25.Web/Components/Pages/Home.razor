@@ -23,9 +23,9 @@
     private List<Post<FrontMatter>>? _posts;
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _posts = BlazorStaticMarkdownContentService.GetAllPosts().OrderByDescending(i => i.FrontMatter.Date).ToList();
+        _posts = (await BlazorStaticMarkdownContentService.GetAllPostsAsync()).OrderByDescending(i => i.FrontMatter.Date).ToList();
     }
 
 }

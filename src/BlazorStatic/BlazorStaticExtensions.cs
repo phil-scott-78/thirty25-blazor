@@ -107,18 +107,18 @@ public static class BlazorStaticExtensions
     private static WebApplication MapBlazorStaticSitemapRss(this WebApplication app)
     {
         // Map the sitemap.xml endpoint
-        app.MapGet("/sitemap.xml", (SitemapRssService service) =>
+        app.MapGet("/sitemap.xml", async (SitemapRssService service) =>
         {
-            var sitemap = service.GenerateSitemap();
+            var sitemap = await service.GenerateSitemap();
             // Set content type and return the sitemap
-            return Task.FromResult(Results.Content(sitemap, "application/xml"));
+            return Results.Content(sitemap, "application/xml");
         });
 
         // Map the rss.xml endpoint
-        app.MapGet("/rss.xml", (SitemapRssService service) =>
+        app.MapGet("/rss.xml", async (SitemapRssService service) =>
         {
-            var rss = service.GenerateRssFeed();
-            return Task.FromResult(Results.Content(rss, "text/xml"));
+            var rss = await service.GenerateRssFeed();
+            return Results.Content(rss, "text/xml");
         });
 
         return app;

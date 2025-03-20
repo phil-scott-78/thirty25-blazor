@@ -80,7 +80,7 @@ public partial class MarkdownService: IDisposable
     /// - The deserialized front matter of type T
     /// - The HTML content generated from the Markdown (without the front matter)
     /// </returns>
-    public (T frontMatter, string htmlContent) ParseMarkdownFile<T>(
+    public async Task<(T frontMatter, string htmlContent)> ParseMarkdownFileAsync<T>(
         string filePath,
         string contentPathRoot,
         string pageUrlRoot,
@@ -118,7 +118,7 @@ public partial class MarkdownService: IDisposable
         yamlDeserializer ??= _options.FrontMatterDeserializer;
 
         // Read the file content
-        var markdownContent = File.ReadAllText(filePath);
+        var markdownContent = await File.ReadAllTextAsync(filePath);
 
         // Apply pre-processing if a preprocessor function was provided
         if (preProcessFile != null)

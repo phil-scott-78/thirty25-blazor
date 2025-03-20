@@ -62,8 +62,12 @@ internal class BlazorStaticOutputGenerationService(
     internal async Task GenerateStaticPages(string appUrl)
     {
         // Collect pages to generate from content services and options
-        var pagesToGenerate = blazorStaticContentServiceCollection
-            .Aggregate(ImmutableList<PageToGenerate>.Empty, (current, item) => current.AddRange(item.GetPagesToGenerate()));
+        var pagesToGenerate =  ImmutableList<PageToGenerate>.Empty;
+        foreach (var content in blazorStaticContentServiceCollection)
+        {
+            pagesToGenerate = pagesToGenerate.AddRange(await content.GetPagesToGenerate());
+
+        }
 
         // add pages that have been mapped via app.MapGet()
         pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());

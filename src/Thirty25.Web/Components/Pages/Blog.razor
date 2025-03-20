@@ -19,8 +19,8 @@
     [Parameter] public required string FileName { get; init; }
     Post<FrontMatter>? _post;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _post = BlazorStaticMarkdownContentService.GetPostByUrlOrDefault(FileName);
+        _post = await BlazorStaticMarkdownContentService.GetPostByUrlOrDefault(FileName);
     }
 }
