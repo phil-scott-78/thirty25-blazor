@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticContentService, IDisposable
     where TFrontMatter : class, IFrontMatter, new()
 {
+    private readonly BlazorStaticContentOptions<TFrontMatter> _options;
     private readonly LazyPopulatedDictionary<string, Post<TFrontMatter>> _postCache;
     private readonly MarkdownService _markdownService;
     private readonly ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> _logger;
@@ -39,7 +40,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         MarkdownService markdownService,
         ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> logger)
     {
-        Options = options;
+        _options = options;
         _markdownService = markdownService;
         _logger = logger;
         _postCache = new LazyPopulatedDictionary<string, Post<TFrontMatter>>(ParseAndAddPosts);
@@ -94,17 +95,20 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     ///     the backing <see cref="LazyPopulatedDictionary{TKey, TValue}"/> acquires a write lock,
     ///     clears existing data, and rebuilds all posts and their associated tags before returning results.
     /// </remarks>
-    public Tag? GetTagByEncodedNameOrDefault(string encodedName)
+    public (Tag Tag, ImmutableList<Post<TFrontMatter>> Posts)? GetTagByEncodedNameOrDefault(string encodedName)
     {
-        return _postCache.Values
-            .SelectMany(post => post.Tags)
-            .FirstOrDefault(i => i.EncodedName == encodedName);
+        var posts = _postCache.Values
+            .Where(x => x.Tags.Any(c => c.EncodedName == encodedName))
+            .ToImmutableList();
+
+        if (posts.Count == 0) return null;
+
+        var tag = posts[0].Tags.First(i => i.EncodedName == encodedName);
+
+        return (tag, posts);
     }
 
-    /// <summary>
-    ///     Gets the configuration options used by this content service.
-    /// </summary>
-    public BlazorStaticContentOptions<TFrontMatter> Options { get; }
+
 
     /// <inheritdoc />
     IEnumerable<PageToGenerate> IBlazorStaticContentService.GetPagesToGenerate()
@@ -114,8 +118,8 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         foreach (var post in allPosts)
         {
             var outputFile =
-                Path.Combine(Options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
-            yield return new PageToGenerate($"{Options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
+                Path.Combine(_options.PageUrl, $"{post.Url.Replace('/', Path.DirectorySeparatorChar)}.html");
+            yield return new PageToGenerate($"{_options.PageUrl}/{post.Url}", outputFile, post.FrontMatter.AsMetadata());
         }
 
         var allTags = allPosts
@@ -125,15 +129,15 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         // Tag pages - one page for each unique tag
         foreach (var tag in allTags)
         {
-            var outputFile = Path.Combine(Options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
-            yield return new PageToGenerate($"{Options.Tags.TagsPageUrl}/{tag.EncodedName}", outputFile);
+            var outputFile = Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
+            yield return new PageToGenerate($"{_options.Tags.TagsPageUrl}/{tag.EncodedName}", outputFile);
         }
     }
 
     /// <inheritdoc />
     IEnumerable<ContentToCopy> IBlazorStaticContentService.GetContentToCopy()
     {
-        yield return new ContentToCopy(Options.ContentPath, Options.PageUrl);
+        yield return new ContentToCopy(_options.ContentPath, _options.PageUrl);
     }
 
     private ConcurrentDictionary<string, Post<TFrontMatter>> ParseAndAddPosts()
@@ -148,10 +152,10 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent) = _markdownService.ParseMarkdownFile(
                 file,
-                Options.ContentPath,
-                Options.PageUrl,
-                preProcessFile: Options.PreProcessMarkdown,
-                postProcessMarkdown: Options.PostProcessMarkdown
+                _options.ContentPath,
+                _options.PageUrl,
+                preProcessFile: _options.PreProcessMarkdown,
+                postProcessMarkdown: _options.PostProcessMarkdown
             );
 
             // Skip draft posts
@@ -170,7 +174,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
             {
                 FrontMatter = frontMatter,
                 Url = GetRelativePathWithFilename(file, absPostPath),
-                NavigateUrl = $"{Options.PageUrl}/{GetRelativePathWithFilename(file, absPostPath)}",
+                NavigateUrl = $"{_options.PageUrl}/{GetRelativePathWithFilename(file, absPostPath)}",
                 HtmlContent = htmlContent,
                 Tags = tags
             };
@@ -187,12 +191,12 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
 
     private Tag BuildTag(string tagName)
     {
-        var tagEncodedName = Options.Tags.TagEncodeFunc(tagName);
+        var tagEncodedName = _options.Tags.TagEncodeFunc(tagName);
         return new Tag
         {
             Name = tagName,
             EncodedName = tagEncodedName,
-            NavigateUrl = Options.Tags.TagsPageUrl + "/" + tagEncodedName,
+            NavigateUrl = _options.Tags.TagsPageUrl + "/" + tagEncodedName,
         };
     }
 
@@ -214,8 +218,8 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         };
 
         // Get all files matching the pattern and return with the content path
-        return (Directory.GetFiles(Options.ContentPath, Options.PostFilePattern, enumerationOptions),
-            Options.ContentPath);
+        return (Directory.GetFiles(_options.ContentPath, _options.PostFilePattern, enumerationOptions),
+            _options.ContentPath);
     }
 
 

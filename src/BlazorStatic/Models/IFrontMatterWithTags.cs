@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace BlazorStatic.Models;
 
 /// <summary>
@@ -10,5 +12,5 @@ public interface IFrontMatterWithTags
     ///     If you have a different name for tags, or tags in complex objects, expose tags as a list of strings here.
     /// This is just front matter, tags will be process with proper encoder.
     /// </summary>
-    List<string> Tags { get; set; }
+    string[] Tags { get; set; }
 }

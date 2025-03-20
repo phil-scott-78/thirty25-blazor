@@ -1,4 +1,5 @@
 ﻿@page "/tags/{TagEncodedName}"
+@using System.Collections.Immutable
 @using BlazorStatic
 @using BlazorStatic.Models
 @using BlazorStatic.Services
@@ -25,20 +26,17 @@
     [Parameter] public required string TagEncodedName { get; set; }
 
     private BlazorStatic.Models.Tag? _tag;
-    private List<Post<FrontMatter>>? _posts;
+    private ImmutableList<Post<FrontMatter>>? _posts;
 
     protected override void OnInitialized()
     {
         if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
-        _tag = BlogService.GetTagByEncodedNameOrDefault(TagEncodedName);
-        if (_tag == null)
+        var tagAndPosts = BlogService.GetTagByEncodedNameOrDefault(TagEncodedName);
+        if (tagAndPosts == null)
         {
             return;
         }
 
-        _posts = BlogService.GetAllPosts()
-            .Where(x => x.Tags.Any(c => c.EncodedName == TagEncodedName))
-            .OrderByDescending(i => i.FrontMatter.Date)
-            .ToList();
+        (_tag, _posts) = tagAndPosts.Value;
     }
 }

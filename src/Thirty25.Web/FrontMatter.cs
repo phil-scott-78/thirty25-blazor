@@ -1,4 +1,5 @@
-﻿using BlazorStatic.Models;
+﻿using System.Collections.Immutable;
+using BlazorStatic.Models;
 
 namespace Thirty25.Web;
 
@@ -17,7 +18,7 @@ public class FrontMatter : IFrontMatter, IFrontMatterWithTags
     /// <inheritdoc />
     public bool IsDraft { get; set; }
 
-    public List<string> Tags { get; set; } = [];
+    public string[] Tags { get; set; } = [];
     
     public Metadata AsMetadata()
     {
