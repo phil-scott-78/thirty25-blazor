@@ -34,7 +34,7 @@ jobs:
          
       - name: Run webapp and generate static files
         run: |
-          export BaseHref="/${{ github.event.repository.name }}/"
+          export BaseHref="/"
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
       - name: Setup Pages
