@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using BlazorStatic.Models;
 
 namespace BlazorStatic.Services;
@@ -21,6 +22,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     private readonly BlazorStaticContentOptions<TFrontMatter> _options;
     private readonly ThreadSafePopulatedCache<string, Post<TFrontMatter>> _postCache;
     private readonly MarkdownService _markdownService;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> _logger;
     private bool _disposed;
 
@@ -30,6 +32,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// <param name="options">Configuration options specific to content handling</param>
     /// <param name="blazorStaticFileWatcher">File watcher for hot-reload functionality</param>
     /// <param name="markdownService">Service used to parse and render markdown files</param>
+    /// <param name="fileSystem">The file system</param>
     /// <param name="logger">Logger for diagnostic information</param>
     /// <remarks>
     ///     If hot-reload is enabled in the blazorStaticOptions, this service will watch
@@ -38,10 +41,12 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     public BlazorStaticMarkdownContentService(BlazorStaticContentOptions<TFrontMatter> options,
         BlazorStaticFileWatcher blazorStaticFileWatcher,
         MarkdownService markdownService,
+        IFileSystem fileSystem,
         ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> logger)
     {
         _options = options;
         _markdownService = markdownService;
+        _fileSystem = fileSystem;
         _logger = logger;
         _postCache = new ThreadSafePopulatedCache<string, Post<TFrontMatter>>(async () => await ParseAndAddPosts());
 
@@ -85,15 +90,19 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     }
 
     /// <summary>
-    ///     Gets a tag by its encoded name, or returns null if not found.
+    ///     Retrieves a tag by its encoded name along with all associated posts, or returns null if the tag is not found.
     /// </summary>
-    /// <param name="encodedName">The encoded name of the tag to retrieve</param>
-    /// <returns>The tag with the matching encoded name, or null if no tag matches</returns>
+    /// <param name="encodedName">The encoded name of the tag to retrieve.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation.
+    ///     The task result contains a tuple with the tag and its associated posts if found, or null if no tag matches.
+    /// </returns>
     /// <remarks>
-    ///     This method accesses the post cache, which may trigger a thread-safe repopulation
+    ///     This method retrieves all posts from the post cache, which may trigger a thread-safe repopulation
     ///     if the cache has been invalidated via <see cref="NeedsRefresh"/>. During repopulation,
     ///     the backing <see cref="ThreadSafePopulatedCache{TKey,TValue}"/> acquires a write lock,
-    ///     clears existing data, and rebuilds all posts and their associated tags before returning results.
+    ///     clears existing data, and rebuilds all posts and their associated tags before filtering and returning results.
+    ///     The method returns both the tag object and an immutable list of all posts that contain this tag.
     /// </remarks>
     public async Task<(Tag Tag, ImmutableList<Post<TFrontMatter>> Posts)?> GetTagByEncodedNameOrDefault(
         string encodedName)
@@ -112,9 +121,9 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
 
 
     /// <inheritdoc />
-    async Task<IEnumerable<PageToGenerate>> IBlazorStaticContentService.GetPagesToGenerate()
+    async Task<ImmutableList<PageToGenerate>> IBlazorStaticContentService.GetPagesToGenerateAsync()
     {
-        var pageToGenerates = new List<PageToGenerate>();
+        var pageToGenerates = ImmutableList<PageToGenerate>.Empty;
 
         // Post pages - one for each blog post
         var allPosts = await GetAllPostsAsync();
@@ -123,10 +132,10 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         foreach (var post in allPosts)
         {
             var relativePath = post.Url.Replace('/', Path.DirectorySeparatorChar);
-            var outputFile = Path.Combine(_options.PageUrl, $"{relativePath}.html");
+            var outputFile = _fileSystem.Path.Combine(_options.PageUrl, $"{relativePath}.html");
             var pageUrl = $"{_options.PageUrl}/{post.Url}";
 
-            pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile, post.FrontMatter.AsMetadata()));
+            pageToGenerates = pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile, post.FrontMatter.AsMetadata()));
         }
 
         // Extract all unique tags from posts
@@ -137,19 +146,22 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         // Generate tag pages - one for each unique tag
         foreach (var tag in allTags)
         {
-            var outputFile = Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
+            var outputFile = _fileSystem.Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
             var pageUrl = $"{_options.Tags.TagsPageUrl}/{tag.EncodedName}";
 
-            pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile));
+            pageToGenerates = pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile));
         }
 
         return pageToGenerates;
     }
 
     /// <inheritdoc />
-    IEnumerable<ContentToCopy> IBlazorStaticContentService.GetContentToCopy()
+    Task<ImmutableList<ContentToCopy>> IBlazorStaticContentService.GetContentToCopyAsync()
     {
-        yield return new ContentToCopy(_options.ContentPath, _options.PageUrl);
+        return Task.FromResult(new []
+        {
+            new ContentToCopy(_options.ContentPath, _options.PageUrl)
+        }.ToImmutableList());
     }
 
     private async Task<IEnumerable<KeyValuePair<string, Post<TFrontMatter>>>> ParseAndAddPosts()
@@ -167,7 +179,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
                 _options.ContentPath,
                 _options.PageUrl,
                 preProcessFile: _options.PreProcessMarkdown,
-                postProcessMarkdown: _options.PostProcessMarkdown
+                postProcessHtml: _options.PostProcessHtml
             );
 
             // Skip draft posts
@@ -212,11 +224,12 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         };
     }
 
-    private static string GetRelativePathWithFilename(string file, string absoluteContentPath)
+    private string GetRelativePathWithFilename(string file, string absoluteContentPath)
     {
-        var relativePathWithFileName = Path.GetRelativePath(absoluteContentPath, file);
-        return Path.Combine(Path.GetDirectoryName(relativePathWithFileName)!,
-                Path.GetFileNameWithoutExtension(relativePathWithFileName).Slugify())
+        var fileSystemPath = _fileSystem.Path;
+        var relativePathWithFileName = fileSystemPath.GetRelativePath(absoluteContentPath, file);
+        return fileSystemPath
+            .Combine(fileSystemPath.GetDirectoryName(relativePathWithFileName)!, fileSystemPath.GetFileNameWithoutExtension(relativePathWithFileName).Slugify())
             .Replace("\\", "/");
     }
 
@@ -230,7 +243,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         };
 
         // Get all files matching the pattern and return with the content path
-        return (Directory.GetFiles(_options.ContentPath, _options.PostFilePattern, enumerationOptions),
+        return (_fileSystem.Directory.GetFiles(_options.ContentPath, _options.PostFilePattern, enumerationOptions),
             _options.ContentPath);
     }
 

@@ -46,7 +46,7 @@ internal class SitemapRssService
 
         foreach (var content in _contentServices)
         {
-            var pages = await content.GetPagesToGenerate();
+            var pages = await content.GetPagesToGenerateAsync();
             pagesToGenerate = pagesToGenerate.AddRange(pages);
         }
 
@@ -107,7 +107,7 @@ internal class SitemapRssService
         // Go through all content services to find posts that should be in the RSS feed
         foreach (var contentService in _contentServices)
         {
-            var pages = (await contentService.GetPagesToGenerate())
+            var pages = (await contentService.GetPagesToGenerateAsync())
                 .Where(p => p.Metadata?.RssItem == true)
                 .ToList();
 

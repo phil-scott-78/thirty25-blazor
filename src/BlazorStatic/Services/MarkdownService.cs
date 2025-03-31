@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.IO.Abstractions;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using BlazorStatic.Models;
 using Markdig;
@@ -13,11 +14,13 @@ namespace BlazorStatic.Services;
 /// Service for parsing and processing Markdown files with YAML front matter.
 /// Provides caching, HTML conversion, and image path transformation capabilities.
 /// </summary>
-public partial class MarkdownService: IDisposable
+public partial class MarkdownService : IDisposable
 {
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly BlazorStaticOptions _options;
+    private readonly MarkdownPipeline _pipeline;
     private bool _disposed;
 
     // Cache to store processed markdown files
@@ -41,19 +44,22 @@ public partial class MarkdownService: IDisposable
         string HtmlContent);
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MarkdownService"/> class.
+    /// Initializes a new instance of the <see cref = "MarkdownService"/> class.
     /// </summary>
-    /// <param name="logger">Logger for recording operational information</param>
-    /// <param name="serviceProvider">Service provider for dependency resolution</param>
-    /// <param name="options">Options for configuring the markdown processing behavior</param>
+    /// <param name = "logger">Logger for recording operational information</param>
+    /// <param name = "serviceProvider">Service provider for dependency resolution</param>
+    /// <param name = "options">Options for configuring the markdown processing behavior</param>
+    /// <param name="fileSystem">The file system</param>
     public MarkdownService(ILogger<MarkdownService> logger, IServiceProvider serviceProvider,
-        BlazorStaticOptions options)
+        BlazorStaticOptions options, IFileSystem fileSystem)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
         _options = options;
-
+        _fileSystem = fileSystem;
         HotReloadManager.Subscribe(ClearCache);
+
+        _pipeline = options.MarkdownPipelineBuilder.Invoke(serviceProvider);
     }
 
     /// <summary>
@@ -71,7 +77,7 @@ public partial class MarkdownService: IDisposable
     /// Optional function to preprocess the Markdown content before parsing.
     /// Takes the service provider and raw file content as inputs and returns modified content.
     /// </param>
-    /// <param name="postProcessMarkdown">
+    /// <param name="postProcessHtml">
     /// Optional function to postProcess the Markdown content before parsing.
     /// Takes the service provider, frotnMatter and HTML content as inputs and returns modified content.
     /// </param>
@@ -86,18 +92,18 @@ public partial class MarkdownService: IDisposable
         string pageUrlRoot,
         IDeserializer? yamlDeserializer = null,
         Func<IServiceProvider, string, string>? preProcessFile = null,
-        Func<IServiceProvider, T, string, (T, string)>? postProcessMarkdown = null
+        Func<IServiceProvider, T, string, (T, string)>? postProcessHtml = null
     ) where T : IFrontMatter, new()
     {
         // Check if file exists
-        if (!File.Exists(filePath))
+        if (!_fileSystem.File.Exists(filePath))
         {
             _logger.LogWarning("File not found: {filePath}", filePath);
             return (new T(), string.Empty);
         }
 
         // Get file's last write time
-        var fileLastModified = File.GetLastWriteTime(filePath);
+        var fileLastModified = _fileSystem.File.GetLastWriteTime(filePath);
 
         // Create a cache key that includes the file path, path root and page url root.
         // changes to those *should* wipe the cache regardless, but just in case
@@ -118,7 +124,7 @@ public partial class MarkdownService: IDisposable
         yamlDeserializer ??= _options.FrontMatterDeserializer;
 
         // Read the file content
-        var markdownContent = await File.ReadAllTextAsync(filePath);
+        var markdownContent = await _fileSystem.File.ReadAllTextAsync(filePath);
 
         // Apply pre-processing if a preprocessor function was provided
         if (preProcessFile != null)
@@ -127,7 +133,7 @@ public partial class MarkdownService: IDisposable
         }
 
         // Parse the markdown content
-        var document = Markdown.Parse(markdownContent, _options.MarkdownPipeline);
+        var document = Markdown.Parse(markdownContent, _pipeline);
 
         // Extract the YAML front matter block, if present
         var yamlBlock = document.Descendants<YamlFrontMatterBlock>().FirstOrDefault();
@@ -163,11 +169,11 @@ public partial class MarkdownService: IDisposable
         var replacedMarkdown =
             ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, filePath, contentPathRoot, pageUrlRoot);
         // Replace image paths if needed and convert to HTML
-        var htmlContent = Markdown.ToHtml(replacedMarkdown, _options.MarkdownPipeline);
+        var htmlContent = Markdown.ToHtml(replacedMarkdown, _pipeline);
 
-        if (postProcessMarkdown != null)
+        if (postProcessHtml != null)
         {
-            (frontMatter, htmlContent) = postProcessMarkdown.Invoke(_serviceProvider, frontMatter, htmlContent);
+            (frontMatter, htmlContent) = postProcessHtml.Invoke(_serviceProvider, frontMatter, htmlContent);
         }
 
         // Store the result in the cache
@@ -193,7 +199,7 @@ public partial class MarkdownService: IDisposable
         if (string.IsNullOrEmpty(markdownContent)) return markdownContent;
 
         // Get the directory of the current markdown file relative to the content root
-        var fileDirectory = Path.GetDirectoryName(filePath);
+        var fileDirectory = _fileSystem.Path.GetDirectoryName(filePath);
         if (string.IsNullOrEmpty(fileDirectory))
         {
             return markdownContent;

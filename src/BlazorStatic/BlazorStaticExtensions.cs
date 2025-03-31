@@ -1,10 +1,10 @@
-﻿using BlazorStatic.Models;
+﻿using System.IO.Abstractions;
+using BlazorStatic.Models;
 using BlazorStatic.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
 
 namespace BlazorStatic;
 
@@ -79,6 +79,7 @@ public static class BlazorStaticExtensions
     private static void MapBlazorStaticAssets(this WebApplication app)
     {
         var optionList = app.Services.GetServices<IBlazorStaticContentOptions>().ToList();
+        var fileSystem = app.Services.GetRequiredService<IFileSystem>();
         if (optionList.Count == 0)
         {
             throw new InvalidOperationException(
@@ -87,7 +88,7 @@ public static class BlazorStaticExtensions
 
         foreach (var option in optionList)
         {
-            var combine = Path.Combine(Directory.GetCurrentDirectory(), option.ContentPath);
+            var combine = fileSystem.Path.Combine(fileSystem.Directory.GetCurrentDirectory(), option.ContentPath);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(combine),
@@ -104,7 +105,7 @@ public static class BlazorStaticExtensions
     /// </summary>
     /// <param name="app">The web application.</param>
     /// <returns>The web application for chaining.</returns>
-    private static WebApplication MapBlazorStaticSitemapRss(this WebApplication app)
+    private static void MapBlazorStaticSitemapRss(this WebApplication app)
     {
         // Map the sitemap.xml endpoint
         app.MapGet("/sitemap.xml", async (SitemapRssService service) =>
@@ -120,8 +121,6 @@ public static class BlazorStaticExtensions
             var rss = await service.GenerateRssFeed();
             return Results.Content(rss, "text/xml");
         });
-
-        return app;
     }
 
     /// <summary>

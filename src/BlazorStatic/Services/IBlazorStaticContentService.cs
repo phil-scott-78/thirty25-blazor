@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using BlazorStatic.Models;
 
 namespace BlazorStatic.Services;
@@ -15,7 +16,7 @@ internal interface IBlazorStaticContentService
     ///     An enumerable of PageToGenerate objects, each representing a page that
     ///     should be processed by the BlazorStaticService.
     /// </returns>
-    Task<IEnumerable<PageToGenerate>> GetPagesToGenerate();
+    Task<ImmutableList<PageToGenerate>> GetPagesToGenerateAsync();
     
 
     /// <summary>
@@ -26,5 +27,5 @@ internal interface IBlazorStaticContentService
     ///     An enumerable of ContentToCopy objects, each representing a file or directory
     ///     that should be copied by the BlazorStaticService.
     /// </returns>
-    IEnumerable<ContentToCopy> GetContentToCopy();
+    Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync();
 }

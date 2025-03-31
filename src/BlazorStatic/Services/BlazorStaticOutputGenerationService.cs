@@ -65,7 +65,7 @@ internal class BlazorStaticOutputGenerationService(
         var pagesToGenerate =  ImmutableList<PageToGenerate>.Empty;
         foreach (var content in blazorStaticContentServiceCollection)
         {
-            pagesToGenerate = pagesToGenerate.AddRange(await content.GetPagesToGenerate());
+            pagesToGenerate = pagesToGenerate.AddRange(await content.GetPagesToGenerateAsync());
 
         }
 
@@ -95,11 +95,13 @@ internal class BlazorStaticOutputGenerationService(
             .Select(x => Path.Combine(options.OutputFolderPath, x))
             .ToList();
 
-        // get each BlazorStaticContentService<T>'s static content for copying 
-        var contentToCopy = blazorStaticContentServiceCollection
-            .SelectMany(service => service.GetContentToCopy())
-            .Concat(GetStaticWebAssetsToOutput(environment.WebRootFileProvider, string.Empty))
-            .ToImmutableList();
+        var contentToCopy = ImmutableList<ContentToCopy>.Empty;
+        foreach (var content in blazorStaticContentServiceCollection)
+        {
+            contentToCopy = contentToCopy.AddRange(await content.GetContentToCopyAsync());
+        }
+
+        contentToCopy = contentToCopy.AddRange(GetStaticWebAssetsToOutput(environment.WebRootFileProvider, string.Empty));
 
         // Copy all content to output directory
         foreach (var pathToCopy in contentToCopy)

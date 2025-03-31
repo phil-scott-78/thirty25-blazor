@@ -1,21 +1,33 @@
+using System.IO.Abstractions;
 using BlazorStatic;
-using Microsoft.AspNetCore.ResponseCompression;
+using Markdig;
 using Thirty25.Web;
 using Thirty25.Web.BlogServices;
 using Thirty25.Web.Components;
+using Thirty25.Web.Markdown;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseStaticWebAssets();
 builder.Services.AddRazorComponents();
+builder.Services.AddSingleton<IFileSystem>(new FileSystem());
 
 // configures site wide settings
 builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
 {
     BlogTitle = "Thirty25",
     BlogDescription = "Quite exciting this computer magic",
-    BaseUrl = "https://thirty25.blog"
+    BaseUrl = "https://thirty25.blog",
+    MarkdownPipelineBuilder = serviceProvider =>
+    {
+        var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
+        return new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UseSyntaxHighlighting(roslynHighlighter)
+            .UseYamlFrontMatter()
+            .Build();
+    }
 });
 
 // configures individual sections of the blog. PageUrl should match the configured razor pages route
@@ -25,11 +37,6 @@ builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOpti
 {
     PageUrl = "blog",
     ContentPath = "Content/Blog",
-    PostProcessMarkdown = (serviceProvider, f, s) =>
-    {
-        var roslyn = serviceProvider.GetRequiredService<RoslynHighlighterService>();
-        return (f, roslyn.Highlight(s));
-    } 
 });
 
 // custom service for doing css work

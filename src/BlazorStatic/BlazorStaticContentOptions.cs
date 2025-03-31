@@ -84,7 +84,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// This function takes an IServiceProvider, the parsed front matter, and the HTML content,
     /// and returns a tuple containing potentially modified versions of both.
     /// </remarks>
-    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessMarkdown { get; init; } =
+    public Func<IServiceProvider, TFrontMatter, string, (TFrontMatter, string)> PostProcessHtml { get; init; } =
         (_, frontMatter, html) => (frontMatter, html);
 
     /// <summary>

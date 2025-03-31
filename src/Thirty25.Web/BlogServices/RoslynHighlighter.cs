@@ -14,55 +14,56 @@ using RoslynHighlighterService = Thirty25.Web.BlogServices.RoslynHighlighterServ
 
 namespace Thirty25.Web.BlogServices;
 
+internal enum Language
+{
+    CSharp,
+    VisualBasic,
+}
+
 internal partial class RoslynHighlighterService : IDisposable
 {
     private readonly AdhocWorkspace _workspace;
-    private readonly Project _project;
+    private readonly Project _csharpProject;
+    private readonly Project _vbProject;
     private bool _disposed;
+
     private static readonly ConcurrentDictionary<int, string> Cache = new();
 
     public RoslynHighlighterService()
     {
         _workspace = new AdhocWorkspace();
-        _project = _workspace.CurrentSolution.AddProject("projectName", "assemblyName", LanguageNames.CSharp);
+        _csharpProject = _workspace.CurrentSolution.AddProject("csProjectName", "assemblyName", LanguageNames.CSharp);
+        _vbProject = _workspace.CurrentSolution.AddProject("vbProjectName", "assemblyName", LanguageNames.VisualBasic);
     }
-    
+
     internal static void ClearCache(Type[]? _)
     {
         Cache.Clear();
     }
 
-    public string Highlight(string htmlCode)
+    public string Highlight(string codeContent, Language language  = Language.CSharp)
     {
-        var highlighted = false;
+        // Calculate a hash for the content to use as cache key
+        var contentHash = codeContent.GetHashCode();
 
-        // Process each match
-        var result = CSharpLanguageBlockRegEx().Replace(htmlCode, match =>
+        var highlightedCode = Cache.GetOrAdd(contentHash, _ =>
         {
-            highlighted = true;
-            var openingTagStart = match.Groups[1].Value;
-            var openingTagEnd = match.Groups[2].Value;
-            var codeContent = match.Groups[3].Value;
-            var closingTags = match.Groups[4].Value;
-           
-            // Calculate a hash for the content to use as cache key
-            var contentHash = codeContent.GetHashCode();
-            
-            var highlightedCode = Cache.GetOrAdd(contentHash, _ =>
+            var project = language switch
             {
-                return RunSync(() =>
-                {
-                    // HTML decode the content to get actual code
-                    var decodedContent = HttpUtility.HtmlDecode(codeContent);
-                    return HighlightContent(decodedContent, _project);
-                });
-            });
+                Language.CSharp => _csharpProject,
+                Language.VisualBasic => _vbProject,
+                _ => throw new NotSupportedException($"Language {language} is not supported.")
+            };
 
-            // Remove language-csharp and replace with language-none so prism.js skips it
-            return $"{openingTagStart}language-none{openingTagEnd}{highlightedCode}{closingTags}";
+            return RunSync(() =>
+            {
+                // HTML decode the content to get actual code
+                var decodedContent = HttpUtility.HtmlDecode(codeContent);
+                return HighlightContent(decodedContent, project);
+            });
         });
 
-        return highlighted ? result : htmlCode;
+        return $"<pre><code>{highlightedCode}</code></pre>";
     }
 
     private static async Task<string> HighlightContent(string codeContent, Project project)
@@ -133,8 +134,15 @@ internal partial class RoslynHighlighterService : IDisposable
         private ClassifiedSpan ClassifiedSpan { get; } = classifiedSpan;
         public string Text { get; } = text;
 
-        public Range(string classification, TextSpan span, SourceText text) : this(classification, span, text.GetSubText(span).ToString()) { }
-        private Range(string classification, TextSpan span, string text) : this(new ClassifiedSpan(classification, span), text) { }
+        public Range(string classification, TextSpan span, SourceText text) : this(classification, span,
+            text.GetSubText(span).ToString())
+        {
+        }
+
+        private Range(string classification, TextSpan span, string text) : this(
+            new ClassifiedSpan(classification, span), text)
+        {
+        }
 
         public string ClassificationType => ClassifiedSpan.ClassificationType;
 

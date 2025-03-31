@@ -45,28 +45,55 @@
 </script>
 <!-- Import the ESM versions of the required libraries -->
 <script type="module">
-    import {
-        common,
-        createStarryNight
-    } from 'https://esm.sh/@@wooorm/starry-night@3?bundle'
-    import powershell from 'https://esm.sh/@@wooorm/starry-night@3/lang/source.powershell?bundle'
+    const prefix = 'language-';
+    const codeNodes = Array.from(document.body.querySelectorAll('code'));
+    const relevantNodes = codeNodes.filter(node =>
+        Array.from(node.classList).some(cls => cls.startsWith(prefix))
+    );
 
-    import {toDom} from 'https://esm.sh/hast-util-to-dom@4?bundle'
+    if (relevantNodes.length > 0) {
+        // Collect unique languages used
+        const languages = new Set();
+        for (const node of relevantNodes) {
+            const langClass = Array.from(node.classList).find(cls => cls.startsWith(prefix));
+            if (langClass) {
+                languages.add(langClass.slice(prefix.length));
+            }
+        }
 
-    const starryNight = await createStarryNight([...common, powershell])
-    const prefix = 'language-'
+        // Dynamically import starry-night and any needed languages
+        const [{common, createStarryNight}, {toDom}] = await Promise.all([
+            import('https://esm.sh/@@wooorm/starry-night@3?bundle'),
+            import('https://esm.sh/hast-util-to-dom@4?bundle')
+        ]);
 
-    const nodes = Array.from(document.body.querySelectorAll('code'))
+        // Build list of grammar imports
+        const langImports = [];
+        for (const lang of languages) {
+            // Only load extra languages that are NOT part of `common`
+            if (!common.some(gram => gram.names.includes(lang))) {
 
-    for (const node of nodes) {
-        const className = Array.from(node.classList).find(function (d) {
-            return d.startsWith(prefix)
-        })
-        if (!className) continue
-        const scope = starryNight.flagToScope(className.slice(prefix.length))
-        if (!scope) continue
-        const tree = starryNight.highlight(node.textContent, scope)
-        node.replaceChildren(toDom(tree, {fragment: true}))
+                try {
+                    const mod = await import(`https://esm.sh/@@wooorm/starry-night@3/lang/source.${lang}?bundle`);
+                    langImports.push(mod.default);
+                } catch (err) {
+                    console.warn(`Could not load language grammar for: ${lang}`, err);
+                }
+            }
+        }
+
+        const starryNight = await createStarryNight([...common, ...langImports]);
+
+        for (const node of relevantNodes) {
+            const className = Array.from(node.classList).find(cls => cls.startsWith(prefix));
+            if (!className) continue;
+
+            const scope = starryNight.flagToScope(className.slice(prefix.length));
+            if (!scope) continue;
+
+            const tree = starryNight.highlight(node.textContent, scope);
+            node.replaceChildren(toDom(tree, {fragment: true}));
+        }
     }
 </script>
 </html>

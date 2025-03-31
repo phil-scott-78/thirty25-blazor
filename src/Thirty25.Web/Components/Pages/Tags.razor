@@ -10,7 +10,7 @@
 <PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
 <PageHeader Title="All Tags"></PageHeader>
 
-@if (TagsWithCount == null)
+@if (_tagsWithCount == null)
 {
     <div>No tags?</div>
     return;
@@ -18,7 +18,7 @@
 
 <div class="flex flex-wrap justify-between gap-1">
     @{
-        foreach (var tagGroup in TagsWithCount)
+        foreach (var tagGroup in _tagsWithCount)
         {
             <a class="text-primary-500 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
                href="@tagGroup.Tag.NavigateUrl"> @tagGroup.Tag.Name (@tagGroup.Count) </a>
@@ -28,11 +28,11 @@
 
 
 @code {
-    private ImmutableList<(BlazorStatic.Models.Tag Tag, int Count)>? TagsWithCount;
+    private ImmutableList<(BlazorStatic.Models.Tag Tag, int Count)>? _tagsWithCount;
 
     protected override async Task OnInitializedAsync()
     {
-        TagsWithCount = (await BlogService.GetAllPostsAsync())
+        _tagsWithCount = (await BlogService.GetAllPostsAsync())
             .SelectMany(x => x.Tags)
             .GroupBy(x => x)
             .Select(group => (group.Key, group.Count()))

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Markdig;
 using BlazorStatic.Models;
+using Microsoft.Extensions.DependencyInjection;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -177,29 +178,30 @@ public class BlazorStaticOptions
     /// </remarks>
     public IDeserializer FrontMatterDeserializer { get; init; } = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .WithCaseInsensitivePropertyMatching()
         .IgnoreUnmatchedProperties()
         .Build();
 
     /// <summary>
-    /// Gets or sets the Markdown processing pipeline used for parsing markdown files.
+    /// Gets or sets the function that builds the Markdown pipeline used for parsing and rendering markdown content.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This pipeline defines how markdown content is parsed and transformed into HTML.
+    /// This pipeline factory creates a configured Markdig pipeline that processes markdown content
+    /// with the necessary extensions and features for your application.
     /// </para>
     /// <para>
-    /// The default configuration includes:
+    /// The default configuration:
     /// </para>
     /// <list type="bullet">
-    ///     <item><description>Advanced Markdig extensions (tables, footnotes, citations, etc.)</description></item>
-    ///     <item><description>YAML front matter support for metadata extraction</description></item>
+    ///     <item><description>Enables advanced extensions for enhanced markdown features</description></item>
+    ///     <item><description>Supports YAML front matter parsing in markdown documents</description></item>
     /// </list>
     /// <para>
-    /// You can customize this pipeline to add or remove markdown extensions as needed
-    /// for your specific content requirements.
+    /// You can customize this to add additional extensions or configure different parsing options.
     /// </para>
     /// </remarks>
-    public MarkdownPipeline MarkdownPipeline { get; init; } = new MarkdownPipelineBuilder()
+    public Func<IServiceProvider, MarkdownPipeline> MarkdownPipelineBuilder { get; init; } = _ => new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UseYamlFrontMatter()
         .Build();
