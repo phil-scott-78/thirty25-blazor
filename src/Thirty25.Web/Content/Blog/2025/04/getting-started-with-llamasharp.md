@@ -6,8 +6,8 @@ tags:
 - llamasharp
 ---
 
-Don't want to destroy the rain forests and boil the ocean but still like the idea of using an LLM to help with some tasks
-in your .NET application? That's where [LlamaSharp](https://github.com/SciSharp/LLamaSharp) comes in.
+Like the idea of using a LLM in .NET to do some small tasks, but don't want to destroy the half the rain forest per
+query to do so? That's where [LlamaSharp](https://github.com/SciSharp/LLamaSharp) comes in)
 
 ## What is LlamaSharp?
 
@@ -23,13 +23,13 @@ The key benefits of LlamaSharp include:
 - **Low latency**: Eliminate network delays with local execution
 - **Full integration**: Works seamlessly with the .NET ecosystem and supports both Windows and Linux
 
-Under the hood, LlamaSharp leverages P/Invoke to call into the native llama.cpp library, providing a friendly C# API
-that feels natural to .NET developers.
+Under the hood, LlamaSharp leverages P/Invoke to call into the native llama.cpp library, wrapping up functionality in a
+more C# friendly way.
 
 ## Setting Up LlamaSharp on Windows with CUDA Support
 
-You can run it against a CPU, but it shines with a video card. Getting LlamaSharp running on a Windows machine with an
-NVIDIA GPU involves a few steps. Let's break it down:
+You can run it against a CPU, but it shines with a video card. I only have an NVIDIA card, so that's what we are gonna focus on.
+Getting LlamaSharp running on a Windows machine with an NVIDIA GPU involves a few steps. Let's break it down:
 
 ### 1. CUDA Requirements for NVIDIA GPUs
 
