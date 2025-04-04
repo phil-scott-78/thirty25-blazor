@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Markdig;
 using BlazorStatic.Models;
-using Microsoft.Extensions.DependencyInjection;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

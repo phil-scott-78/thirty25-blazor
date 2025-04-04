@@ -1,5 +1,4 @@
-﻿using System.IO.Abstractions;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using BlazorStatic.Models;
 using Markdig;
@@ -16,7 +15,6 @@ namespace BlazorStatic.Services;
 /// </summary>
 public partial class MarkdownService : IDisposable
 {
-    private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly BlazorStaticOptions _options;
@@ -49,14 +47,12 @@ public partial class MarkdownService : IDisposable
     /// <param name = "logger">Logger for recording operational information</param>
     /// <param name = "serviceProvider">Service provider for dependency resolution</param>
     /// <param name = "options">Options for configuring the markdown processing behavior</param>
-    /// <param name="fileSystem">The file system</param>
     public MarkdownService(ILogger<MarkdownService> logger, IServiceProvider serviceProvider,
-        BlazorStaticOptions options, IFileSystem fileSystem)
+        BlazorStaticOptions options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
         _options = options;
-        _fileSystem = fileSystem;
         HotReloadManager.Subscribe(ClearCache);
 
         _pipeline = options.MarkdownPipelineBuilder.Invoke(serviceProvider);
@@ -96,14 +92,14 @@ public partial class MarkdownService : IDisposable
     ) where T : IFrontMatter, new()
     {
         // Check if file exists
-        if (!_fileSystem.File.Exists(filePath))
+        if (!File.Exists(filePath))
         {
             _logger.LogWarning("File not found: {filePath}", filePath);
             return (new T(), string.Empty);
         }
 
         // Get file's last write time
-        var fileLastModified = _fileSystem.File.GetLastWriteTime(filePath);
+        var fileLastModified = File.GetLastWriteTime(filePath);
 
         // Create a cache key that includes the file path, path root and page url root.
         // changes to those *should* wipe the cache regardless, but just in case
@@ -124,7 +120,7 @@ public partial class MarkdownService : IDisposable
         yamlDeserializer ??= _options.FrontMatterDeserializer;
 
         // Read the file content
-        var markdownContent = await _fileSystem.File.ReadAllTextAsync(filePath);
+        var markdownContent = await File.ReadAllTextAsync(filePath);
 
         // Apply pre-processing if a preprocessor function was provided
         if (preProcessFile != null)
@@ -199,7 +195,7 @@ public partial class MarkdownService : IDisposable
         if (string.IsNullOrEmpty(markdownContent)) return markdownContent;
 
         // Get the directory of the current markdown file relative to the content root
-        var fileDirectory = _fileSystem.Path.GetDirectoryName(filePath);
+        var fileDirectory = Path.GetDirectoryName(filePath);
         if (string.IsNullOrEmpty(fileDirectory))
         {
             return markdownContent;

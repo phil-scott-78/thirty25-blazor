@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using BlazorStatic;
 using Markdig;
 using Thirty25.Web;
@@ -11,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseStaticWebAssets();
 builder.Services.AddRazorComponents();
-builder.Services.AddSingleton<IFileSystem>(new FileSystem());
 
 // configures site wide settings
 builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions

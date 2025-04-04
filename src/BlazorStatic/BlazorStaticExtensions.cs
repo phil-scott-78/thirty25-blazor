@@ -1,5 +1,4 @@
-﻿using System.IO.Abstractions;
-using BlazorStatic.Models;
+﻿using BlazorStatic.Models;
 using BlazorStatic.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +78,6 @@ public static class BlazorStaticExtensions
     private static void MapBlazorStaticAssets(this WebApplication app)
     {
         var optionList = app.Services.GetServices<IBlazorStaticContentOptions>().ToList();
-        var fileSystem = app.Services.GetRequiredService<IFileSystem>();
         if (optionList.Count == 0)
         {
             throw new InvalidOperationException(
@@ -88,7 +86,7 @@ public static class BlazorStaticExtensions
 
         foreach (var option in optionList)
         {
-            var combine = fileSystem.Path.Combine(fileSystem.Directory.GetCurrentDirectory(), option.ContentPath);
+            var combine = Path.Combine(Directory.GetCurrentDirectory(), option.ContentPath);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(combine),

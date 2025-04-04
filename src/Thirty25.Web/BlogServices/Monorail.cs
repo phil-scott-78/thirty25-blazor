@@ -41,6 +41,12 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                                 new CssDeclaration(CssProperties.BorderColor, designSystem.Colors["base"][ColorLevels._700].AsStringWithOpacity("50%")),
                                 new CssDeclaration(CssProperties.BorderWidth, "1px"),
                                 new CssDeclaration(CssProperties.FontWeight, "300")
+                            ]),
+                            new CssRuleSet("blockquote",
+                            [
+                                new CssDeclaration(CssProperties.BorderLeftWidth, "4px"),
+                                new CssDeclaration(CssProperties.PaddingLeft, "1rem"),
+                                new CssDeclaration(CssProperties.BorderColor, designSystem.Colors["primary"][ColorLevels._700].AsString()),
                             ])
                         ]
                     }

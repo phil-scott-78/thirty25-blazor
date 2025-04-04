@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO.Abstractions;
 using BlazorStatic.Models;
 
 namespace BlazorStatic.Services;
@@ -22,7 +21,6 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     private readonly BlazorStaticContentOptions<TFrontMatter> _options;
     private readonly ThreadSafePopulatedCache<string, Post<TFrontMatter>> _postCache;
     private readonly MarkdownService _markdownService;
-    private readonly IFileSystem _fileSystem;
     private readonly ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> _logger;
     private bool _disposed;
 
@@ -32,7 +30,6 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// <param name="options">Configuration options specific to content handling</param>
     /// <param name="blazorStaticFileWatcher">File watcher for hot-reload functionality</param>
     /// <param name="markdownService">Service used to parse and render markdown files</param>
-    /// <param name="fileSystem">The file system</param>
     /// <param name="logger">Logger for diagnostic information</param>
     /// <remarks>
     ///     If hot-reload is enabled in the blazorStaticOptions, this service will watch
@@ -41,12 +38,10 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     public BlazorStaticMarkdownContentService(BlazorStaticContentOptions<TFrontMatter> options,
         BlazorStaticFileWatcher blazorStaticFileWatcher,
         MarkdownService markdownService,
-        IFileSystem fileSystem,
         ILogger<BlazorStaticMarkdownContentService<TFrontMatter>> logger)
     {
         _options = options;
         _markdownService = markdownService;
-        _fileSystem = fileSystem;
         _logger = logger;
         _postCache = new ThreadSafePopulatedCache<string, Post<TFrontMatter>>(async () => await ParseAndAddPosts());
 
@@ -132,7 +127,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         foreach (var post in allPosts)
         {
             var relativePath = post.Url.Replace('/', Path.DirectorySeparatorChar);
-            var outputFile = _fileSystem.Path.Combine(_options.PageUrl, $"{relativePath}.html");
+            var outputFile = Path.Combine(_options.PageUrl, $"{relativePath}.html");
             var pageUrl = $"{_options.PageUrl}/{post.Url}";
 
             pageToGenerates = pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile, post.FrontMatter.AsMetadata()));
@@ -146,7 +141,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         // Generate tag pages - one for each unique tag
         foreach (var tag in allTags)
         {
-            var outputFile = _fileSystem.Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
+            var outputFile = Path.Combine(_options.Tags.TagsPageUrl, $"{tag.EncodedName}.html");
             var pageUrl = $"{_options.Tags.TagsPageUrl}/{tag.EncodedName}";
 
             pageToGenerates = pageToGenerates.Add(new PageToGenerate(pageUrl, outputFile));
@@ -226,10 +221,9 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
 
     private string GetRelativePathWithFilename(string file, string absoluteContentPath)
     {
-        var fileSystemPath = _fileSystem.Path;
-        var relativePathWithFileName = fileSystemPath.GetRelativePath(absoluteContentPath, file);
-        return fileSystemPath
-            .Combine(fileSystemPath.GetDirectoryName(relativePathWithFileName)!, fileSystemPath.GetFileNameWithoutExtension(relativePathWithFileName).Slugify())
+        var relativePathWithFileName = Path.GetRelativePath(absoluteContentPath, file);
+        return Path
+            .Combine(Path.GetDirectoryName(relativePathWithFileName)!, Path.GetFileNameWithoutExtension(relativePathWithFileName).Slugify())
             .Replace("\\", "/");
     }
 
@@ -243,7 +237,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         };
 
         // Get all files matching the pattern and return with the content path
-        return (_fileSystem.Directory.GetFiles(_options.ContentPath, _options.PostFilePattern, enumerationOptions),
+        return (Directory.GetFiles(_options.ContentPath, _options.PostFilePattern, enumerationOptions),
             _options.ContentPath);
     }
 
