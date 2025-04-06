@@ -19,6 +19,8 @@ public class FrontMatter : IFrontMatter, IFrontMatterWithTags
 
     public string[] Tags { get; set; } = [];
     
+    public string Series { get; set; } = string.Empty;
+    
     public Metadata AsMetadata()
     {
         return new Metadata()

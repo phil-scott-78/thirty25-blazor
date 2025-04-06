@@ -13,14 +13,25 @@
     return;
 }
 <PageTitle>@Options.BlogTitle - @_post.FrontMatter.Title</PageTitle>
-<BlogPost Post="_post"/>
+<BlogPost Post="_post" Series="_series"/>
 
 @code{
     [Parameter] public required string FileName { get; init; }
     Post<FrontMatter>? _post;
+    List<Post<FrontMatter>>? _series;
+    List<TocEntry>? _tableOfContents;
 
     protected override async Task OnInitializedAsync()
     {
         _post = await BlazorStaticMarkdownContentService.GetPostByUrlOrDefault(FileName);
+        
+        if (_post != null && !string.IsNullOrWhiteSpace(_post.FrontMatter.Series))
+        {
+            var allPosts = await BlazorStaticMarkdownContentService.GetAllPostsAsync();
+            _series = allPosts
+                .Where(i => string.Equals(i.FrontMatter.Series, _post.FrontMatter.Series, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.FrontMatter.Date)
+                .ToList();
+        }
     }
 }

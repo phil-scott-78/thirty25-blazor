@@ -2,7 +2,7 @@
 @inject BlazorStaticOptions Options
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 
 <head>
     <meta charset="utf-8"/>
@@ -43,7 +43,72 @@
         }
     }
 </script>
-<!-- Import the ESM versions of the required libraries -->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+        // Get all the links in the table of contents
+        const tocLinks = document.querySelectorAll('aside ul li a[href^="blog/"]');
+
+        // Map to store section elements and their corresponding TOC links
+        const sectionMap = new Map();
+
+        // Initialize all links with aria-selected="false"
+        tocLinks.forEach(link => {
+            link.setAttribute('aria-selected', 'false');
+
+            // Extract the ID from the href
+            const href = link.getAttribute('href');
+            const id = href.split('#')[1];
+
+            if (id) {
+                const section = document.getElementById(id);
+                if (section) {
+                    sectionMap.set(section, link);
+                }
+            }
+        });
+
+        // Function to handle intersection changes
+        const handleIntersection = (entries) => {
+            // Sort entries by their intersection ratio (how much of the element is visible)
+            const visibleEntries = entries
+                .filter(entry => entry.isIntersecting)
+                .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+            if (visibleEntries.length > 0) {
+                // Reset all links
+                tocLinks.forEach(link => {
+                    link.setAttribute('aria-selected', 'false');
+                    // Optional: Remove any visual active class
+                    link.parentElement.classList.remove('active');
+                });
+
+                // Get the most visible section
+                const mostVisibleSection = visibleEntries[0].target;
+                const correspondingLink = sectionMap.get(mostVisibleSection);
+
+                if (correspondingLink) {
+                    // Set aria-selected="true" on the active link
+                    correspondingLink.setAttribute('aria-selected', 'true');
+                    // Optional: Add a visual active class
+                    correspondingLink.parentElement.classList.add('active');
+                }
+            }
+        };
+
+        // Create the Intersection Observer
+        const observer = new IntersectionObserver(handleIntersection, {
+            // Root margin to slightly adjust when the observation triggers
+            rootMargin: '-10% 0px -70% 0px',
+            // Threshold array for when the callback should be executed
+            threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        });
+
+        // Observe all sections
+        sectionMap.forEach((link, section) => {
+            observer.observe(section);
+        });
+    });
+</script>
 <script type="module">
     const prefix = 'language-';
     const codeNodes = Array.from(document.body.querySelectorAll('code'));

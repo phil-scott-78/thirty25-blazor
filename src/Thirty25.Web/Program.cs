@@ -1,5 +1,6 @@
 using BlazorStatic;
 using Markdig;
+using Markdig.Extensions.AutoIdentifiers;
 using Thirty25.Web;
 using Thirty25.Web.BlogServices;
 using Thirty25.Web.Components;
@@ -21,6 +22,7 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
     {
         var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
         return new MarkdownPipelineBuilder()
+            .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
             .UseAdvancedExtensions()
             .UseSyntaxHighlighting(roslynHighlighter)
             .UseYamlFrontMatter()

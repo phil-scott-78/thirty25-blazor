@@ -31,8 +31,21 @@ public class Post<TFrontMatter> where TFrontMatter : class, IFrontMatter, new()
     public required string HtmlContent { get; init; }
 
     /// <summary>
+    /// The table of contents of the post, pulled from the Markdown using Header tags.
+    /// </summary>
+    public required TocEntry[] TableOfContents { get; init; }
+
+    /// <summary>
     ///     The tags associated with this post.
     ///     Only populated when the TFrontMatter type implements IFrontMatterWithTags.
     /// </summary>
     public ImmutableList<Tag> Tags { get; init; } = [];
 }
+
+/// <summary>
+/// A Table of Contents entry.
+/// </summary>
+/// <param name="Title">The title.</param>
+/// <param name="Id">The id of the header.</param>
+/// <param name="Children">Any children of the entry</param>
+public record TocEntry(string Title, string Id, TocEntry[] Children);

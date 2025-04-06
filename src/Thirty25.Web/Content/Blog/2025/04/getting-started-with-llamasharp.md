@@ -1,6 +1,7 @@
 ---
 title: Getting Started with LlamaSharp
 description: "Running Local LLMs in Your .NET Applications"
+series: "Intro to LlamaSharp"
 date: April 2, 2025
 tags:
 - llamasharp

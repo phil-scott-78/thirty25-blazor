@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Markdig;
 using BlazorStatic.Models;
+using Markdig.Extensions.AutoIdentifiers;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -202,6 +203,7 @@ public class BlazorStaticOptions
     /// </remarks>
     public Func<IServiceProvider, MarkdownPipeline> MarkdownPipelineBuilder { get; init; } = _ => new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
+        .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
         .UseYamlFrontMatter()
         .Build();
 }

@@ -1,11 +1,10 @@
 ﻿---
 title: "Mastering LlamaSharp's Sampling Pipeline"
 description: "Fine-tuning LLM Output Generation in Your .NET Applications"
+series: "Intro to LlamaSharp"
 date: April 3, 2025
 tags:
   - llamasharp
-  - llm
-  - dotnet
 ---
 
 In our [previous post](getting-started-with-llamasharp), we covered the basics of getting LlamaSharp up and running with

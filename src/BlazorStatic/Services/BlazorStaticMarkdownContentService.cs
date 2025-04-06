@@ -169,7 +169,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         await Parallel.ForEachAsync(files, async (file, _) =>
         {
             // Parse markdown and extract front matter
-            var (frontMatter, htmlContent) = await _markdownService.ParseMarkdownFileAsync(
+            var (frontMatter, htmlContent, toc) = await _markdownService.ParseMarkdownFileAsync(
                 file,
                 _options.ContentPath,
                 _options.PageUrl,
@@ -195,7 +195,8 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
                 Url = GetRelativePathWithFilename(file, absPostPath),
                 NavigateUrl = $"{_options.PageUrl}/{GetRelativePathWithFilename(file, absPostPath)}",
                 HtmlContent = htmlContent,
-                Tags = tags
+                Tags = tags,
+                TableOfContents = toc
             };
 
             // Add to concurrent dictionary instead of yield returning

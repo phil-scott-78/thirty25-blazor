@@ -3,7 +3,10 @@ using System.Text.RegularExpressions;
 using BlazorStatic.Models;
 using Markdig;
 using Markdig.Extensions.Yaml;
+using Markdig.Helpers;
+using Markdig.Renderers.Html;
 using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using Microsoft.Extensions.Logging;
 using YamlDotNet.Serialization;
 
@@ -39,6 +42,7 @@ public partial class MarkdownService : IDisposable
     private record CachedMarkdownEntry(
         DateTime LastModified,
         IFrontMatter FrontMatter,
+        TocEntry[] TocEntry,
         string HtmlContent);
 
     /// <summary>
@@ -82,7 +86,7 @@ public partial class MarkdownService : IDisposable
     /// - The deserialized front matter of type T
     /// - The HTML content generated from the Markdown (without the front matter)
     /// </returns>
-    public async Task<(T frontMatter, string htmlContent)> ParseMarkdownFileAsync<T>(
+    public async Task<(T frontMatter, string htmlContent, TocEntry[] tableOfContent)> ParseMarkdownFileAsync<T>(
         string filePath,
         string contentPathRoot,
         string pageUrlRoot,
@@ -95,7 +99,7 @@ public partial class MarkdownService : IDisposable
         if (!File.Exists(filePath))
         {
             _logger.LogWarning("File not found: {filePath}", filePath);
-            return (new T(), string.Empty);
+            return (new T(), string.Empty, []);
         }
 
         // Get file's last write time
@@ -112,7 +116,7 @@ public partial class MarkdownService : IDisposable
             if (cachedEntry.LastModified >= fileLastModified)
             {
                 _logger.LogDebug("Using cached version of {filePath}", filePath);
-                return ((T)cachedEntry.FrontMatter, cachedEntry.HtmlContent);
+                return ((T)cachedEntry.FrontMatter, cachedEntry.HtmlContent, cachedEntry.TocEntry);
             }
         }
 
@@ -162,10 +166,13 @@ public partial class MarkdownService : IDisposable
         // Extract content without front matter
         var contentWithoutFrontMatter = markdownContent[(yamlBlock == null ? 0 : yamlBlock.Span.End + 1)..];
 
+        // Replace image paths if needed and convert to HTML
         var replacedMarkdown =
             ReplaceImagePathsInMarkdown(contentWithoutFrontMatter, filePath, contentPathRoot, pageUrlRoot);
-        // Replace image paths if needed and convert to HTML
-        var htmlContent = Markdown.ToHtml(replacedMarkdown, _pipeline);
+
+        var parsedMarkdown = Markdown.Parse(replacedMarkdown, _pipeline);
+        var toc = GenerateTableOfContents(parsedMarkdown);
+        var htmlContent = parsedMarkdown.ToHtml(_pipeline);
 
         if (postProcessHtml != null)
         {
@@ -173,11 +180,11 @@ public partial class MarkdownService : IDisposable
         }
 
         // Store the result in the cache
-        MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, htmlContent);
+        MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, toc, htmlContent);
 
         _logger.LogDebug("Added/updated cache entry for {filePath}", filePath);
 
-        return (frontMatter, htmlContent);
+        return (frontMatter, htmlContent, toc);
     }
 
 
@@ -340,6 +347,75 @@ public partial class MarkdownService : IDisposable
         // Combine the remaining base segments with the relative segments
         var resultSegments = baseSegments.Concat(relativeSegments);
         return string.Join("/", resultSegments);
+    }
+
+    private static TocEntry[] GenerateTableOfContents(MarkdownDocument document)
+    {
+        var tocEntries = new List<TocEntry>();
+        var headerStack = new Stack<(TocEntry Entry, int Level)>();
+
+        // Traverse the document to find headings
+        foreach (var node in document.Descendants())
+        {
+            if (node is not HeadingBlock headingBlock) continue;
+            var level = headingBlock.Level;
+
+            // Extract title from the heading
+            var title = string.Concat(headingBlock.Inline?.Descendants()
+                .OfType<LiteralInline>()
+                .Select(x => x.Content) ?? Array.Empty<StringSlice>());
+
+            // Get the ID that will be used in the HTML output
+            var id = headingBlock.TryGetAttributes()?.Id;
+
+            // Skip headers without IDs
+            if (id == null)
+            {
+                continue;
+            }
+
+            var newEntry = new TocEntry(title, id, []);
+
+            // Pop entries from stack that are at the same or higher level
+            while (headerStack.Count > 0 && headerStack.Peek().Level >= level)
+            {
+                headerStack.Pop();
+            }
+
+            if (headerStack.Count == 0)
+            {
+                // This is a top-level heading
+                tocEntries.Add(newEntry);
+            }
+            else
+            {
+                // Add as child to parent heading
+                var (parentEntry, parentLevel) = headerStack.Peek(); // Store the parent level here
+                var parentChildren = parentEntry.Children.ToList();
+                parentChildren.Add(newEntry);
+
+                // Create updated parent with new children
+                var updatedParent = parentEntry with { Children = parentChildren.ToArray() };
+
+                // Pop the old parent and push the updated one with the same level
+                headerStack.Pop();
+                headerStack.Push((updatedParent, parentLevel)); // Use the stored parent level
+
+                // Update in the main list if it's a top-level entry
+                if (headerStack.Count == 1)
+                {
+                    int index = tocEntries.IndexOf(parentEntry);
+                    if (index >= 0) // Make sure we found the parent
+                    {
+                        tocEntries[index] = updatedParent;
+                    }
+                }
+            }
+
+            headerStack.Push((newEntry, level));
+        }
+
+        return tocEntries.ToArray();
     }
 
     [GeneratedRegex(@"!\[([^\]]*)\]\(([^)]+)\)")]
