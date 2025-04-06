@@ -148,16 +148,6 @@ Beyond memory constraints, large contexts significantly impact performance for t
 2. **Cache Misses**: With larger KV caches, you're more likely to experience cache misses at the hardware level, further
    degrading performance.
 
-Here's a rough guideline for how context length affects token generation speed on consumer hardware:
-
-| Context Length | Approximate Performance Impact |
-|----------------|--------------------------------|
-| 512            | Baseline (fastest)             |
-| 2,048          | 25-30% slower than baseline    |
-| 4,096          | 50-60% slower than baseline    |
-| 8,192          | 75-85% slower than baseline    |
-| 16,384+        | >90% slower than baseline      |
-
 This is why you might observe your model generating 30 tokens/second with a short context, but dropping to 5-10
 tokens/second with a very long context.
 
@@ -314,12 +304,4 @@ Memory management is perhaps the most critical aspect of running LLMs efficientl
 the interplay between model size, quantization, context length, and the KV cache gives you the tools to make informed
 trade-offs.
 
-With the right optimization strategies, even modest consumer hardware can run surprisingly capable language models. My
-RTX 4080 SUPER can comfortably run a Gemma-3 12B model with 8K context, which would have been unthinkable just a couple
-of years ago.
-
-As LlamaSharp and llama.cpp continue to evolve, we can expect even more sophisticated memory optimization techniques.
-Keep an eye on new releases, as they often bring significant performance improvements.
-
-In our next post, we'll explore techniques for working with documents and implementing retrieval-augmented generation (
-RAG) using LlamaSharp. Until then, happy optimizing!
+With the right optimization strategies, even modest consumer hardware can run surprisingly capable language models. 
