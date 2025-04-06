@@ -72,7 +72,6 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                 PluginSettings = new List<ISettings> { proseSettings },
                 Applies = new Dictionary<string, string> /* these are just for a custom starry-night theme using tailwind colors */
                 {
-                    { ".prose", "scroll-smooth" },
                     { ".prose h1, .prose h2, .prose h3, .prose h4", "scroll-m-24" },
                     { ".pl-c", "text-base-300/50 italic" },
                     { ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-300" },  // comments, punctuation, selectors, tags

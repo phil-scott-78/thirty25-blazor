@@ -1,13 +1,10 @@
 ---
 title: "Efficient LLM Memory Management with LlamaSharp"
 description: "A practical guide to KV cache behavior, memory optimization, and performance tuning on consumer hardware"
-date: April 5, 2025
+date: April 6, 2025
 series: "Intro to LlamaSharp"
 tags:
   - llamasharp
-  - llm
-  - dotnet
-  - memory-optimization
 ---
 
 In our [first post](getting-started-with-llamasharp), we covered the basics of setting up LlamaSharp and running a local
@@ -164,255 +161,10 @@ Here's a rough guideline for how context length affects token generation speed o
 This is why you might observe your model generating 30 tokens/second with a short context, but dropping to 5-10
 tokens/second with a very long context.
 
-## Memory Optimization Strategies
-
-Now that we understand where memory goes, let's explore strategies to optimize LlamaSharp applications:
-
-### 1. Right-Size Your Context Window
-
-The simplest optimization is to use only the context length you need. If your use case involves short queries and
-responses, there's no need to set a 32K context window.
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    ContextSize = 2048,  // Adjusted based on your actual needs
-    // Other parameters...
-};
-```
-
-For typical chat applications, 2K-4K is often sufficient. For document analysis, you might need 8K-16K, but rarely the
-maximum possible.
-
-### 2. Model Size and Quantization Trade-offs
-
-Choose model size and quantization level based on your hardware constraints and quality requirements:
-
-- On integrated graphics or older GPUs (4GB VRAM): Stick with 1B-4B models with Q4_K quantization
-- On mid-range GPUs (8GB VRAM): 7B models with Q6_K work well
-- On high-end GPUs (16GB+ VRAM): 13B models with Q6_K or 34B models with Q4_K
-
-My general recommendations:
-
-- Q6_K offers the best quality-to-size ratio for most use cases
-- Q4_K is acceptable for non-critical applications where speed matters more
-- Avoid Q2_K except for extremely constrained environments
-
-### 3. Offloading Strategies
-
-Modern applications often use a hybrid approach between CPU and GPU to maximize performance. LlamaSharp gives you
-fine-grained control over how the model's computational workload is distributed:
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    MainGpu = 0,           // Use GPU 0 as primary
-    GpuLayerCount = 20,    // Put 20 layers on GPU, rest on CPU
-    // Other parameters...
-};
-```
-
-Think of a model as a stack of processing layers (similar to how a neural network has layers). Each layer performs
-specific calculations as data flows through it. The model in our example has more than 20 layers total.
-
-**What's happening here?**
-
-- By setting `GpuLayerCount = 20`, you're telling LlamaSharp: "Run 20 layers on my fast GPU, and put the remaining
-  layers on my CPU"
-- This is like splitting a workload between a powerful but limited resource (GPU) and a less powerful but more abundant
-  resource (system RAM)
-
-**Why is this useful?**
-
-1. **Memory constraints**: If your model is too large to fit entirely on your GPU's VRAM, you can keep the most
-   performance-critical layers on the GPU and offload the rest
-2. **Balanced performance**: Some layers benefit more from GPU acceleration than others
-3. **Flexible scaling**: You can adjust based on your specific hardware - use more GPU layers on better graphics cards
-
-**Which layers benefit most from GPU acceleration?**
-
-The "middle" layers of transformer models typically benefit most from GPU acceleration for two key reasons:
-
-1. **Computation intensity**: Middle layers perform the most matrix multiplication operations, which GPUs excel at
-2. **Data dependencies**: Middle layers have extensive data interdependencies that GPU's parallel processing handles
-   efficiently
-
-When llama.cpp decides which layers to offload by default (when you don't specify), it typically:
-
-```
-// Pseudo-code for how llama.cpp prioritizes layers
-if (total_layers <= gpu_layers) {
-    // Put all layers on GPU
-    gpu_layers = total_layers;
-} else {
-    // Put middle layers on GPU, keeping first and last few on CPU
-    int layers_on_cpu = total_layers - gpu_layers;
-    
-    // Keep some early layers on CPU (typically 1/4 of CPU layers)
-    int early_cpu_layers = layers_on_cpu / 4;
-    
-    // Keep some final layers on CPU (typically 3/4 of CPU layers)
-    int late_cpu_layers = layers_on_cpu - early_cpu_layers;
-    
-    // Middle layers go to GPU
-    // GPU gets layers from (early_cpu_layers) to (total_layers - late_cpu_layers)
-}
-```
-
-This isn't the exact algorithm, but it illustrates the approach. You'll often see this pattern in the logs when
-llama.cpp decides layer allocation automatically.
-
-For multi-GPU setups, you can distribute layers across devices:
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    // Assign tensors to multiple GPUs
-    TensorSplit = new float[] { 0.5f, 0.5f },  // 50% on GPU 0, 50% on GPU 1
-    // Other parameters...
-};
-```
-
-### 4. KV Cache Management
-
-As we've seen, the KV cache can consume massive amounts of memory, especially with long contexts. Fortunately, modern
-versions of llama.cpp (and LlamaSharp) offer several techniques to manage this memory footprint more intelligently.
-
-#### Fixed KV Cache Size
-
-Instead of letting the KV cache grow proportionally with your context window, you can set an absolute limit:
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    // Limit KV cache to approximately 1GB regardless of context size
-    MaxKvCache = 1024 * 1024 * 1024,  // 1GB in bytes
-    // Other parameters...
-};
-```
-
-**What happens here?**
-
-- You're telling LlamaSharp: "Never use more than 1GB for the KV cache, no matter how long the context gets"
-- When the cache fills up, the model will intelligently manage it, typically by:
-    1. Discarding the oldest keys and values first
-    2. Keeping the most recent and most relevant information
-    3. Preserving special tokens that provide important context
-
-**When to use this:**
-
-- When you want predictable memory usage regardless of input length
-- When processing very long documents that would otherwise exceed your memory
-- When you want to maximize the model size you can run rather than context length
-
-**Trade-offs:**
-
-- May reduce accuracy for references to very early parts of long contexts
-- Slightly increases computation overhead for cache management
-- Can actually improve performance by keeping the working set in faster memory
-
-#### Sliding Window Attention
-
-This technique limits how far back each token can "look" when performing attention:
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    // Only look at the most recent 4096 tokens when generating
-    SlidingWindowSize = 4096,
-    // Other parameters...
-};
-```
-
-**What's happening here?**
-
-- Even if your total context is 32K tokens, each new token will only "attend to" (consider) the most recent 4K tokens
-- Think of it like giving the model a short-term memory that's smaller than its total context window
-- It's like saying "you can remember everything, but only actively think about the most recent part"
-
-**When to use this:**
-
-- When processing long documents where recent context matters most
-- When you want the benefits of a large context without the quadratic computation cost
-- When nearby tokens are more relevant than distant ones (true for most text)
-
-#### Rope Frequency Scaling (Advanced)
-
-This is a more technical approach that modifies how position information is encoded:
-
-```csharp
-var parameters = new ModelParams(modelPath)
-{
-    RopeFrequencyBase = 10000.0f,  // Default value
-    RopeFrequencyScale = 0.5f,     // Lower values improve long-context performance
-    // Other parameters...
-};
-```
-
-**In simpler terms:**
-
-- LLMs need to know where each word is positioned in a sequence (is it the 5th word? The 1000th?)
-- They use a technique called RoPE (Rotary Position Embedding) to encode this information
-- By adjusting the frequency parameters, you're essentially "stretching" the model's perception of distance
-- With `RopeFrequencyScale = 0.5f`, a model trained on 4K contexts can often handle 8K+ contexts more effectively
-
-**When to use this:**
-
-- When working with contexts longer than what the model was originally trained for
-- When fine-tuning isn't an option, but you need to process longer documents
-- Usually combined with other techniques for maximum effectiveness
-
-#### KV Cache Compression (Coming Soon)
-
-Newer versions of llama.cpp are introducing KV cache compression, which can reduce memory usage by 2-4x with minimal
-quality impact. While not yet fully exposed in LlamaSharp's API at the time of writing, watch for this feature in
-upcoming releases.
-
-The compression works by:
-
-1. Quantizing the floating-point values in the cache to lower precision
-2. Using specialized compression algorithms designed for neural network activations
-3. Dynamically decompressing only the needed portions during inference
-
-This is similar to how model weights are quantized, but applied to the runtime cache instead.
-
-### 5. Context Pruning
-
-For very long conversations, consider implementing context pruning - removing less relevant parts of the conversation
-history to maintain performance.
-
-While LlamaSharp doesn't have built-in pruning, you can implement it by summarizing or truncating older parts of
-conversations before sending them to the model:
-
-```csharp
-// Simple example of context pruning in a chat application
-private string PruneConversationHistory(List<ChatMessage> history, int maxTokens)
-{
-    // Keep system message and most recent messages
-    var pruned = new List<ChatMessage>();
-    
-    // Always keep system message if present
-    var systemMsg = history.FirstOrDefault(m => m.Role == "system");
-    if (systemMsg != null)
-        pruned.Add(systemMsg);
-        
-    // Add most recent messages up to token limit
-    // In practice, you'd need to count tokens properly
-    foreach (var msg in history.Where(m => m.Role != "system").TakeLast(10))
-    {
-        pruned.Add(msg);
-    }
-    
-    return FormatConversation(pruned);
-}
-```
-
-For document processing applications, consider splitting long documents into chunks with overlapping content.
-
 ## Real-world Performance Benchmarks
 
-To give you a concrete idea of what to expect, here are some benchmarks running Gemma-3 Models (Q6_K quantization) on my RTX 4080 SUPER with 16GB VRAM:
-
+To give you a concrete idea of what to expect, here are some benchmarks running Gemma-3 Models (Q6_K quantization) on my
+RTX 4080 SUPER with 16GB VRAM:
 
 | Model Size | Context | Layers on GPU | Loading Time | First Token | Tokens/sec | Max VRAM Usage |
 |------------|---------|---------------|--------------|-------------|------------|----------------|
@@ -488,15 +240,73 @@ When optimizing LLMs on consumer hardware, you're always balancing three competi
 Here's a simple decision tree to guide your optimization process:
 
 1. Start with the largest model that fits in your VRAM with Q6_K quantization
-2. Set context length based on your use case (2K for chat, 4K+ for document processing)
+2. Set context length based on your use case (2K for instructions, 4K+ for document processing)
 3. If you run out of memory:
     - First, reduce context length if possible
-    - If not, try GPU offloading (reduce GpuLayerCount)
+    - If not, try GPU offloading (reduce `GpuLayerCount`)
     - If still insufficient, move to a smaller model or lower quantization
 4. If generation is too slow:
     - Reduce context length
     - Consider a smaller model with full GPU utilization
     - As a last resort, use lower quantization (Q4_K or Q2_K)
+
+## When Context Overflows: Understanding LLM Memory Limitations
+
+Of course, reducing context size has its downside. Let's examine what happens in different overflow scenarios and 
+how to handle them effectively.
+
+### Input Overflow - Too Much Data In
+
+When you feed more tokens into the model than its configured context size allows, several things can happen:
+
+```csharp
+// This might seem fine initially...
+var text = File.ReadAllText("very-large-document.txt");
+var result = await model.InferAsync(text);
+```
+
+Depending on LlamaSharp's configuration and the underlying llama.cpp version, you might see:
+
+1. **Silent Truncation**: The model simply discards tokens beyond the context limit, starting from the beginning
+2. **Exception Thrown**: An explicit error about exceeding context length. You'll often see this error with LlamaSharp
+   as a `NoKvSlot` exception.
+3. **Degraded Performance**: The model attempts to process everything but slows to a crawl
+
+The first case is particularly dangerous because the model might lose critical information without warning. For
+instance, if your prompt structure is:
+
+```
+<SYSTEM PROMPT>
+<DOCUMENT>
+<QUESTION>
+```
+
+And the document is massive, the system prompt might get truncated, causing the model to ignore your instructions
+entirely.
+
+### Goldfish Memory - Generation Exceeds Context
+
+A more subtle issue occurs when you generate more tokens than the model can "remember":
+
+```csharp
+var prompt = "Write a comprehensive essay on the history of computing";
+// Model starts generating and keeps going...
+```
+
+Since the context window acts like a sliding window, when generation exceeds available context, the model begins to "
+forget" the earliest parts of the conversation, including:
+
+1. Your original instructions
+2. Earlier parts of its own generation
+3. Key details from the prompt
+
+This leads to:
+
+- **Topic Drift**: The model gradually wanders off-topic
+- **Contradictions**: The model makes claims that conflict with earlier statements it can no longer "see"
+- **Repetition Loops**: Without memory of what it already said, the model may start repeating itself
+
+You'll see this most often when asking for long-form content like essays, stories, or code implementations. 
 
 ## Conclusion
 
