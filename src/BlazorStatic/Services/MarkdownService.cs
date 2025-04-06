@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using System.Text.RegularExpressions;
 using BlazorStatic.Models;
 using Markdig;
@@ -360,10 +361,13 @@ public partial class MarkdownService : IDisposable
             if (node is not HeadingBlock headingBlock) continue;
             var level = headingBlock.Level;
 
+            if (headingBlock.Inline == null)
+            {
+                continue;
+            }
+
             // Extract title from the heading
-            var title = string.Concat(headingBlock.Inline?.Descendants()
-                .OfType<LiteralInline>()
-                .Select(x => x.Content) ?? Array.Empty<StringSlice>());
+            var title = GetPlainTextFromInline(headingBlock.Inline);
 
             // Get the ID that will be used in the HTML output
             var id = headingBlock.TryGetAttributes()?.Id;
@@ -416,6 +420,46 @@ public partial class MarkdownService : IDisposable
         }
 
         return tocEntries.ToArray();
+    }
+
+    private static string GetPlainTextFromInline(ContainerInline container)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var inline in container)
+        {
+            switch (inline)
+            {
+                case LiteralInline literal:
+                    sb.Append(literal.Content.ToString());
+                    break;
+
+                case EmphasisInline emphasis:
+                    sb.Append(GetPlainTextFromInline(emphasis));
+                    break;
+
+                case CodeInline code:
+                    sb.Append(code.Content);
+                    break;
+
+                case ContainerInline nestedContainer:
+                    sb.Append(GetPlainTextFromInline(nestedContainer));
+                    break;
+
+                // Add more cases as needed for other inline types
+
+                default:
+                    // For any other inline type, try to get content if it's a ContainerInline
+                    if (inline is ContainerInline otherContainer)
+                    {
+                        sb.Append(GetPlainTextFromInline(otherContainer));
+                    }
+
+                    break;
+            }
+        }
+
+        return sb.ToString();
     }
 
     [GeneratedRegex(@"!\[([^\]]*)\]\(([^)]+)\)")]
