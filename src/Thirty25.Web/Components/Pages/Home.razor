@@ -14,7 +14,17 @@
 <PageTitle>@BlazorStaticOptions.BlogTitle - Recent Posts</PageTitle>
 
 <div>
-    <PageHeader Title="Recent Posts">@BlazorStaticOptions.BlogDescription</PageHeader>
+    <PageHeader Title="Welcome">
+        <div class="prose prose-sm md:prose-base lg:prose-lg dark:prose-invert">
+
+
+            <p>Welcome to my blog. I'm <strong class="text-accent-400">Phil Scott</strong>, I was once a .NET developer
+                and a current stay-at-home Dad. I clean up their messes then create my own here.
+            </p>
+        </div>
+    </PageHeader>
+    <h3 class="text-base-900 border-b border-primary-500/50 pb-4 dark:text-base-200 text-2xl lg:text-4xl font-bold">
+        Recent Posts</h3>
     <BlogPostsList Posts="_posts"/>
 </div>
 

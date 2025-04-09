@@ -19,7 +19,6 @@
     [Parameter] public required string FileName { get; init; }
     Post<FrontMatter>? _post;
     List<Post<FrontMatter>>? _series;
-    List<TocEntry>? _tableOfContents;
 
     protected override async Task OnInitializedAsync()
     {

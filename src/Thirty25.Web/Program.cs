@@ -3,8 +3,8 @@ using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
 using Thirty25.Web;
 using Thirty25.Web.BlogServices;
+using Thirty25.Web.BlogServices.Markdown;
 using Thirty25.Web.Components;
-using Thirty25.Web.Markdown;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +42,7 @@ builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOpti
 // custom service for doing css work
 builder.Services.AddSingleton<MonorailCssService>();
 // custom service for highlighting C# code blocks at generation time
-builder.Services.AddSingleton<RoslynHighlighterService>();
+builder.Services.AddSingleton<RoslynHighlighterService>(sp => new RoslynHighlighterService("../../thirty25-blazor.sln", "../../blog-projects/", sp.GetRequiredService<ILogger<RoslynHighlighterService>>()));
 
 var app = builder.Build();
 app.UseHttpsRedirection();

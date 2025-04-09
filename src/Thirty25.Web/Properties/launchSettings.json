@@ -27,13 +27,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "watch": {
       "commandName": "Executable",
       "executablePath": "dotnet",
@@ -47,6 +40,14 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
+    },
+    "examples": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)/../../",
+      "hotReloadProfile": "aspnetcore",
+      "commandLineArgs": "example --select",
+      "dotnetRunMessages": true  
     }
   }
 }

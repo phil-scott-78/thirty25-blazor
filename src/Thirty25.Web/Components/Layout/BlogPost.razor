@@ -69,16 +69,16 @@
                 {
                     <div class="hidden xl:block">
                     <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">On This Page</h2>
-                    <ul class="list-none mt-6 text-neutral-600 font-light text-sm dark:text-neutral-50/60">
+                    <ul class="list-none mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
                         @foreach (var entry in Post.TableOfContents)
                         {
-                            <li class="flex"><a class="transition-all border-neutral-200 dark:border-neutral-700 hover:opacity-80 border-l-2 pl-4 pt-1 pb-1 pb-8 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@entry.Id">@entry.Title</a></li>
+                            <li class="flex"><a class="border-neutral-200 dark:border-neutral-700 hover:opacity-80 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@entry.Id">@entry.Title</a></li>
                             @if (entry.Children.Length > 0)
                             {
-                                <ul>
+                                <ul class="pb-1px">
                                     @foreach (var childEnry in entry.Children)
                                     {
-                                        <li class="flex"><a class="transition-all border-neutral-200 dark:border-neutral-700 hover:opacity-80  border-l-2 pl-8 pt-1 pb-1 pb-8 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
+                                        <li class="flex"><a class="transition-all border-neutral-200 dark:border-neutral-700 hover:opacity-80 border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
                                     }
                                 </ul>
                             }
@@ -86,9 +86,19 @@
                     </ul>
                     </div>
                 }
+                
+                @if (string.IsNullOrWhiteSpace(Post.FrontMatter.Repository) == false)
+                {
+                    <a class="block" href="@Post.FrontMatter.Repository">
+                    <div class="mt-8 border bg-base-400/5 border-primary-50/25 p-4 rounded rounded-lg" >
+                        <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">Source Code</h2>
+                        <p class="mt-2 text-primary-900/75 dark:text-neutral-50/90 hover:text-primary-400 mr-3 text-sm font-light">Example source code for this post</p>
+                    </div>
+                        </a>
+                }
+                
                 <div class="pt-4 xl:pt-8">
-                    <a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href="">← Back to
-                        the home</a>
+                    <a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href="">← Back to the home</a>
                 </div>
             </aside>
         </div>

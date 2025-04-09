@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using BlazorStatic.Models;
 using Markdig;
 using Markdig.Extensions.Yaml;
-using Markdig.Helpers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
@@ -17,34 +16,12 @@ namespace BlazorStatic.Services;
 /// Service for parsing and processing Markdown files with YAML front matter.
 /// Provides caching, HTML conversion, and image path transformation capabilities.
 /// </summary>
-public partial class MarkdownService : IDisposable
+public partial class MarkdownService
 {
     private readonly ILogger _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly BlazorStaticOptions _options;
     private readonly MarkdownPipeline _pipeline;
-    private bool _disposed;
-
-    // Cache to store processed markdown files
-    private static readonly ConcurrentDictionary<string, CachedMarkdownEntry> MarkdownCache = new();
-
-    /// <summary>
-    /// Clears the markdown cache when metadata is updated.
-    /// Used by the MetadataUpdateHandler to refresh content after changes.
-    /// </summary>
-    private static void ClearCache()
-    {
-        MarkdownCache.Clear();
-    }
-
-    /// <summary>
-    /// Private class to store cached markdown parsing results
-    /// </summary>
-    private record CachedMarkdownEntry(
-        DateTime LastModified,
-        IFrontMatter FrontMatter,
-        TocEntry[] TocEntry,
-        string HtmlContent);
 
     /// <summary>
     /// Initializes a new instance of the <see cref = "MarkdownService"/> class.
@@ -58,7 +35,6 @@ public partial class MarkdownService : IDisposable
         _logger = logger;
         _serviceProvider = serviceProvider;
         _options = options;
-        HotReloadManager.Subscribe(ClearCache);
 
         _pipeline = options.MarkdownPipelineBuilder.Invoke(serviceProvider);
     }
@@ -109,17 +85,6 @@ public partial class MarkdownService : IDisposable
         // Create a cache key that includes the file path, path root and page url root.
         // changes to those *should* wipe the cache regardless, but just in case
         var cacheKey = $"{filePath}_{contentPathRoot}_{pageUrlRoot}";
-
-        // Check if the file is in the cache and is still valid
-        if (MarkdownCache.TryGetValue(cacheKey, out var cachedEntry))
-        {
-            // If the cached version is newer than or equal to the file's last modified time
-            if (cachedEntry.LastModified >= fileLastModified)
-            {
-                _logger.LogDebug("Using cached version of {filePath}", filePath);
-                return ((T)cachedEntry.FrontMatter, cachedEntry.HtmlContent, cachedEntry.TocEntry);
-            }
-        }
 
         // If not in cache or cache is invalid, process the file
         yamlDeserializer ??= _options.FrontMatterDeserializer;
@@ -179,9 +144,6 @@ public partial class MarkdownService : IDisposable
         {
             (frontMatter, htmlContent) = postProcessHtml.Invoke(_serviceProvider, frontMatter, htmlContent);
         }
-
-        // Store the result in the cache
-        MarkdownCache[cacheKey] = new CachedMarkdownEntry(fileLastModified, frontMatter, toc, htmlContent);
 
         _logger.LogDebug("Added/updated cache entry for {filePath}", filePath);
 
@@ -467,30 +429,4 @@ public partial class MarkdownService : IDisposable
 
     [GeneratedRegex(@"(?<!!)\[([^\]]*)\]\(([^)]+)\)")]
     private static partial Regex LinkRegex();
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-        if (disposing)
-        {
-            HotReloadManager.Unsubscribe(ClearCache);
-        }
-
-        _disposed = true;
-    }
-
-    /// <summary>
-    /// Finalizer for the <see cref="MarkdownService"/> class.
-    /// </summary>
-    ~MarkdownService()
-    {
-        Dispose(false);
-    }
 }

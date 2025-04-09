@@ -45,7 +45,10 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         _logger = logger;
         _postCache = new ThreadSafePopulatedCache<string, Post<TFrontMatter>>(async () => await ParseAndAddPosts());
 
-        blazorStaticFileWatcher.Initialize([options.ContentPath], NeedsRefresh);
+        blazorStaticFileWatcher.Initialize([
+            options.ContentPath,
+            "../../blog-projects"
+        ], NeedsRefresh);
         HotReloadManager.Subscribe(NeedsRefresh);
     }
 
@@ -166,8 +169,9 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         var (files, absPostPath) = GetPostsPath();
         var results = new ConcurrentDictionary<string, Post<TFrontMatter>>();
 
-        await Parallel.ForEachAsync(files, async (file, _) =>
+        foreach (var file in files)
         {
+            _logger.LogInformation("Processing {file} markdown", file);
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent, toc) = await _markdownService.ParseMarkdownFileAsync(
                 file,
@@ -180,7 +184,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
             // Skip draft posts
             if (frontMatter.IsDraft)
             {
-                return; // 'continue' in a parallel loop becomes 'return'
+                continue; 
             }
 
             // Process tags if supported
@@ -201,7 +205,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
 
             // Add to concurrent dictionary instead of yield returning
             results.TryAdd(post.Url, post);
-        });
+        }
 
         stopwatch.Stop();
         _logger.LogInformation("Posts and tagged rebuilt in {elapsed}", stopwatch.Elapsed);
@@ -255,7 +259,6 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         if (_disposed) return;
         if (disposing)
         {
-            _markdownService.Dispose();
             HotReloadManager.Unsubscribe(NeedsRefresh);
         }
 
