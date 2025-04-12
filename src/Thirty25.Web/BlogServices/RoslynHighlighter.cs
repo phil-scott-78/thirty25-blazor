@@ -57,6 +57,9 @@ internal class RoslynHighlighterService : IDisposable
         _vbProject =
             _adHocWorkspace.CurrentSolution.AddProject("vbProjectName", "assemblyName", LanguageNames.VisualBasic);
 
+        var msBuildInstance = MSBuildLocator.QueryVisualStudioInstances().First();
+        MSBuildLocator.RegisterInstance(msBuildInstance);
+        
         _exampleWorkspace = MSBuildWorkspace.Create();
         _exampleWorkspace.LoadMetadataForReferencedProjects = true;
         _exampleWorkspace.WorkspaceFailed += (_, args) =>
@@ -76,7 +79,7 @@ internal class RoslynHighlighterService : IDisposable
 
         var path = new DirectoryInfo(examplePaths);
 
-        _logger.LogInformation("Watching {path} for code changes.", path.FullName);
+        _logger.LogDebug("Watching {path} for code changes.", path.FullName);
         _fileSystemWatch = new FileSystemWatcher(path.FullName, "*.cs")
         {
             IncludeSubdirectories = true,
@@ -125,7 +128,7 @@ internal class RoslynHighlighterService : IDisposable
         var code = RunSync(async () =>
         {
             var sanitizedXmlDocId = DocIdSanitizer.SanitizeXmlDocId(xmlDocId);
-            _logger.LogInformation("Looking up {xmlDocId}.", sanitizedXmlDocId);
+            _logger.LogDebug("Looking up {xmlDocId}.", sanitizedXmlDocId);
             if (await _roslynCache.TryGetValueAsync(sanitizedXmlDocId) is not { Found: true, Value: var (document, originalSpan, sourceText) })
             {
                 _logger.LogWarning("Failed to find {sanitizedXmlDocId}", sanitizedXmlDocId);
@@ -426,10 +429,10 @@ internal class RoslynHighlighterService : IDisposable
 
         foreach (var project in solution.Projects)
         {
-            _logger.LogInformation("Getting types and methods {project}", project.FilePath);
+            _logger.LogDebug("Getting types and methods {project}", project.FilePath);
             if ((project.FilePath?.Contains("blog-projects") ?? false) == false)
             {
-                _logger.LogInformation("Skipping {project}", project.FilePath);
+                _logger.LogDebug("Skipping {project}", project.FilePath);
                 continue;
             }
 

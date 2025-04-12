@@ -171,7 +171,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
 
         foreach (var file in files)
         {
-            _logger.LogInformation("Processing {file} markdown", file);
+            _logger.LogDebug("Processing {file} markdown", file);
             // Parse markdown and extract front matter
             var (frontMatter, htmlContent, toc) = await _markdownService.ParseMarkdownFileAsync(
                 file,

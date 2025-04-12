@@ -44,7 +44,7 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                                 new CssDeclaration(CssProperties.FontFeatureSettings,
                                     "\"cv02\", \"cv03\", \"cv04\", \"cv11\""),
                                 new CssDeclaration(CssProperties.BorderWidth, "1px"),
-                                new CssDeclaration(CssProperties.FontWeight, "300")
+                                new CssDeclaration(CssProperties.FontWeight, "300"),
                             ]),
                             new CssRuleSet("blockquote",
                             [
@@ -57,7 +57,7 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                             [
                                 new CssDeclaration(CssProperties.FontSize, ".85em"),
                                 new CssDeclaration(CssProperties.FontWeight, "500"),
-                                new CssDeclaration(CssProperties.Color, designSystem.Colors["accent"][ColorLevels._700].AsString()),
+                                new CssDeclaration(CssProperties.Color, designSystem.Colors["accent"][ColorLevels._800].AsString()),
                             ]),
                         ]
                     }
@@ -72,6 +72,22 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                             [
                                 new CssDeclaration(CssProperties.Color,
                                     designSystem.Colors["accent"][ColorLevels._400].AsString()),
+                            ])
+                        ]
+                    }
+                },
+                {
+                    // dark mode color overrides
+                    "base", new CssSettings()
+                    {
+                        ChildRules =
+                        [
+                            new CssRuleSet("pre",
+                            [
+                                new CssDeclaration(CssProperties.FontSize, ".75em"),
+                                new CssDeclaration(CssProperties.LineHeight, "1.7em"),
+                                new CssDeclaration(CssProperties.PaddingLeft, "2em"),
+                                new CssDeclaration(CssProperties.PaddingRight, "2em"),
                             ])
                         ]
                     }
