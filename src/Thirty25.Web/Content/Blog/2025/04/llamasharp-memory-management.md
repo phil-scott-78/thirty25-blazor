@@ -1,5 +1,5 @@
 ---
-title: "Efficient LLM Memory Management with LlamaSharp"
+title: "Efficient Language Model Memory Management with LlamaSharp"
 description: "A practical guide to KV cache behavior, memory optimization, and performance tuning on consumer hardware"
 date: April 6, 2025
 series: "Intro to LlamaSharp"
@@ -8,16 +8,16 @@ tags:
 ---
 
 In our [first post](getting-started-with-llamasharp), we covered the basics of setting up LlamaSharp and running a local
-LLM. In the [second post](llamasharp-sampling-pipeline), we explored how to fine-tune the sampling pipeline for optimal
-text generation. Now, let's now examine one of the most critical aspects of local LLM deployment: **memory management**.
+model. In the [second post](llamasharp-sampling-pipeline), we explored how to fine-tune the sampling pipeline for optimal
+text generation. Now, let's now examine one of the most critical aspects of local model deployment: **memory management**.
 
 If you've experimented with different models and context lengths, you've likely encountered situations where your GPU
 ran out of memory or performance degraded significantly with larger contexts. Today, we'll demystify these issues and
-explore strategies to keep your LLMs running efficiently on consumer hardware.
+explore strategies to keep your models running efficiently on consumer hardware.
 
-## Understanding LLM Memory Usage
+## Understanding Language Model Memory Usage
 
-Before we dive into optimization techniques, it's important to understand what consumes memory when running an LLM:
+Before we dive into optimization techniques, it's important to understand what consumes memory when running a language:
 
 1. **Model Weights**: The parameters that define the neural network itself
 2. **KV Cache**: Memory used to store intermediate values during text generation
@@ -60,7 +60,7 @@ size lines up with your VRAM size minus 4GB." Those extra 4GB are primarily need
 
 ## The KV Cache: Memory's Hidden Consumer
 
-The KV (Key-Value) cache is perhaps the most important memory component to understand when optimizing LLMs, yet it's
+The KV (Key-Value) cache is perhaps the most important memory component to understand when optimizing language model, yet it's
 often overlooked.
 
 ### What is the KV Cache?
@@ -68,7 +68,7 @@ often overlooked.
 The KV (Key-Value) cache is a memory optimization technique that stores intermediate calculation results to
 avoid redundant work.
 
-To understand this better, let's break down how an LLM works:
+To understand this better, let's break down how a model works:
 
 1. When processing text, the model breaks it into tokens (roughly word fragments)
 2. For each token, the model needs to look at all previous tokens to understand context
@@ -221,7 +221,7 @@ Based on these benchmarks and principles, here are my recommendations for differ
 
 ## Understanding the Memory vs. Performance Tradeoff
 
-When optimizing LLMs on consumer hardware, you're always balancing three competing factors:
+When optimizing models on consumer hardware, you're always balancing three competing factors:
 
 1. **Model Quality**: Larger models and better quantization generally produce better outputs
 2. **Context Length**: Longer contexts provide more information but consume more memory
@@ -240,7 +240,7 @@ Here's a simple decision tree to guide your optimization process:
     - Consider a smaller model with full GPU utilization
     - As a last resort, use lower quantization (Q4_K or Q2_K)
 
-## When Context Overflows: Understanding LLM Memory Limitations
+## When Context Overflows: Understanding Memory Limitations
 
 Of course, reducing context size has its downside. Let's examine what happens in different overflow scenarios and 
 how to handle them effectively.
@@ -300,7 +300,7 @@ You'll see this most often when asking for long-form content like essays, storie
 
 ## Conclusion
 
-Memory management is perhaps the most critical aspect of running LLMs efficiently on consumer hardware. Understanding
+Memory management is perhaps the most critical aspect of running models efficiently on consumer hardware. Understanding
 the interplay between model size, quantization, context length, and the KV cache gives you the tools to make informed
 trade-offs.
 

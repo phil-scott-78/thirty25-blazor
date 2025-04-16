@@ -3,6 +3,7 @@ using Markdig.Parsers;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
+using Thirty25.Web.BlogServices.Roslyn;
 
 namespace Thirty25.Web.BlogServices.Markdown;
 
@@ -12,23 +13,29 @@ internal sealed class CodeHighlightRenderer(
 {
     protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
     {
-        if (codeBlock is not FencedCodeBlock fencedCodeBlock ||
-            codeBlock.Parser is not FencedCodeBlockParser fencedCodeBlockParser)
+        if (codeBlock is not FencedCodeBlock fencedCodeBlock || codeBlock.Parser is not FencedCodeBlockParser fencedCodeBlockParser
+            || fencedCodeBlock.Info == null || fencedCodeBlockParser.InfoPrefix == null)
         {
             codeBlockRenderer.Write(renderer, codeBlock);
             return;
         }
 
-        var languageId = fencedCodeBlock.Info!.Replace(fencedCodeBlockParser.InfoPrefix!, string.Empty);
+        var languageId = fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
         if (!string.IsNullOrWhiteSpace(languageId))
         {
             var code = ExtractCode(codeBlock);
 
             switch (languageId)
             {
+                case "vb" or "vbnet":
+                {
+                    var html = roslynHighlighter.Highlight(code, Language.VisualBasic);
+                    renderer.Write(html);
+                    return;
+                }
                 case "csharp" or "c#" or "cs":
                 {
-                    var html = roslynHighlighter.Highlight(code, Language.CSharp);
+                    var html = roslynHighlighter.Highlight(code);
                     renderer.Write(html);
                     return;
                 }
@@ -41,12 +48,6 @@ internal sealed class CodeHighlightRenderer(
                 case "csharp:xmldocid":
                 {
                     var html = roslynHighlighter.HighlightExample(code, false);
-                    renderer.Write(html);
-                    return;
-                }
-                case "vb" or "vbnet":
-                {
-                    var html = roslynHighlighter.Highlight(code, Language.VisualBasic);
                     renderer.Write(html);
                     return;
                 }

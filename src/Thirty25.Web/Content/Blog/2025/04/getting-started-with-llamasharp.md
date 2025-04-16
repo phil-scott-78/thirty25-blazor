@@ -1,13 +1,13 @@
 ---
 title: Getting Started with LlamaSharp
-description: "Running Local LLMs in Your .NET Applications"
+description: "Running Local Small Language Models in .NET"
 series: "Intro to LlamaSharp"
 date: April 2, 2025
 tags:
 - llamasharp
 ---
 
-Like the idea of using a LLM in .NET to do some small tasks, but don't want to destroy the half the rain forest per
+Like the idea of using a AI in .NET to do some small tasks, but don't want to destroy the half the rain forest per
 query to do so? That's where [LlamaSharp](https://github.com/SciSharp/LLamaSharp) comes in)
 
 ## What is LlamaSharp?
@@ -90,7 +90,7 @@ For a typical ASP.NET Core or console application, your project file might look 
 
 Now we need a model! GGUF (GGML GPU Unified Format) is the standard format for optimized language models in the
 llama.cpp ecosystem. It evolved from the older GGML format and has become the de facto standard for efficiently running
-LLMs on consumer hardware. GGUF files are essentially containers that package the model's weights, architecture
+models on consumer hardware. GGUF files are essentially containers that package the model's weights, architecture
 information, vocabulary, and metadata together in a highly optimized binary format.
 
 The internal structure of a GGUF file includes several key components: a header with format version and metadata, the
@@ -126,7 +126,7 @@ and convert them into the GGUF format, but thankfully due to the openness of the
 already exists.
 
 A great resource for finding GGUFs is Colin Kealty's account, [Bartowski1182](https://huggingface.co/bartowski). He's an
-employee of [LM Studio](https://lmstudio.ai/), a popular LLM tool
+employee of [LM Studio](https://lmstudio.ai/), a popular local language model tool
 based on llama.cpp. Because LM Studio is based on llama.cpp, it has an interest in ensuring good GGUFs exist for their
 users, and
 the Barowksi1182 account is where you'll find them. His profile also has recommended models, large and small, which is
@@ -243,7 +243,7 @@ complex state.
 When you run this application, you'll see the model load (which might take a moment) along with a whole mess of log
 statements, followed by the generated response to your prompt.
 
-Did it work? Nice! You're now running a local LLM directly in your .NET application.
+Did it work? Nice! You're now running a local language model directly in your .NET application.
 
 ## Time To Dig Into Logs
 
@@ -289,7 +289,7 @@ medium-sized models.
 ```
 
 These statements show how the model layers are distributed between CPU and GPU. In this case, layers 14-33 are assigned
-to the GPU, while the rest are on the CPU. Think of LLM layers like stages in a data processing pipeline, similar to
+to the GPU, while the rest are on the CPU. Think of layers like stages in a data processing pipeline, similar to
 how you might chain middleware in a web app.
 
 A big model like GPT-4 has around 100 of these layers stacked sequentially. The more layers, the deeper the model can
@@ -326,7 +326,7 @@ but honestly I stick to models where `-1` always works.
 #### Context Length
 
 Context length is essentially the model's working memory size - like the difference between a 4GB and 64GB RAM machine.
-When an LLM processes text, it can only 'see' and reference information within its context window.
+When an model processes text, it can only 'see' and reference information within its context window.
 If you set it to 8K tokens, that's roughly 6,000 words or 24 pages of text that the model can consider at once.
 
 The catch is that the memory requirements grow quadratically with context length due to the attention mechanism. It's
@@ -362,7 +362,7 @@ these memory requirements. When running these models, we want to always fit the 
 
 We do not need this much context, plus it is bogging us down quite a bit because that much data won't fit in my graphics
 card. And even if it did we'd wait for allocation anyway. I tend to stick to around `4096` as my context size. Anything
-larger and most of these local LLMs start to lose the plot anyways.
+larger and most of these local models start to lose the plot anyways.
 
 ```csharp
 var parameters = new ModelParams(modelPath)
@@ -374,7 +374,7 @@ var parameters = new ModelParams(modelPath)
 
 #### Batch Size
 
-Batch size in LLMs is like thread pooling. It defines how many tokens the model processes in parallel during inference.
+Batch size in language model processing is like thread pooling. It defines how many tokens the model processes in parallel during inference.
 
 When generating text, the model needs to run a full forward pass through all layers for each new token. With a batch
 size of 512 like in your logs, the GPU is calculating 512 potential next tokens simultaneously. This dramatically
@@ -414,7 +414,7 @@ serious gains.
 ## Improving Our Prompt
 
 GGUF prompt formats define how input text is structured and tokenized before being processed by the model. Think of them
-as the language interface between you and the LLM - each model family (like Llama, Mistral, or Falcon) expects inputs
+as the language interface between you and the model - each model family (like Llama, Mistral, or Falcon) expects inputs
 formatted in specific ways. The prompt format determines everything from system prompts and role markers to special
 tokens that separate turns in a conversation. Getting this format right is crucial, as even small deviations can
 significantly impact output quality or cause the model to misinterpret your instructions entirely.
@@ -441,7 +441,7 @@ content when the template is rendered. The system prompt typically contains inst
 the user's actual query.
 
 This format essentially structures how the model receives input, with clear delineation between system instructions and
-user queries, helping the LLM understand the conversational context.
+user queries, helping the model understand the conversational context.
 
 For example, if we had a chat that went:
 
@@ -449,7 +449,7 @@ For example, if we had a chat that went:
 * **Assistant**: Paris is the capital of France.
 
 Then the user was sending a second message of "How many people live there?" this would be the entire message sent to the
-LLM (note: the jinja template also specifies to convert "assistant" to "model")
+model (note: the jinja template also specifies to convert "assistant" to "model")
 
 ```text
 <bos><start_of_turn>user
@@ -463,10 +463,10 @@ How many people live there?<end_of_turn>
 <start_of_turn>model
 ```
 
-Remember - LLMs are at their core text completion engines. The tokens defined here and then ending the prompt with
+Remember - models are at their core text completion engines. The tokens defined here and then ending the prompt with
 `<start_of_turn>model`
-gives the LLM a starting point to begin "completing" the message and gives us a return. The prompt also specifies that
-`<end_of_turn>` is how to complete the turn. With many of these LLMs, they have a tendency to start rambling without
+gives the model a starting point to begin "completing" the message and gives us a return. The prompt also specifies that
+`<end_of_turn>` is how to complete the turn. With many of these models, they have a tendency to start rambling without
 being given the proper prompt template because they don't know how or when to stop.
 
 This would change our code to now be:
@@ -541,7 +541,7 @@ await foreach (var result in executor.InferAsync(prompt))
 
 ## What's Left to Tweak?
 
-One very important thing we can configure is `DefaultSampling` parameters, the algorithm that shapes how an LLM
+One very important thing we can configure is `DefaultSampling` parameters, the algorithm that shapes how an model
 generates text. While context length and layer distribution handle the "how much" and "where" of model execution, these
 sampling parameters control the "what" and "how" of token generation.
 
@@ -553,7 +553,7 @@ repetition penalties help avoid those frustrating loops where models get stuck r
 
 We've covered quite a bit in this post, so let's summarize the key points:
 
-* **LlamaSharp basics**: We explored what LlamaSharp is—a .NET wrapper around llama.cpp that lets you run LLMs locally in your applications
+* **LlamaSharp basics**: We explored what LlamaSharp is—a .NET wrapper around llama.cpp that lets you run language models locally in your applications
 * **Setup and installation**: We walked through setting up CUDA for NVIDIA GPUs and installing the right NuGet packages
 * **Finding models**: We navigated the world of GGUF models, learning how to find them on Hugging Face and understanding the differences between model sizes (1B to 27B) and quantization levels (Q2_K to Q8_0)
 * **Fine-tuning performance**: We examined the logs to optimize GPU layer allocation, context length, and batch size for your specific hardware

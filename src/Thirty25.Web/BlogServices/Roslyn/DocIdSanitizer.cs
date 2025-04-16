@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace Thirty25.Web.BlogServices;
+namespace Thirty25.Web.BlogServices.Roslyn;
 
-public class DocIdSanitizer
+internal static class DocIdSanitizer
 {
     public static string SanitizeXmlDocId(string xmlDocId)
     {

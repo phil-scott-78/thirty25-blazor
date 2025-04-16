@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "type": "command",
+            "program": "dotnet",
+            "args": ["watch"],
+            "name": "Thirty25.Web: Watch",
+            "workingDir": "B:\\thirty25-blazor\\src\\Thirty25.Web",
+            "allowParallelRun": false,            
+        }
+    ]
+}

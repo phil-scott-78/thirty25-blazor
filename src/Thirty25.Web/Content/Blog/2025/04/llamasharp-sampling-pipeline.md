@@ -1,6 +1,6 @@
 ﻿---
 title: "Mastering LlamaSharp's Sampling Pipeline"
-description: "Fine-tuning LLM Output Generation in Your .NET Applications"
+description: "Fine-tuning Text Generation in Your .NET Applications"
 series: "Intro to LlamaSharp"
 date: April 3, 2025
 tags:
@@ -8,16 +8,16 @@ tags:
 ---
 
 In our [previous post](getting-started-with-llamasharp), we covered the basics of getting LlamaSharp up and running with
-a local LLM in your .NET applications. We set up the environment, downloaded a model, and ran our first inference.. But if you've been experimenting with your implementation, you might have noticed that the quality of responses
+a local model in your .NET applications. We set up the environment, downloaded a model, and ran our first inference.. But if you've been experimenting with your implementation, you might have noticed that the quality of responses
 can vary significantly.
 
-That's where the `DefaultSamplingPipeline` comes in - it's essentially the control panel for how your LLM generates
+That's where the `DefaultSamplingPipeline` comes in - it's essentially the control panel for how your model generates
 text. Think of it as the difference between a basic camera in auto mode and a professional DSLR with manual settings.
 Let's dive into how to fine-tune these settings to get exactly the output you want.
 
-## Understanding Token Generation in LLMs
+## Understanding Token Generation in Language Models
 
-Before we get into the specific parameters, it's important to understand how LLMs generate text. At each step, the
+Before we get into the specific parameters, it's important to understand how models generate text. At each step, the
 model:
 
 1. Predicts a probability distribution across its entire vocabulary (tens of thousands of tokens)
@@ -290,7 +290,7 @@ creativity settings, TopK ensures you're not getting words like "battleships" or
 
 ## Repeat Penalties: Avoiding the Loops
 
-One of the most frustrating issues with LLMs is when they get stuck in repetitive loops. LlamaSharp provides several
+One of the most frustrating issues with models is when they get stuck in repetitive loops. LlamaSharp provides several
 parameters to address this:
 
 ```csharp
@@ -460,7 +460,7 @@ var inferenceParams = new InferenceParams
     AntiPrompts = new List<string> { "###", "User:", "\n\n\n" },
 };
 
-var prompt = "Write a concise explanation of how token sampling works in LLMs.";
+var prompt = "Write a concise explanation of how token sampling works in LlamaSharp.";
 
 Console.WriteLine("Generating response with optimized parameters...\n");
 await foreach (var result in executor.InferAsync(prompt, inferenceParams))
