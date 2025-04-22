@@ -24,6 +24,7 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
         var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
         return new MarkdownPipelineBuilder()
             .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
+            .UseBlocks()
             .UseAdvancedExtensions()
             .UseSyntaxHighlighting(roslynHighlighter)
             .UseYamlFrontMatter()
@@ -31,7 +32,7 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
     }
 });
 
-// configures individual sections of the blog. PageUrl should match the configured razor pages route
+// configures individual sections of the blog. PageUrl should match the configured razor pages route,
 // and contentPath should match the location on disk.
 // you can have multiple of these per site.
 builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>

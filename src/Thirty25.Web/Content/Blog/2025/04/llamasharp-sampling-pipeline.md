@@ -285,7 +285,7 @@ var inferenceParams = new InferenceParams
 TopK is often used alongside TopP and temperature for tighter control. Think of it like a preliminary filter - if your
 model has 50,000 tokens in its vocabulary, using TopK = 40 means immediately eliminating 49,960 words from consideration,
 keeping only the top 40 candidates. This acts as a guardrail, preventing the model from picking truly bizarre words even
-when using high temperature settings. For example, when completing "I went to the store to buy some ___", even at high
+when using high-temperature settings. For example, when completing "I went to the store to buy some ___", even at high
 creativity settings, TopK ensures you're not getting words like "battleships" or "skyscrapers" as suggestions.
 
 ## Repeat Penalties: Avoiding the Loops
@@ -409,8 +409,9 @@ User: What about Germany?
 ```
 
 This prevents the model from trying to simulate both sides of the conversation and lets your application control the
-conversational flow. A good prompt template can often lower, or completely eliminate the need for stop sequences. You'll
-see them used in older examples far more frequently than recently demos.
+conversational flow.
+A good prompt template can often lower or completely eliminate the need for stop sequences.
+You'll see them used in older examples far more frequently than recent demos.
 
 ## Putting It All Together: A Complete Example
 

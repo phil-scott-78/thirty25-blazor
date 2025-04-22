@@ -17,4 +17,11 @@ internal static class MarkdownPipelineBuilderExtensions
 
         return markdownPipelineBuilder;
     }
+    
+    public static MarkdownPipelineBuilder UseBlocks(
+        this MarkdownPipelineBuilder markdownPipelineBuilder)
+    {
+        markdownPipelineBuilder.Extensions.Add(new PymdownBlocksExtension());
+        return markdownPipelineBuilder;
+    }
 }
