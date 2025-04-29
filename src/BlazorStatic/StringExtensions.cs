@@ -68,19 +68,4 @@ internal static class StringExtensions
 
         return slugBuilder.ToString();
     }
-
-    /// <summary>
-    /// Returns a collection of distinct non-null string values.
-    /// </summary>
-    /// <param name="source">The source enumerable that may contain null values.</param>
-    /// <returns>An IEnumerable with distinct non-null values.</returns>
-    public static IEnumerable<string> DistinctNotNullOrWhiteSpace(this IEnumerable<string?> source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        return source
-            .Where(item => !string.IsNullOrWhiteSpace(item))
-            .Select(item => item!) // This tells the compiler that item is not null
-            .Distinct();
-    }
 }

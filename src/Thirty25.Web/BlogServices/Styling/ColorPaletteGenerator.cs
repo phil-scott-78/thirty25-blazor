@@ -5,7 +5,7 @@ namespace Thirty25.Web.BlogServices.Styling;
 
 public static class ColorPaletteGenerator
 {
-    // The provided chroma and lightness values from https://evilmartians.com/chronicles/better-dynamic-themes-in-tailwind-with-oklch-color-magic
+    // Chroma and lightness values from https://evilmartians.com/chronicles/better-dynamic-themes-in-tailwind-with-oklch-color-magic
     private static readonly double[] ChromaLevels =
     [
         0.0108, 0.0321, 0.0609, 0.0908, 0.1398, 0.1472, 0.1299, 0.1067, 0.0898, 0.0726, 0.054
@@ -31,7 +31,7 @@ public static class ColorPaletteGenerator
         // Normalize the hue to 0-360 range
         hue = (hue % 360 + 360) % 360;
         
-        // Generate primary palette (with the exact hue)
+        // Generate a primary palette (with the exact hue)
         var primaryPalette = GeneratePaletteFromHue(hue);
         
         // Generate accent palette (30 degrees offset from primary)

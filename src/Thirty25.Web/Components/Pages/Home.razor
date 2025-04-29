@@ -1,9 +1,9 @@
 ﻿@page "/"
 @using BlazorStatic
 @using BlazorStatic.Models
-@using BlazorStatic.Services
+@using BlazorStatic.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticMarkdownContentService<FrontMatter> BlazorStaticMarkdownContentService
+@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlazorStaticMarkdownContentService
 @inject BlazorStaticOptions BlazorStaticOptions
 
 @if (_posts == null)
@@ -30,12 +30,12 @@
 
 @code{
     [Parameter] public string? FileName { get; set; }
-    private List<Post<FrontMatter>>? _posts;
+    private List<MarkdownContentPage<BlogFrontMatter>>? _posts;
 
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = (await BlazorStaticMarkdownContentService.GetAllPostsAsync()).OrderByDescending(i => i.FrontMatter.Date).ToList();
+        _posts = (await BlazorStaticMarkdownContentService.GetAllContentPagesAsync()).OrderByDescending(i => i.FrontMatter.Date).ToList();
     }
 
 }

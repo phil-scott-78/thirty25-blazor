@@ -1,7 +1,7 @@
 namespace BlazorStatic.Models;
 
 /// <summary>
-///     Class for keeping the content to copy properties together.
+/// Content that will be copied to the output during a static build.
 /// </summary>
 /// <param name="SourcePath"></param>
 /// <param name="TargetPath"></param>

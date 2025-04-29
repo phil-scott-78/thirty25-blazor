@@ -33,7 +33,7 @@ public class ParseOrder
         // rather pass it as a parameter.
         var parameters = new ModelParams(modelPath) { ContextSize = 1000, GpuLayerCount = -1, };
         using var model = await LLamaWeights.LoadFromFileAsync(parameters);
-
+        
         // Build type structure metadata from the User class to guide extraction
         // and GBNF and JSON sample generators
         var typeModelBuilder = new TypeModelBuilder<User>();

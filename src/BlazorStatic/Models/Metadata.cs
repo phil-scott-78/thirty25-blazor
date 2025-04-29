@@ -2,8 +2,8 @@ namespace BlazorStatic.Models;
 
 /// <summary>
 ///     Additional AdditionalInfo related to the page. This info is typically not bounded to FrontMatter, but rather
-///     "computed" additionaly.
-///     Currently, it is used to pass LastMod to the node in xml sitemap
+///     "computed" additionally.
+///     Currently, it is used to pass LastMod to the node in XML sitemap
 /// </summary>
 public class Metadata
 {
@@ -18,7 +18,7 @@ public class Metadata
     public string? Title { get; set; }
 
     /// <summary>
-    /// The description of the page, used for RSS feed items
+    /// The description of the page used for RSS feed items
     /// </summary>
     public string? Description { get; set; }
 

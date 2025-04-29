@@ -14,7 +14,7 @@ public class Tag
     /// The URL to use for navigation. Includes the BaseUrl of the static content section.
     /// </summary>
     public required string NavigateUrl { get; init; }
-    
+
     /// <summary>
     /// The URL-safe version of the tag name.
     /// Used in URLs and file names where special characters might cause issues.

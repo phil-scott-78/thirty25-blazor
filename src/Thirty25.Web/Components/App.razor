@@ -184,14 +184,14 @@
         if (!contentPanel) return;
 
         // Get the tablist base ID to find all related content panels
-        // Example: If tab ID is "tabButtontabs-23-0", we want to find all panels with "tabcontenttabs-23-*"
+        // Example: If tab ID is "tabButtontabs-23-0", we want to find all panels with "tab-contenttabs-23-*"
         const tabId = tab.id;
         const match = tabId.match(/^tabButton(.*)-\d+$/);
 
         if (match) {
             const baseId = match[1]; // This would be "tabs-23" in our example
             // Find all content panels that belong to this tab group
-            const allContentPanels = document.querySelectorAll(`[id^="tabcontent${baseId}-"]`);
+            const allContentPanels = document.querySelectorAll(`[id^="tab-content${baseId}-"]`);
 
             console.log(`Found ${allContentPanels.length} content panels for tab group ${baseId}`);
 

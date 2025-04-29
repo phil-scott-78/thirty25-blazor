@@ -1,7 +1,28 @@
 ﻿using Gbnf;
+using Gbnf.AdvancedScenarios;
 
 MyApp.GetSimpleGbnf();
 MyApp.GetSimpleJson();
-var user = await ParseOrder.Parse(@"b:\models\Qwen2.5.1-Coder-1.5B-Instruct-Q8_0.gguf");
 
-Console.WriteLine($"{user.FirstName} {user.LastName}, age {user.Age}. Is member? {user.IsMember}");
+ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels();
+
+Console.WriteLine();
+Console.WriteLine("=========================================");
+Console.WriteLine("Running different advanced GBNF scenarios");
+Console.WriteLine("=========================================");
+Console.WriteLine();
+
+var results = new ScenarioRunner()
+    .ProcessAllTypesInNamespace();
+
+foreach (var result in results)
+{
+    Console.WriteLine(result.Type.Name);
+    Console.WriteLine();
+    Console.WriteLine(result.JsonSample);
+    Console.WriteLine();
+    Console.WriteLine(result.Gbnf);
+    Console.WriteLine();
+    Console.WriteLine();
+    Console.WriteLine();
+}

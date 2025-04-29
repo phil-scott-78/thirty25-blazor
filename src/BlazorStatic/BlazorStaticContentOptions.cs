@@ -30,7 +30,7 @@ internal interface IBlazorStaticContentOptions
 /// </para>
 /// </remarks>
 public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOptions
-    where TFrontMatter : class, IFrontMatter, new()
+    where TFrontMatter : class, IFrontMatter
 {
     /// <summary>
     /// Gets or sets the folder path relative to the project root where content files are stored.
@@ -110,15 +110,6 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
 public class TagsOptions
 {
     /// <summary>
-    /// Gets or sets whether tag pages should be automatically generated from tags found in blog posts.
-    /// </summary>
-    /// <remarks>
-    /// When true, the system will create dedicated pages for each unique tag found across all posts.
-    /// Default value is true.
-    /// </remarks>
-    public bool AddTagPagesFromPosts { get; init; } = true;
-
-    /// <summary>
     /// Gets or sets the URL path component for the page that displays all tags.
     /// </summary>
     /// <remarks>
@@ -147,7 +138,7 @@ public class TagsOptions
     /// throughout the application to ensure proper navigation.
     /// </para>
     /// <para>
-    /// Default implementation uses the Slugify() extension method to create URL-friendly strings.
+    /// The default implementation uses the Slugify() extension method to create URL-friendly strings.
     /// </para>
     /// </remarks>
     public Func<string, string> TagEncodeFunc { get; init; } = s => s.Slugify();

@@ -1,10 +1,10 @@
 ﻿@page "/blog/{*fileName:nonfile}"
 @using BlazorStatic
 @using BlazorStatic.Models
-@using BlazorStatic.Services
+@using BlazorStatic.Services.Content
 @using Thirty25.Web.Components.Layout
 @inject BlazorStaticOptions Options
-@inject BlazorStaticMarkdownContentService<FrontMatter> BlazorStaticMarkdownContentService
+@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlazorStaticMarkdownContentService
 
 @* Show specific post by filename param *@
 @if (_post == null)
@@ -13,20 +13,20 @@
     return;
 }
 <PageTitle>@Options.BlogTitle - @_post.FrontMatter.Title</PageTitle>
-<BlogPost Post="_post" Series="_series"/>
+<BlogPost MarkdownContentPage="_post" Series="_series"/>
 
 @code{
     [Parameter] public required string FileName { get; init; }
-    Post<FrontMatter>? _post;
-    List<Post<FrontMatter>>? _series;
+    MarkdownContentPage<BlogFrontMatter>? _post;
+    List<MarkdownContentPage<BlogFrontMatter>>? _series;
 
     protected override async Task OnInitializedAsync()
     {
-        _post = await BlazorStaticMarkdownContentService.GetPostByUrlOrDefault(FileName);
+        _post = await BlazorStaticMarkdownContentService.GetContentPageByUrlOrDefault(FileName);
         
         if (_post != null && !string.IsNullOrWhiteSpace(_post.FrontMatter.Series))
         {
-            var allPosts = await BlazorStaticMarkdownContentService.GetAllPostsAsync();
+            var allPosts = await BlazorStaticMarkdownContentService.GetAllContentPagesAsync();
             _series = allPosts
                 .Where(i => string.Equals(i.FrontMatter.Series, _post.FrontMatter.Series, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FrontMatter.Date)

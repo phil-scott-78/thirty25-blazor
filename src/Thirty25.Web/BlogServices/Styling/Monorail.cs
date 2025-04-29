@@ -1,10 +1,8 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection.Metadata;
 using MonorailCss;
 using MonorailCss.Css;
 using MonorailCss.Plugins;
 using MonorailCss.Plugins.Prose;
-using Thirty25.Web.BlogServices.Styling;
 
 
 namespace Thirty25.Web.BlogServices.Styling;
@@ -14,7 +12,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
     public string GetStyleSheet()
     {
         // we are only scanning razor files, not the generated files. if you use
-        // code like bg-{color}-400 in the razor as a variable, that's not gonna be detected.
+        // code like bg-{color}-400 in the razor as a variable, that's not going to be detected.
         var cssClassValues = cssClassCollector.GetClasses();
         return GetCssFramework().Process(cssClassValues);
     }
@@ -85,7 +83,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
         };
 
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(248);
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(235);
 
         return new CssFramework(new CssFrameworkSettings()
         {

@@ -1,5 +1,10 @@
 ﻿using BlazorStatic.Models;
-using BlazorStatic.Services;
+using BlazorStatic.Services.Content;
+using BlazorStatic.Services.Content.MarkdigExtensions;
+using BlazorStatic.Services.Content.Roslyn;
+using BlazorStatic.Services.Generation;
+using BlazorStatic.Services.Infrastructure;
+using BlazorStatic.Services.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +21,7 @@ public static class BlazorStaticExtensions
     /// <summary>
     /// Adds a BlazorStaticContentService to the application's service collection with custom front matter support.
     /// </summary>
-    /// <typeparam name="TFrontMatter">The type used for post metadata. Must implement IFrontMatter.</typeparam>
+    /// <typeparam name="TFrontMatter">The type used for Post metadata. Must implement IFrontMatter.</typeparam>
     /// <param name="services">The application's service collection.</param>
     /// <param name="configureOptions">Action to customize the content service options.</param>
     /// <returns>The updated service collection for method chaining.</returns>
@@ -24,7 +29,7 @@ public static class BlazorStaticExtensions
     /// <para>This method registers both concrete and interface implementations of the content service:</para>
     /// <list type="bullet">
     ///     <item><description>BlazorStaticContentService&lt;TFrontMatter&gt; as a concrete implementation</description></item>
-    ///     <item><description>IContentPostService for general content post access</description></item>
+    ///     <item><description>IContentPostService for general content Post access</description></item>
     ///     <item><description>IBlazorStaticContentOptions for configuration access</description></item>
     /// </list>
     /// <para>The service handles parsing, loading, and providing content with the specified front matter format.</para>
@@ -35,13 +40,24 @@ public static class BlazorStaticExtensions
     {
         var options = configureOptions.Invoke();
 
+        // Register options
         services.AddSingleton(options);
+
+        // Register specialized services
+        services.AddSingleton<TagService<TFrontMatter>>();
+        services.AddSingleton<ContentFilesService<TFrontMatter>>();
+        services.AddSingleton<MarkdownContentProcessor<TFrontMatter>>();
+
+        // Register the primary service
         services.AddSingleton<BlazorStaticMarkdownContentService<TFrontMatter>>();
         services.AddSingleton<SitemapRssService>();
 
-        // also include their interface, we'll need these for loading all at once
-        services.AddSingleton<IBlazorStaticContentService>(provider => provider.GetRequiredService<BlazorStaticMarkdownContentService<TFrontMatter>>());
-        services.AddSingleton<IBlazorStaticContentOptions>(provider => provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
+        // Register interface implementations
+        services.AddSingleton<IBlazorStaticContentService>(provider =>
+            provider.GetRequiredService<BlazorStaticMarkdownContentService<TFrontMatter>>());
+        services.AddSingleton<IBlazorStaticContentOptions>(provider =>
+            provider.GetRequiredService<BlazorStaticContentOptions<TFrontMatter>>());
+
         return services;
     }
 
@@ -68,9 +84,32 @@ public static class BlazorStaticExtensions
 
         services.AddSingleton(options);
         services.AddSingleton<BlazorStaticOutputGenerationService>();
-        services.AddSingleton<BlazorStaticFileWatcher>();
-        services.AddSingleton<MarkdownService>();
+        services.AddSingleton<BlazorFileWatcher>();
+        services.AddSingleton<MarkdownParserService>();
         services.AddSingleton<RoutesHelperService>();
+        services.AddSingleton<ConfigVerifier>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds a RoslynHighlighterService to the application's service collection with support for Roslyn highlighter configuration.
+    /// </summary>
+    /// <param name="services">The application's service collection.</param>
+    /// <param name="configureOptions">Action to configure the Roslyn highlighter options.</param>
+    /// <returns>The updated service collection for method chaining.</returns>
+    /// <remarks>
+    /// This method registers the RoslynHighlighterService and its associated options as singleton services.
+    /// The RoslynHighlighterService facilitates syntax highlighting
+    /// using Roslyn configuration provided in the specified options.
+    /// </remarks>
+    public static IServiceCollection AddRoslynService(this IServiceCollection services,
+        Func<RoslynHighlighterOptions> configureOptions)
+    {
+        var options = configureOptions.Invoke();
+
+        services.AddSingleton(options);
+        services.AddSingleton<RoslynHighlighterService>();
 
         return services;
     }
@@ -109,7 +148,7 @@ public static class BlazorStaticExtensions
         app.MapGet("/sitemap.xml", async (SitemapRssService service) =>
         {
             var sitemap = await service.GenerateSitemap();
-            // Set content type and return the sitemap
+            // Set the content type and return the sitemap
             return Results.Content(sitemap, "application/xml");
         });
 
@@ -136,7 +175,7 @@ public static class BlazorStaticExtensions
     /// <para>Call this method after configuring all required BlazorStatic services and during application startup.
     /// The generation uses the first URL from the application's configured URLs list as the base address.</para>
     /// </remarks>
-    public static async Task UseBlazorStaticGenerator(this WebApplication app)
+    private static async Task UseBlazorStaticGenerator(this WebApplication app)
     {
         var blazorStaticService = app.Services.GetRequiredService<BlazorStaticOutputGenerationService>();
         await blazorStaticService.GenerateStaticPages(app.Urls.First());
@@ -159,7 +198,13 @@ public static class BlazorStaticExtensions
     /// </remarks>
     public static async Task RunOrBuildBlazorStaticSite(this WebApplication app, string[] args)
     {
+        // Verify configuration before proceeding
+        var configVerifier = app.Services.GetRequiredService<ConfigVerifier>();
+        var isConfigValid = configVerifier.VerifyConfiguration();
+        if (!isConfigValid) return;
+
         app.MapBlazorStaticAssets();
+
 
         if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
         {

@@ -1,12 +1,12 @@
 namespace BlazorStatic.Models;
 
 /// <summary>
-///     Interface for front matter. FrontMatter is the metadata of a post.
+///     Interface for front matter. FrontMatter is the metadata of a Markdown content page.
 /// </summary>
 public interface IFrontMatter
 {
     /// <summary>
-    ///     If true, the blog post will not be generated.
+    /// If true, the content page will not be generated.
     /// </summary>
     bool IsDraft => false;
 

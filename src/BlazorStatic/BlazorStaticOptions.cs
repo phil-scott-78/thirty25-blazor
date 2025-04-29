@@ -55,8 +55,8 @@ public class BlazorStaticOptions
     /// Example format: "https://example.com" (without a trailing slash)
     /// </para>
     /// </remarks>
-    public required string BaseUrl { get; init; } 
-    
+    public required string BaseUrl { get; init; }
+
     /// <summary>
     /// Gets or sets the output directory path for generated static files.
     /// </summary>
@@ -66,7 +66,7 @@ public class BlazorStaticOptions
     /// will be placed in this directory during the build process.
     /// </para>
     /// <para>
-    /// Default value is "output".
+    /// The default value is "output".
     /// </para>
     /// </remarks>
     public string OutputFolderPath { get; init; } = "output";
@@ -123,10 +123,10 @@ public class BlazorStaticOptions
     /// </para>
     /// <list type="bullet">
     ///     <item>
-    ///         <description>A route "@page "/blog"" will generate a file at "blog/index.html"</description>
+    ///         <description>A route @page "/blog" will generate a file at "blog/index.html"</description>
     ///     </item>
     ///     <item>
-    ///         <description>A route "@page "/blog/about"" will generate a file at "blog/about/index.html"</description>
+    ///         <description>A route @page "/blog/about" will generate a file at "blog/about/index.html"</description>
     ///     </item>
     /// </list>
     /// <para>
@@ -158,12 +158,12 @@ public class BlazorStaticOptions
     public ImmutableList<string> IgnoredPathsOnContentCopy { get; init; } = [];
 
     /// <summary>
-    /// Gets or sets the YAML deserializer used for parsing front matter in markdown files.
+    /// Gets or sets the YAML deserializer used for parsing front matter in Markdown files.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This deserializer converts YAML front matter sections in markdown files into
-    /// strongly-typed objects for use in templates and rendering.
+    /// This deserializer converts YAML front matter sections in Markdown files into
+    /// strongly typed objects for use in templates and rendering.
     /// </para>
     /// <para>
     /// The default configuration:
@@ -194,8 +194,8 @@ public class BlazorStaticOptions
     /// The default configuration:
     /// </para>
     /// <list type="bullet">
-    ///     <item><description>Enables advanced extensions for enhanced markdown features</description></item>
-    ///     <item><description>Supports YAML front matter parsing in markdown documents</description></item>
+    ///     <item><description>Enables advanced extensions for enhanced Markdown features</description></item>
+    ///     <item><description>Supports YAML front matter parsing in Markdown documents</description></item>
     /// </list>
     /// <para>
     /// You can customize this to add additional extensions or configure different parsing options.

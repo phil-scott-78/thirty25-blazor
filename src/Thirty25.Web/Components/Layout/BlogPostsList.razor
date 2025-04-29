@@ -4,11 +4,11 @@
 @foreach (var post in Posts)
 {
     <div class="pt-4 md:pt-8">
-        <BlogSummary Post="post"></BlogSummary>
+        <BlogSummary MarkdownContentPage="post"></BlogSummary>
     </div>
 }
 </div>
 
 @code {
-    [Parameter] public required IList<Post<FrontMatter>> Posts { get; set; }
+    [Parameter] public required IList<MarkdownContentPage<BlogFrontMatter>> Posts { get; set; }
 }

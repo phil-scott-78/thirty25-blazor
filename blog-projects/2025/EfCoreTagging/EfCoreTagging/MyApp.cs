@@ -1,11 +1,12 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace EfCoreTagging;
 
+[SuppressMessage("ReSharper", "UnusedVariable")]
 internal static class MyApp
 {
     public static async Task BasicQueryWithTag()

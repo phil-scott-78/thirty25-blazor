@@ -1,9 +1,9 @@
 namespace BlazorStatic.Models;
 
 /// <summary>
-///     Class for keeping the page to generate properties together.
+///  A page that will be generated during a static build.
 /// </summary>
-/// <param name="Url"></param>
-/// <param name="OutputFile"></param>
+/// <param name="Url">The URL pointing to the page.</param>
+/// <param name="OutputFile">The relative path of the output file.</param>
 /// <param name="Metadata">Additional file properties.</param>
 public record PageToGenerate(string Url, string OutputFile, Metadata? Metadata = null);

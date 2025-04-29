@@ -10,14 +10,14 @@
                         <dt class="sr-only">Published on</dt>
                         <dd class="text-base font-medium leading-6 text-primary-800 dark:text-primary-400">
                             <time
-                                datetime="@Post.FrontMatter.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)">
-                                @Post.FrontMatter.Date.ToString("MMMM d, yyyy", new CultureInfo("en-US"))
+                                datetime="@MarkdownContentPage.FrontMatter.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)">
+                                @MarkdownContentPage.FrontMatter.Date.ToString("MMMM d, yyyy", new CultureInfo("en-US"))
                             </time>
                         </dd>
                     </div>
                 </dl>
                 <div class="prose prose-stone dark:prose-invert mx-auto">
-                    <h1 class="">@Post.FrontMatter.Title</h1>
+                    <h1 class="">@MarkdownContentPage.FrontMatter.Title</h1>
                 </div>
             </div>
         </header>
@@ -26,10 +26,10 @@
         {
             <div class="p-4 text-neutral-700 dark:text-neutral-100/75">
                 <p>This post is part of a series</p>
-                <ul class="mt-4 space-y-1 list-disc  pl-6">
+                <ul class="mt-4 space-y-2 list-disc  pl-6">
                     @foreach (var post in Series)
                     {
-                        @if (post.Url == Post.Url)
+                        @if (post.Url == MarkdownContentPage.Url)
                         {
                             <li><strong>@post.FrontMatter.Title</strong></li>
                         }
@@ -43,20 +43,35 @@
         }
 
         <div
-            class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 xl:divide-y-0">
-            <div class="divide-y  divide-primary-700  lg:col-span-9 xl:row-span-2 xl:pb-0">
+            class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 lg:divide-y-0">
+            <div class="lg:col-span-9 xl:row-span-2 xl:pb-0">
                 <div
                     class="prose prose-stone dark:prose-invert mt-8 prose-base md:prose-lg max-w-full lg:leading-loose">
-                    @((MarkupString)Post.HtmlContent)
+                    @((MarkupString)MarkdownContentPage.HtmlContent)
                 </div>
+                @if (_nextPost != null)
+                {
+                    <a href="@_nextPost.NavigateUrl">
+                    <div class="flex flex-row items-center justify-between hover:ring-1 hover:ring-primary-500/25 px-6 py-4 rounded rounded-xl mt-8 bg-primary-50 dark:bg-primary-900/10 border border-base-400 dark:border-primary-700/75 text-primary-700 dark:text-primary-100">
+                        <div>Ready for the next article in the series? <span class="border-b border-accent-400">@_nextPost.FrontMatter.Title</span></div>
+                        <svg class="text-accent-400 fill-current" height="2em" width="2em" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                             viewBox="0 0 490 490" xml:space="preserve">
+                            <g>
+                                <path d="M245,0C109.7,0,0,109.7,0,245s109.7,245,245,245s245-109.7,245-245S380.3,0,245,0z M315,287.7l-90.5,90.5l-42.7-42.7
+		l90.5-90.5l-90.5-90.5l42.7-42.7l90.5,90.5l42.7,42.7L315,287.7z"/>
+                            </g>
+                        </svg>
+                    </div>
+            </a>
+                }
             </div>
-            <aside class="sticky scroll-m-32 lg:col-span-3 top-16 max-h-screen ">
+            <aside class="sticky scroll-m-32 lg:col-span-3 top-20 lg:top-16 max-h-screen ">
                 <div
                     class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y">
                     <div class="py-4 xl:py-8">
                         <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">Tags</h2>
                         <div class="flex flex-wrap">
-                            @foreach (var tag in Post.Tags)
+                            @foreach (var tag in MarkdownContentPage.Tags)
                             {
                                 <a class="text-primary-900 dark:text-neutral-100 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
                                    href="@tag.NavigateUrl">@tag.Name</a>
@@ -65,20 +80,20 @@
                     </div>
                 </div>
 
-                @if (Post.TableOfContents.Length > 1)
+                @if (MarkdownContentPage.TableOfContents.Length > 1)
                 {
                     <div class="hidden lg:block">
                     <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">On This Page</h2>
                     <ul class="list-none text-sm mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
-                        @foreach (var entry in Post.TableOfContents)
+                        @foreach (var entry in MarkdownContentPage.TableOfContents)
                         {
-                            <li class="flex"><a class="border-neutral-200 dark:border-neutral-700 hover:text-primary-900 dark:hover:text-neutral-50/90 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@entry.Id">@entry.Title</a></li>
+                            <li class="flex"><a class="border-neutral-200 dark:border-neutral-700 hover:text-primary-900 dark:hover:text-neutral-50/90 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@MarkdownContentPage.NavigateUrl#@entry.Id">@entry.Title</a></li>
                             @if (entry.Children.Length > 0)
                             {
                                 <ul class="pb-1px">
                                     @foreach (var childEnry in entry.Children)
                                     {
-                                        <li class="flex"><a class="transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
+                                        <li class="flex"><a class="transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@MarkdownContentPage.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
                                     }
                                 </ul>
                             }
@@ -87,9 +102,9 @@
                     </div>
                 }
                 
-                @if (string.IsNullOrWhiteSpace(Post.FrontMatter.Repository) == false)
+                @if (string.IsNullOrWhiteSpace(MarkdownContentPage.FrontMatter.Repository) == false)
                 {
-                    <a class="block" href="@Post.FrontMatter.Repository">
+                    <a class="block" href="@MarkdownContentPage.FrontMatter.Repository">
                     <div class="mt-8 border bg-base-400/5 border-primary-50/25 p-4 rounded rounded-lg" >
                         <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">Source Code</h2>
                         <p class="mt-2 text-primary-900/75 dark:text-neutral-50/90 hover:text-primary-400 mr-3 text-sm font-light">Example source code for this post</p>
@@ -106,6 +121,24 @@
 </article>
 
 @code {
-    [Parameter] public required Post<FrontMatter> Post { get; init; }
-    [Parameter] public required List<Post<FrontMatter>>? Series { get; init; }
+    [Parameter] public required MarkdownContentPage<BlogFrontMatter> MarkdownContentPage { get; init; }
+    [Parameter] public required List<MarkdownContentPage<BlogFrontMatter>>? Series { get; init; }
+
+    MarkdownContentPage<BlogFrontMatter>? _nextPost;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (Series != null)
+        {
+            var thisPostIndex = Series.FindIndex(x => x.Url == MarkdownContentPage.Url);
+            
+            if (thisPostIndex < Series.Count - 1)
+            {
+                _nextPost = Series[thisPostIndex + 1];
+            }
+            
+        }
+        await base.OnInitializedAsync();
+    }
+
 }

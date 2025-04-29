@@ -2,9 +2,9 @@
 @using System.Collections.Immutable
 @using BlazorStatic
 @using BlazorStatic.Models
-@using BlazorStatic.Services
+@using BlazorStatic.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticMarkdownContentService<FrontMatter> BlogService
+@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlogService
 @inject BlazorStaticOptions BlazorStaticOptions
 
 @if (_tag == null)
@@ -26,7 +26,7 @@
     [Parameter] public required string TagEncodedName { get; set; }
 
     private BlazorStatic.Models.Tag? _tag;
-    private ImmutableList<Post<FrontMatter>>? _posts;
+    private ImmutableList<MarkdownContentPage<BlogFrontMatter>>? _posts;
 
     protected override async Task OnInitializedAsync()
     {

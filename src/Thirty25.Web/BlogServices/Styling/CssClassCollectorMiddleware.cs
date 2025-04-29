@@ -32,7 +32,7 @@ internal partial class CssClassCollectorMiddleware(RequestDelegate next)
             return;
         }
         
-        logger.LogInformation("Gathering CSS for {url}", url);
+        logger.LogDebug("Gathering CSS for {url}", url);
 
         memoryStream.Seek(0, SeekOrigin.Begin);
         var html = await new StreamReader(memoryStream).ReadToEndAsync();
@@ -43,7 +43,7 @@ internal partial class CssClassCollectorMiddleware(RequestDelegate next)
             .Distinct()
             .ToList();
 
-        logger.LogInformation("Gathered {count} CSS classes", allClasses.Count());
+        logger.LogDebug("Gathered {count} CSS classes", allClasses.Count());
         collector.AddClasses(url, allClasses);
 
         memoryStream.Seek(0, SeekOrigin.Begin);
