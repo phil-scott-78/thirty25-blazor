@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using MonorailCss.Css;
 
-namespace Thirty25.Web.BlogServices;
+namespace Thirty25.Web.BlogServices.Styling;
 
 public static class ColorPaletteGenerator
 {

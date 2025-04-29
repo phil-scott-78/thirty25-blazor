@@ -26,7 +26,7 @@
         {
             <div class="p-4 text-neutral-700 dark:text-neutral-100/75">
                 <p>This post is part of a series</p>
-                <ul class="mt-4 list-disc pl-6">
+                <ul class="mt-4 space-y-1 list-disc  pl-6">
                     @foreach (var post in Series)
                     {
                         @if (post.Url == Post.Url)
@@ -43,14 +43,14 @@
         }
 
         <div
-            class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 xl:grid xl:grid-cols-6 xl:gap-x-12 xl:divide-y-0">
-            <div class="divide-y  divide-primary-700 xl:col-span-4 xl:row-span-2 xl:pb-0">
+            class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 xl:divide-y-0">
+            <div class="divide-y  divide-primary-700  lg:col-span-9 xl:row-span-2 xl:pb-0">
                 <div
                     class="prose prose-stone dark:prose-invert mt-8 prose-base md:prose-lg max-w-full lg:leading-loose">
                     @((MarkupString)Post.HtmlContent)
                 </div>
             </div>
-            <aside class="sticky scroll-m-32 xl:col-span-2 top-16 max-h-screen ">
+            <aside class="sticky scroll-m-32 lg:col-span-3 top-16 max-h-screen ">
                 <div
                     class=" text-sm font-medium leading-5 divide-primary-700 xl:col-start-1 xl:row-start-2 xl:divide-y">
                     <div class="py-4 xl:py-8">
@@ -67,18 +67,18 @@
 
                 @if (Post.TableOfContents.Length > 1)
                 {
-                    <div class="hidden xl:block">
+                    <div class="hidden lg:block">
                     <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">On This Page</h2>
-                    <ul class="list-none mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
+                    <ul class="list-none text-sm mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
                         @foreach (var entry in Post.TableOfContents)
                         {
-                            <li class="flex"><a class="border-neutral-200 dark:border-neutral-700 hover:opacity-80 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@entry.Id">@entry.Title</a></li>
+                            <li class="flex"><a class="border-neutral-200 dark:border-neutral-700 hover:text-primary-900 dark:hover:text-neutral-50/90 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@entry.Id">@entry.Title</a></li>
                             @if (entry.Children.Length > 0)
                             {
                                 <ul class="pb-1px">
                                     @foreach (var childEnry in entry.Children)
                                     {
-                                        <li class="flex"><a class="transition-all border-neutral-200 dark:border-neutral-700 hover:opacity-80 border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
+                                        <li class="flex"><a class="transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400" href="@Post.NavigateUrl#@childEnry.Id">@childEnry.Title</a></li>
                                     }
                                 </ul>
                             }

@@ -11,51 +11,68 @@ internal sealed class CodeHighlightRenderer(
     CodeBlockRenderer codeBlockRenderer,
     RoslynHighlighterService roslynHighlighter) : HtmlObjectRenderer<CodeBlock>
 {
-    protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
+protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
+{
+    var preCss = "overflow-x-auto scheme-dark font-mono text-xs md:text-sm font-light leading-relaxed w-full";
+    var containerCss = "";
+    if (codeBlock.Parent is not TabbedCodeBlock)
     {
-        if (codeBlock is not FencedCodeBlock fencedCodeBlock || codeBlock.Parser is not FencedCodeBlockParser fencedCodeBlockParser
-            || fencedCodeBlock.Info == null || fencedCodeBlockParser.InfoPrefix == null)
-        {
-            codeBlockRenderer.Write(renderer, codeBlock);
-            return;
-        }
-
+        // if we aren't in a tab block, then let's create ourselves a container
+        containerCss = "p-1 bg-base-900/95 dark:bg-base-800/50 border border-base-700/50 shadow rounded rounded-xl overflow-x-auto";
+        preCss += " text-base-100/90  py-2 px-2 md:px-4 ";
+    }
+    
+    renderer.WriteLine("<div class=\"not-prose\">");
+    renderer.WriteLine($"<div class=\"{containerCss}\">");
+    renderer.WriteLine($"<div class=\"{preCss}\">");
+    
+    var useDefaultRenderer = true;
+    
+    if (codeBlock is FencedCodeBlock fencedCodeBlock && 
+        codeBlock.Parser is FencedCodeBlockParser fencedCodeBlockParser &&
+        fencedCodeBlock.Info != null && 
+        fencedCodeBlockParser.InfoPrefix != null)
+    {
         var languageId = fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
         if (!string.IsNullOrWhiteSpace(languageId))
         {
             var code = ExtractCode(codeBlock);
+            useDefaultRenderer = false;
 
             switch (languageId)
             {
                 case "vb" or "vbnet":
-                {
-                    var html = roslynHighlighter.Highlight(code, Language.VisualBasic);
-                    renderer.Write(html);
-                    return;
-                }
+                    renderer.Write(roslynHighlighter.Highlight(code, Language.VisualBasic));
+                    break;
                 case "csharp" or "c#" or "cs":
-                {
-                    var html = roslynHighlighter.Highlight(code);
-                    renderer.Write(html);
-                    return;
-                }
+                    renderer.Write(roslynHighlighter.Highlight(code));
+                    break;
                 case "csharp:xmldocid,bodyonly":
-                {
-                    var html = roslynHighlighter.HighlightExample(code, true);
-                    renderer.Write(html);
-                    return;
-                }
+                    renderer.Write(roslynHighlighter.HighlightExample(code, true));
+                    break;
                 case "csharp:xmldocid":
-                {
-                    var html = roslynHighlighter.HighlightExample(code, false);
-                    renderer.Write(html);
-                    return;
-                }
+                    renderer.Write(roslynHighlighter.HighlightExample(code, false));
+                    break;
+                case "gbnf":
+                    renderer.Write(GbnfHighlighter.HighlightGbnf(code));
+                    break;
+                default:
+                    useDefaultRenderer = true;
+                    break;
             }
         }
-
+    }
+    
+    if (useDefaultRenderer)
+    {
         codeBlockRenderer.Write(renderer, codeBlock);
     }
+    
+    // Common closing tags for all paths
+    renderer.WriteLine("</div>");
+    renderer.WriteLine("</div>");
+    renderer.WriteLine("</div>");
+}
 
     private static string ExtractCode(LeafBlock leafBlock)
     {

@@ -5,7 +5,9 @@ using Thirty25.Web;
 using Thirty25.Web.BlogServices;
 using Thirty25.Web.BlogServices.Markdown;
 using Thirty25.Web.BlogServices.Roslyn;
+using Thirty25.Web.BlogServices.Styling;
 using Thirty25.Web.Components;
+using MonorailCssService = Thirty25.Web.BlogServices.Styling.MonorailCssService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,9 +26,9 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
         var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
         return new MarkdownPipelineBuilder()
             .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
-            .UseBlocks()
             .UseAdvancedExtensions()
             .UseSyntaxHighlighting(roslynHighlighter)
+            .UseTabbedCodeBlocks()
             .UseYamlFrontMatter()
             .Build();
     }
@@ -41,6 +43,7 @@ builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOpti
     ContentPath = "Content/Blog",
 });
 
+builder.Services.AddSingleton<CssClassCollector>();
 // custom service for doing css work
 builder.Services.AddSingleton<MonorailCssService>();
 // custom service for highlighting C# code blocks at generation time
@@ -54,5 +57,7 @@ app.MapRazorComponents<App>();
 
 // custom css. the blazor static service will discover the mapped url automatically
 // and include it with the static generation.
-app.MapGet("/styles.css", async (MonorailCssService cssService) => Results.Content(await cssService.GetStyleSheet(), "text/css"));
+app.UseMiddleware<CssClassCollectorMiddleware>();
+app.MapGet("/styles.css", (MonorailCssService cssService) => Results.Content(cssService.GetStyleSheet(), "text/css"));
+
 await app.RunOrBuildBlazorStaticSite(args);

@@ -14,6 +14,17 @@ public class MyApp
         
         Console.WriteLine(gbnf);
     }
+    
+    public static void GetSimpleJson()
+    {
+        var jsonBuilder = new JsonSampleGenerator();
+        var typeModelBuilder = new TypeModelBuilder<User>();
+        
+        var typeModel = typeModelBuilder.Build();
+        var json = jsonBuilder.Generate(typeModel);
+        
+        Console.WriteLine(json);
+    }
 }
 
 public class User

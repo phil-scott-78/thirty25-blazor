@@ -401,9 +401,10 @@ using GBNF (Guided Backus–Naur Form) specifications.
 GBNF allows us to define a formal grammar that the model **must** follow during token generation. It's like putting
 rails on the generation process, making it impossible for the model to generate invalid JSON.
 
-Here's a basic JSON grammar written in GBNF:
+Here's a basic [JSON grammar](https://github.com/ggml-org/llama.cpp/blob/master/grammars/json.gbnf) written in GBNF from
+the llama.cpp project:
 
-```
+```gbnf
 root   ::= object
 value  ::= object | array | string | number | ("true" | "false" | "null") ws
 

@@ -1,19 +1,21 @@
 ﻿using System.Collections.Immutable;
-using System.Text.RegularExpressions;
+using System.Reflection.Metadata;
 using MonorailCss;
 using MonorailCss.Css;
 using MonorailCss.Plugins;
 using MonorailCss.Plugins.Prose;
+using Thirty25.Web.BlogServices.Styling;
 
-namespace Thirty25.Web.BlogServices;
 
-internal partial class MonorailCssService(IWebHostEnvironment env)
+namespace Thirty25.Web.BlogServices.Styling;
+
+internal class MonorailCssService(CssClassCollector cssClassCollector)
 {
-    public async Task<string> GetStyleSheet()
+    public string GetStyleSheet()
     {
         // we are only scanning razor files, not the generated files. if you use
         // code like bg-{color}-400 in the razor as a variable, that's not gonna be detected.
-        var cssClassValues = await ScanRazorFilesForCssClasses();
+        var cssClassValues = cssClassCollector.GetClasses();
         return GetCssFramework().Process(cssClassValues);
     }
 
@@ -53,11 +55,14 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                                 new CssDeclaration(CssProperties.BorderColor,
                                     designSystem.Colors["primary"][ColorLevels._700].AsString()),
                             ]),
-                            new CssRuleSet(":not(pre) code",
+                            new CssRuleSet("code",
                             [
-                                new CssDeclaration(CssProperties.FontSize, ".85em"),
-                                new CssDeclaration(CssProperties.FontWeight, "500"),
-                                new CssDeclaration(CssProperties.Color, designSystem.Colors["accent"][ColorLevels._800].AsString()),
+                                new CssDeclaration(CssProperties.FontSize, ".80em"),
+                                new CssDeclaration(CssProperties.FontWeight, "400"),
+                                new CssDeclaration(CssProperties.Padding, "2px 5px"),
+                                new CssDeclaration(CssProperties.BorderRadius, "4px"),
+                                new CssDeclaration(CssProperties.BackgroundColor, designSystem.Colors["accent"][ColorLevels._200].AsStringWithOpacity(".50")),
+                                new CssDeclaration(CssProperties.Color, designSystem.Colors["base"][ColorLevels._700].AsString()),
                             ]),
                         ]
                     }
@@ -68,30 +73,14 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                     {
                         ChildRules =
                         [
-                            new CssRuleSet(":not(pre) code",
+                            new CssRuleSet("code",
                             [
-                                new CssDeclaration(CssProperties.Color,
-                                    designSystem.Colors["accent"][ColorLevels._400].AsString()),
+                                new CssDeclaration(CssProperties.BackgroundColor, designSystem.Colors["base"][ColorLevels._800].AsStringWithOpacity(".75")),
+                                new CssDeclaration(CssProperties.Color, designSystem.Colors["accent"][ColorLevels._400].AsString()),
                             ])
                         ]
                     }
                 },
-                {
-                    // dark mode color overrides
-                    "base", new CssSettings()
-                    {
-                        ChildRules =
-                        [
-                            new CssRuleSet("pre",
-                            [
-                                new CssDeclaration(CssProperties.FontSize, ".75em"),
-                                new CssDeclaration(CssProperties.LineHeight, "1.7em"),
-                                new CssDeclaration(CssProperties.PaddingLeft, "2em"),
-                                new CssDeclaration(CssProperties.PaddingRight, "2em"),
-                            ])
-                        ]
-                    }
-                }
             }.ToImmutableDictionary()
         };
 
@@ -115,6 +104,7 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                 new
                     Dictionary<string, string> /* these are just for a custom starry-night theme using tailwind colors */
                     {
+                        { "code", "font-mono" },
                         { ".prose h1, .prose h2, .prose h3, .prose h4", "scroll-m-24" },
                         { ".pl-c", "text-base-300/50 italic" },
                         {
@@ -135,40 +125,4 @@ internal partial class MonorailCssService(IWebHostEnvironment env)
                     }
         });
     }
-
-    private async Task<HashSet<string>> ScanRazorFilesForCssClasses()
-    {
-        var contentRootPath = env.ContentRootPath;
-        var razorFiles = Directory.GetFiles(contentRootPath, "*.razor", SearchOption.AllDirectories)
-            .Concat(Directory.GetFiles(contentRootPath, "*.cshtml", SearchOption.AllDirectories)).ToArray();
-
-        // CSS class pattern - looking for class="..." or class='...' patterns
-        var classRegex = RazorClassRegex();
-
-        var values = new HashSet<string>();
-        foreach (var file in razorFiles)
-        {
-            var content = await File.ReadAllTextAsync(file);
-            var matches = classRegex.Matches(content);
-
-            foreach (Match match in matches)
-            {
-                var classValue = match.Groups["value"].Value;
-                // Split by whitespace to get individual class names
-                var individualClasses = classValue.Split([' '], StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var className in individualClasses)
-                {
-                    values.Add(className.Trim());
-                }
-            }
-        }
-
-        return values;
-    }
-
-    [GeneratedRegex(
-        """(class\s*=\s*[\'\"](?<value>[^<]*?)[\'\"])|(cssclass\s*=\s*[\'\"](?<value>[^<]*?)[\'\"])|(CssClass\s*\(\s*\"(?<value>[^<]*?)\"\s*\))""",
-        RegexOptions.Compiled)]
-    private static partial Regex RazorClassRegex();
 }

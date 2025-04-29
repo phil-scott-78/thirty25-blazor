@@ -34,15 +34,14 @@ internal class DocumentProcessor : IDisposable
                 args.Diagnostic.Message, args.Diagnostic.Kind);
         };
 
-        _roslynCache = new ThreadSafePopulatedCache<string, (Document, TextSpan, SourceText)>(
-            async () =>
-            {
-                var solution = _workspace.CurrentSolution.ProjectIds.Count == 0
-                    ? await _workspace.OpenSolutionAsync(solutionFile)
-                    : await ApplyPendingChangesToSolutionAsync(_workspace.CurrentSolution);
+        _roslynCache = new ThreadSafePopulatedCache<string, (Document, TextSpan, SourceText)>(async () =>
+        {
+            var solution = _workspace.CurrentSolution.ProjectIds.Count == 0
+                ? await _workspace.OpenSolutionAsync(solutionFile)
+                : await ApplyPendingChangesToSolutionAsync(_workspace.CurrentSolution);
 
-                return await GetAllTypesAndMethodsInSolutionAsync(solution);
-            });
+            return await GetAllTypesAndMethodsInSolutionAsync(solution);
+        });
     }
 
     public void InvalidateFile(string filePath)
@@ -61,11 +60,12 @@ internal class DocumentProcessor : IDisposable
         {
             var sanitizedXmlDocId = DocIdSanitizer.SanitizeXmlDocId(xmlDocId);
 
-            if (await _roslynCache.TryGetValueAsync(sanitizedXmlDocId) is { Found: true, Value: var (document, originalSpan, sourceText) })
+            if (await _roslynCache.TryGetValueAsync(sanitizedXmlDocId) is
+                { Found: true, Value: var (document, originalSpan, sourceText) })
             {
                 return await ExtractCodeFragmentAsync(document, originalSpan, sourceText, bodyOnly);
             }
-            
+
             _logger.LogWarning("Failed to find {sanitizedXmlDocId}", sanitizedXmlDocId);
             return "Code not found for specified documentation ID.";
         });
@@ -102,35 +102,65 @@ internal class DocumentProcessor : IDisposable
         return solution;
     }
 
-    private static async Task<string> ExtractCodeFragmentAsync(Document document, TextSpan originalSpan, SourceText sourceText, bool bodyOnly)
+    private static async Task<string> ExtractCodeFragmentAsync(Document document, TextSpan originalSpan,
+        SourceText sourceText, bool bodyOnly)
     {
-        // Check if this is a method and handle bodyOnly if it is
-        var syntaxTree = await document.GetSyntaxTreeAsync() ?? throw new NullReferenceException();
-        var syntaxRoot = await syntaxTree.GetRootAsync();
-        var nodeAtSpan = syntaxRoot.FindNode(originalSpan);
-
-        if (nodeAtSpan is not MethodDeclarationSyntax methodNode)
-        {
-            return sourceText.GetSubText(originalSpan).ToString();
-        }
-
+        // If we don't want body only, just return the original text
         if (!bodyOnly)
         {
             return sourceText.GetSubText(originalSpan).ToString();
         }
 
-        // For bodyOnly, we only want the body of the method, not the signature or braces
-        if (methodNode.Body == null)
+        // Find the node at the span
+        var syntaxTree = await document.GetSyntaxTreeAsync() ?? throw new NullReferenceException();
+        var syntaxRoot = await syntaxTree.GetRootAsync();
+        var nodeAtSpan = syntaxRoot.FindNode(originalSpan);
+
+        return nodeAtSpan switch
         {
-            return methodNode.ExpressionBody != null
-                ? sourceText.GetSubText(methodNode.ExpressionBody.Span).ToString()
-                : sourceText.GetSubText(originalSpan).ToString();
+            // Handle method declarations
+            MethodDeclarationSyntax methodNode => ExtractMethodBodyContent(methodNode, sourceText, originalSpan),
+            // Handle class declarations
+            ClassDeclarationSyntax classNode => ExtractClassBodyContent(classNode, sourceText, originalSpan),
+            // For any other node type, return the original span
+            _ => sourceText.GetSubText(originalSpan).ToString()
+        };
+    }
+
+    private static string ExtractMethodBodyContent(MethodDeclarationSyntax methodNode, SourceText sourceText, TextSpan originalSpan)
+    {
+        // For expression body, return just the expression
+        if (methodNode.ExpressionBody != null)
+        {
+            return sourceText.GetSubText(methodNode.ExpressionBody.Span).ToString();
         }
 
-        // Get the inner content of the body, excluding the opening and closing braces
+        // Fallback to the original span if neither is available
+        if (methodNode.Body == null)
+        {
+            return sourceText.GetSubText(originalSpan).ToString();
+        }
+        
+        // For block body, return the content between braces
         var bodySpan = TextSpan.FromBounds(
             methodNode.Body.OpenBraceToken.Span.End,
             methodNode.Body.CloseBraceToken.SpanStart);
+
+        return sourceText.GetSubText(bodySpan).ToString();
+    }
+
+    private static string ExtractClassBodyContent(ClassDeclarationSyntax classNode, SourceText sourceText, TextSpan originalSpan)
+    {
+        // Fallback to the original span if we can't find valid braces
+        if (classNode.OpenBraceToken.Span.End >= classNode.CloseBraceToken.SpanStart)
+        {
+            return sourceText.GetSubText(originalSpan).ToString();
+        }
+        
+        // For a class, we want the content between the opening and closing braces
+        var bodySpan = TextSpan.FromBounds(
+            classNode.OpenBraceToken.Span.End,
+            classNode.CloseBraceToken.SpanStart);
 
         return sourceText.GetSubText(bodySpan).ToString();
     }
@@ -255,15 +285,15 @@ internal class DocumentProcessor : IDisposable
     private void Dispose(bool disposing)
     {
         if (_disposed) return;
-        
+
         if (disposing)
         {
             _workspace.Dispose();
         }
-        
+
         _disposed = true;
     }
-    
+
     ~DocumentProcessor()
     {
         Dispose(false);

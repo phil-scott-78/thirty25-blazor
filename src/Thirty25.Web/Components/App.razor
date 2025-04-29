@@ -27,7 +27,7 @@
     <PageTitle>@Options.BlogTitle</PageTitle>
 </head>
 
-<body class="antialiased font-sans bg-primary-50 dark:bg-neutral-900 scheme-light dark:scheme-dark  transition-colors ">
+<body class="antialiased font-sans bg-base-50 dark:bg-neutral-900 scheme-light dark:scheme-dark  transition-colors ">
 <div class="dark:bg-primary-950/50 min-h-screen pb-4 md:pb-16">
     <Routes/>
 </div>
@@ -108,6 +108,107 @@
             observer.observe(section);
         });
     });
+
+    /**
+     * Tab System - Handles all tab elements on a page
+     *
+     * This script will:
+     * 1. Find all tablists on the page
+     * 2. Set up event listeners for keyboard navigation and clicking
+     * 3. Handle tab switching with proper ARIA attribute updates
+     * 4. Manage tab content visibility
+     */
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Find all tablists on the page
+        const tablists = document.querySelectorAll('[role="tablist"]');
+
+        tablists.forEach(tablist => {
+            // Get the ID of the tablist to match with related elements
+            const tablistId = tablist.id;
+            if (!tablistId) return; // Skip if no ID
+
+            // Find all tabs within this tablist
+            const tabs = tablist.querySelectorAll('[role="tab"]');
+            if (tabs.length === 0) return; // Skip if no tabs
+
+            // Set up click event listeners for each tab
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activateTab(tab, tabs);
+                });
+
+            });
+
+            // Initialize - make sure at least one tab is active
+            const activeTab = tablist.querySelector('[aria-selected="true"]');
+            if (!activeTab && tabs.length > 0) {
+                activateTab(tabs[0], tabs);
+            } else if (activeTab) {
+                // Ensure the corresponding tab content is visible
+                showTabContent(activeTab);
+            }
+        });
+    });
+
+    /**
+     * Activate a tab and deactivate all others in the same tablist
+     */
+    function activateTab(selectedTab, allTabs) {
+        // Deactivate all tabs
+        allTabs.forEach(tab => {
+            tab.setAttribute('aria-selected', 'false');
+            tab.setAttribute('data-state', 'inactive');
+            tab.setAttribute('tabindex', '-1');
+        });
+
+        // Activate the selected tab
+        selectedTab.setAttribute('aria-selected', 'true');
+        selectedTab.setAttribute('data-state', 'active');
+        selectedTab.setAttribute('tabindex', '0');
+
+        // Show the corresponding tab content
+        showTabContent(selectedTab);
+    }
+
+    /**
+     * Show the tab content associated with the selected tab
+     */
+    function showTabContent(tab) {
+        // Get the ID of the tab content panel from the aria-controls attribute
+        const contentId = tab.getAttribute('aria-controls');
+        if (!contentId) return;
+
+        // Find the content panel
+        const contentPanel = document.getElementById(contentId);
+        if (!contentPanel) return;
+
+        // Get the tablist base ID to find all related content panels
+        // Example: If tab ID is "tabButtontabs-23-0", we want to find all panels with "tabcontenttabs-23-*"
+        const tabId = tab.id;
+        const match = tabId.match(/^tabButton(.*)-\d+$/);
+
+        if (match) {
+            const baseId = match[1]; // This would be "tabs-23" in our example
+            // Find all content panels that belong to this tab group
+            const allContentPanels = document.querySelectorAll(`[id^="tabcontent${baseId}-"]`);
+
+            console.log(`Found ${allContentPanels.length} content panels for tab group ${baseId}`);
+
+            // Hide all content panels
+            allContentPanels.forEach(panel => {
+                panel.setAttribute('aria-selected', 'false');
+                console.log(`Setting panel ${panel.id} to inactive`);
+            });
+        } else {
+            console.warn(`Could not parse tab ID format: ${tabId}`);
+        }
+
+        // Show the selected content panel
+        contentPanel.removeAttribute('hidden');
+        contentPanel.setAttribute('aria-selected', 'true');
+        console.log(`Setting panel ${contentPanel.id} to active`);
+    }
 </script>
 <script type="module">
     const prefix = 'language-';
