@@ -69,9 +69,6 @@ internal class BlazorStaticOutputGenerationService(
 
         }
 
-        // add pages that have been mapped via app.MapGet()
-        pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
-
         // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
         {
@@ -81,6 +78,10 @@ internal class BlazorStaticOutputGenerationService(
         // add explicitly defined pages to generate
         pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
 
+        // add pages that have been mapped via app.MapGet()
+        // this contains styles.css which needs to be last
+        pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
+        
         // Clear and recreate output directory
         if (Directory.Exists(options.OutputFolderPath))
         {
