@@ -59,9 +59,20 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                                 new CssDeclaration(CssProperties.FontWeight, "400"),
                                 new CssDeclaration(CssProperties.Padding, "2px 5px"),
                                 new CssDeclaration(CssProperties.BorderRadius, "4px"),
-                                new CssDeclaration(CssProperties.BackgroundColor, designSystem.Colors["accent"][ColorLevels._200].AsStringWithOpacity(".50")),
-                                new CssDeclaration(CssProperties.Color, designSystem.Colors["base"][ColorLevels._700].AsString()),
+                                new CssDeclaration(CssProperties.BackgroundColor,
+                                    designSystem.Colors["accent"][ColorLevels._200].AsStringWithOpacity(".50")),
+                                new CssDeclaration(CssProperties.Color,
+                                    designSystem.Colors["base"][ColorLevels._700].AsString()),
                             ]),
+                        ]
+                    }
+                },
+                {
+                    "lg", new CssSettings()
+                    {
+                        ChildRules =
+                        [
+                            new CssRuleSet("code", [new CssDeclaration(CssProperties.FontSize, "0.8em")])
                         ]
                     }
                 },
@@ -73,8 +84,10 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                         [
                             new CssRuleSet("code",
                             [
-                                new CssDeclaration(CssProperties.BackgroundColor, designSystem.Colors["base"][ColorLevels._800].AsStringWithOpacity(".75")),
-                                new CssDeclaration(CssProperties.Color, designSystem.Colors["accent"][ColorLevels._400].AsString()),
+                                new CssDeclaration(CssProperties.BackgroundColor,
+                                    designSystem.Colors["base"][ColorLevels._800].AsStringWithOpacity(".75")),
+                                new CssDeclaration(CssProperties.Color,
+                                    designSystem.Colors["accent"][ColorLevels._400].AsString()),
                             ])
                         ]
                     }
@@ -83,7 +96,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
         };
 
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(235);
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(1111235);
 
         return new CssFramework(new CssFrameworkSettings()
         {

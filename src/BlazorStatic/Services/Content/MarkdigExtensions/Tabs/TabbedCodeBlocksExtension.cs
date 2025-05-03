@@ -72,7 +72,7 @@ namespace BlazorStatic.Services.Content.MarkdigExtensions.Tabs
                     }
                     else
                     {
-                        // Single code block, just add it directly
+                        // Single code block, add it directly
                         document.Add(codeBlock);
                     }
                 }

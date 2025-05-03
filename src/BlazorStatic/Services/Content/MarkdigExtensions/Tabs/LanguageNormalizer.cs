@@ -2,6 +2,21 @@
 
 internal static class LanguageNormalizer
 {
+    
+    public static string GetLanguageName(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "Text";
+
+        var colonLocation = input.IndexOf(':');
+        if (colonLocation > -1)
+        {
+            input = input[..colonLocation];
+        }
+        
+        return LanguageMap.GetValueOrDefault(input, input);
+    }
+    
     private static readonly Dictionary<string, string> LanguageMap = new(StringComparer.OrdinalIgnoreCase)
     {
         { "gbnf", "GBNF"},
@@ -303,18 +318,4 @@ internal static class LanguageNormalizer
         { "protobuf", "Protocol Buffer" },
         { "thrift", "Thrift" }
     };
-
-    public static string GetLanguageName(string? input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return "Text";
-
-        var colonLocation = input.IndexOf(':');
-        if (colonLocation > -1)
-        {
-            input = input[..colonLocation];
-        }
-        
-        return LanguageMap.GetValueOrDefault(input, input);
-    }
 }
