@@ -8,8 +8,8 @@
         <InterceptorsNamespaces>$(InterceptorsNamespaces);EfCoreTagging</InterceptorsNamespaces>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\EfCoreTagging.SourceGenerator\EfCoreTagging.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />

@@ -143,7 +143,6 @@ public sealed class BlazorFileWatcher : IDisposable
 
         if (disposing)
         {
-            // Dispose managed resources
             foreach (var watcher in _watchers.Values)
             {
                 watcher.EnableRaisingEvents = false;

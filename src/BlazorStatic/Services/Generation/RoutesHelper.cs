@@ -53,20 +53,19 @@ internal class RoutesHelperService
         // get all the routes that don't contain parameters
         var routes = components
             .Select(GetRouteFromComponent)
-            .Where(route => route is not null)
-            .Select(i => i!)
+            .SelectMany(i => i)
             .Select(route => new PageToGenerate(route, Path.Combine(route, _options.IndexPageHtml)));
 
         return routes;
     }
 
-    private static string? GetRouteFromComponent(Type component)
+    private static IEnumerable<string> GetRouteFromComponent(Type component)
     {
-        var attributes = component.GetCustomAttributes(true);
-
-        // Can't work with parameterized pages (such pages have params defined with {paramName})
-        return attributes.OfType<RouteAttribute>()
-            .FirstOrDefault(x => !x.Template.Contains('{'))?.Template;
+        return component
+            .GetCustomAttributes(typeof(RouteAttribute), inherit: false)
+            .Cast<RouteAttribute>()
+            .Where(attr => !attr.Template.Contains('{')) // Ignore parameterized routes (e.g /{Id}) because we can't generate them.
+            .Select(attr => attr.Template);
     }
 
     /// <summary>

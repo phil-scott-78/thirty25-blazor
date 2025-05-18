@@ -4,29 +4,36 @@ namespace Gbnf;
 
 public class MyApp
 {
-    public static void GetSimpleGbnf()
+
+    public static string GetSimpleGbnf()
     {
-        var gbnfBuilder = new GbnfGenerator();
+        // these settings enable or disable thinking tags for models
+        // with reasoning, we'll disable them for now
+        var gbnfGeneratorSettings = new GbnfGeneratorSettings
+        {
+            IncludeThinkingTags = false
+        };
+        
+        var gbnfBuilder = new GbnfGenerator(gbnfGeneratorSettings);
         var typeModelBuilder = new TypeModelBuilder<User>();
         
         var typeModel = typeModelBuilder.Build();
         var gbnf = gbnfBuilder.Generate(typeModel);
-        
-        Console.WriteLine(gbnf);
+
+        return gbnf;
     }
-    
-    public static void GetSimpleJson()
+
+
+    public static string GetSimpleJson()
     {
         var jsonBuilder = new JsonSampleGenerator();
         var typeModelBuilder = new TypeModelBuilder<User>();
-        
+
         var typeModel = typeModelBuilder.Build();
         var json = jsonBuilder.Generate(typeModel);
-        
-        Console.WriteLine(json);
-    }
 
-    
+        return json;
+    }
 }
 
 public class User

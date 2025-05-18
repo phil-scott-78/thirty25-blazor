@@ -32,9 +32,7 @@ namespace BlazorStatic.Services.Content.MarkdigExtensions.CodeHighlighting
             }
 
             htmlRenderer.ObjectRenderers.AddIfNotAlready(
-                new CodeHighlightRenderer(
-                    codeBlockRenderer,
-                    roslynHighlighter, options)
+                new CodeHighlightRenderer(roslynHighlighter, options)
             );
         }
     }

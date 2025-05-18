@@ -2,7 +2,6 @@
 
 internal static class LanguageNormalizer
 {
-    
     public static string GetLanguageName(string? input)
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -13,13 +12,13 @@ internal static class LanguageNormalizer
         {
             input = input[..colonLocation];
         }
-        
+
         return LanguageMap.GetValueOrDefault(input, input);
     }
-    
+
     private static readonly Dictionary<string, string> LanguageMap = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "gbnf", "GBNF"},
+        { "gbnf", "GBNF" },
         // .NET Languages
         { "csharp", "C#" },
         { "c#", "C#" },

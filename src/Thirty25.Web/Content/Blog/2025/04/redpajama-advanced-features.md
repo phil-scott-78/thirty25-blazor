@@ -6,6 +6,7 @@ date: April 24, 2025
 tags:
   - llamasharp
   - redpajama
+repository: https://github.com/phil-scott-78/thirty25-blazor/tree/main/blog-projects/2025/GbnfGeneration/Gbnf
 ---
 
 In our [previous post](strong-typed-gbnf), we introduced the basic concepts of RedPajama, showing how to generate GBNF
@@ -18,29 +19,8 @@ The more advanced features of RedPajama give you even finer control over your mo
 
 Both the GBNF and JSON sample generators accept settings objects that allow you to customize their behavior:
 
-```csharp
-// Custom GBNF generator settings
-var gbnfSettings = new GbnfGeneratorSettings
-{
-    DefaultMinLength = 2,
-    DefaultMaxLength = 1000,
-    OpeningDelimiter = '<',  // Change from default ⟨
-    ClosingDelimiter = '>'   // Change from default ⟩
-};
-
-// Custom JSON sample generator settings
-var jsonSettings = new JsonSampleGeneratorSettings
-{
-    OpeningDelimiter = '<',
-    ClosingDelimiter = '>'
-};
-
-var gbnfGenerator = new GbnfGenerator(gbnfSettings);
-var jsonGenerator = new JsonSampleGenerator(jsonSettings);
-
-var typeModel = new TypeModelBuilder<User>().Build();
-var gbnf = gbnfGenerator.Generate(typeModel);
-var json = jsonGenerator.Generate(typeModel);
+```csharp:xmldocid,bodyonly
+M:Gbnf.CustomSettingsExample.CustomSettings
 ```
 
 These settings allow you to control the appearance and behavior of the generated artifacts to match your specific needs
@@ -84,12 +64,12 @@ But we can trick it with two phases:
 If you remember from the last chapter, our allowed string values were rather complex
 
 ```gbnf
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
 ```
 
-If you look close, we are not allowing `⟨` and `⟩` at all within a string. They are almost certain not to appear
-in the output naturally. With them not being allowed, the model when trying to use the template text fails and has to
-try again, still allowing `<` and `>` to be in our strings.
+If you look close, we are not allowing `\u27E8` or `\u27E9` at all within a string. That's `⟨` and `⟩` escaped for the 
+GBNF. They are almost certain not to appear in the output naturally. With them not being allowed, the model when trying 
+to use the template text fails and has to try again, still allowing `<` and `>` to be in our strings.
 
 Additionally, `JsonSampleGenerator` has an additional helper that returns a string to be used with directions to replace 
 the placeholder text.
@@ -123,20 +103,11 @@ but appear as comments in the generated JSON sample, providing valuable context 
 ```csharp:xmldocid
 T:Gbnf.AdvancedScenarios.Product
 ```
-```json
-{
-  "Id": ⟨GUID value in standard format⟩, // The unique identifier for this product
-  "Name": "⟨string value⟩", // The customer-facing name of the product
-  "StockLevel": ⟨integer value⟩ // Current inventory count
-}
+```json:xmldocid data="Gbnf.AdvancedScenarios.Product-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-```gbnf
-root ::= "{" space root-id-kv "," space root-name-kv "," space root-stocklevel-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-id-kv ::= "\"Id\"" space ":" space "\"" [0-9a-fA-F]{8} "-" [0-9a-fA-F]{4} "-" [0-9a-fA-F]{4} "-" [0-9a-fA-F]{4} "-" [0-9a-fA-F]{12} "\"" space
-root-name-kv ::= "\"Name\"" space ":" space "\"" char{1, 512} "\"" space
-root-stocklevel-kv ::= "\"StockLevel\"" space ":" space ("-"? [0] | [1-9] [0-9]{0,15}) space
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Product-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 The descriptions help guide the model about what each field represents without modifying the grammar constraints. This
@@ -154,20 +125,11 @@ or other standardized data.
 ```csharp:xmldocid
 T:Gbnf.AdvancedScenarios.User
 ```
-```json
-{
-  "Username": "⟨string value between 2 and 50 characters⟩",
-  "Password": "⟨string value between 8 and 100 characters⟩",
-  "ZipCode": "⟨string value exactly 5 characters⟩"
-}
+```json:xmldocid data="Gbnf.AdvancedScenarios.User-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-```gbnf
-root ::= "{" space root-username-kv "," space root-password-kv "," space root-zipcode-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-username-kv ::= "\"Username\"" space ":" space "\"" char{2,50} "\"" space
-root-password-kv ::= "\"Password\"" space ":" space "\"" char{8,100} "\"" space
-root-zipcode-kv ::= "\"ZipCode\"" space ":" space "\"" char{5,5} "\"" space
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.User-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 This is particularly powerful for enforcing data validation rules directly at the generation level. If your zip code
@@ -182,28 +144,11 @@ format:
 T:Gbnf.AdvancedScenarios.ShoppingCart
 T:Gbnf.AdvancedScenarios.CartItem
 ```
-```json
-{
-  "UserId": "⟨string value⟩",
-  "Items": [{
-    "ProductId": "⟨string value⟩",
-    "ProductName": "⟨string value⟩",
-    "Quantity": ⟨integer value⟩,
-    "Price": ⟨decimal value⟩
-  }, Items_2, Items_N]
-}
+```json:xmldocid data="Gbnf.AdvancedScenarios.ShoppingCart-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-```gbnf
-root ::= "{" space root-userid-kv "," space root-items-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-userid-kv ::= "\"UserId\"" space ":" space "\"" char{1, 512} "\"" space
-root-items-item-productid-kv ::= "\"ProductId\"" space ":" space "\"" char{1, 512} "\"" space
-root-items-item-productname-kv ::= "\"ProductName\"" space ":" space "\"" char{1, 512} "\"" space
-root-items-item-quantity-kv ::= "\"Quantity\"" space ":" space ("-"? [0] | [1-9] [0-9]{0,15}) space
-root-items-item-price-kv ::= "\"Price\"" space ":" space ("-"? ([0] | [1-9] [0-9]{0,15}) ("." [0-9]{1,15})?) space
-root-items-item ::= "{" space root-items-item-productid-kv "," space root-items-item-productname-kv "," space root-items-item-quantity-kv "," space root-items-item-price-kv "}" space
-root-items-kv ::= "\"Items\"" space ":" space "[" space (root-items-item ("," space root-items-item)*)? "]" space
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.ShoppingCart-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 Notice how the JSON sample includes three example items to make it clear to the model that multiple entries should be
@@ -217,32 +162,11 @@ For strings that should follow specific patterns, RedPajama provides several for
 ```csharp:xmldocid
 T:Gbnf.AdvancedScenarios.Contact
 ```
-
-```json
-{
-  "FullName": "⟨string containing only letters and spaces⟩",
-  "Email": "⟨email address (e.g., user@example.com)⟩",
-  "PhoneNumber": "⟨string in the format: (###) ###-####⟩",
-  "CountryCode": "⟨uppercase string⟩",
-  "ReferenceNumber": "⟨alphanumeric string (letters and numbers only)⟩"
-}
+```json:xmldocid data="Gbnf.AdvancedScenarios.Contact-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-
-```gbnf
-root ::= "{" space root-fullname-kv "," space root-email-kv "," space root-phonenumber-kv "," space root-countrycode-kv "," space root-referencenumber-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-fullname ::= "\"" [a-zA-Z ]{1,} "\"" space
-root-fullname-kv ::= "\"FullName\"" space ":" space root-fullname
-root-email ::= "\"" "e" "m" [a-z] "i" "l" "\"" space
-root-email-kv ::= "\"Email\"" space ":" space root-email
-root-phonenumber ::= "\"" "(" [0-9] [0-9] [0-9] ")" " " [0-9] [0-9] [0-9] "-" [0-9] [0-9] [0-9] [0-9] "\"" space
-root-phonenumber-kv ::= "\"PhoneNumber\"" space ":" space root-phonenumber
-root-countrycode ::= "\"" [A-Z]+ "\"" space
-root-countrycode-kv ::= "\"CountryCode\"" space ":" space root-countrycode
-root-referencenumber ::= "\"" [a-zA-Z0-9]+ "\"" space
-root-referencenumber-kv ::= "\"ReferenceNumber\"" space ":" space root-referencenumber
-
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Contact-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 RedPajama supports several built-in formats:
@@ -264,27 +188,11 @@ For absolute control, RedPajama allows you to specify custom GBNF patterns direc
 ```csharp:xmldocid
 T:Gbnf.AdvancedScenarios.Document
 ```
-
-```json
-{
-  "ReferenceCode": "⟨string value⟩", // Alphanumeric code in the format XXX-XXX-XXXX.
-  "SerialNumber": "⟨string value⟩", // Serial number in the format AA999999999AA.
-  "Title": "⟨string value⟩",
-  "CreatedOn": ⟨ISO 8601 date value (YYYY-MM-DDThh:mm:ss.sssZ)⟩
-}
-
+```json:xmldocid data="Gbnf.AdvancedScenarios.Document-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-
-```gbnf
-root ::= "{" space root-referencecode-kv "," space root-serialnumber-kv "," space root-title-kv "," space root-createdon-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-referencecode ::= [a-zA-Z0-9]{3}-[a-zA-Z0-9]{3}-[a-zA-Z0-9]{4}
-root-referencecode-kv ::= "\"ReferenceCode\"" space ":" space root-referencecode
-root-serialnumber ::= [A-Z]{2}[0-9]{9}[A-Z]{2}
-root-serialnumber-kv ::= "\"SerialNumber\"" space ":" space root-serialnumber
-root-title-kv ::= "\"Title\"" space ":" space "\"" char{1, 512} "\"" space
-root-createdon-kv ::= "\"CreatedOn\"" space ":" space "\"" [0-9]{4} "-" ([0][1-9]|[1][0-2]) "-" ([0][1-9]|[12][0-9]|[3][01]) "T" ([01][0-9]|[2][0-3]) ":" [0-5][0-9] ":" [0-5][0-9] ("." [0-9]{3})? ("Z"|([+-] ([01][0-9]|[2][0-3]) ":" [0-5][0-9])) "\"" space
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Document-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 The `gbnf:` prefix allows you to inject raw GBNF patterns for complete control over string validation. This is
@@ -299,23 +207,11 @@ For properties that should only accept specific values, RedPajama supports const
 T:Gbnf.AdvancedScenarios.Order
 ```
 
-```json
-{
-    "CustomerName": "⟨string value⟩",
-    "Status": "⟨Pending|Processing|Shipped|Delivered|Cancelled⟩",
-    "ShippingMethod": "⟨Standard|Express|Overnight⟩"
-}
+```json:xmldocid data="Gbnf.AdvancedScenarios.Order-json"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
-
-```gbnf
-root ::= "{" space root-customername-kv "," space root-status-kv "," space root-shippingmethod-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-customername-kv ::= "\"CustomerName\"" space ":" space "\"" char{1, 512} "\"" space
-root-status ::= ("\"Pending\""|"\"Processing\""|"\"Shipped\""|"\"Delivered\""|"\"Cancelled\"") space
-root-status-kv ::= "\"Status\"" space ":" space root-status
-root-shippingmethod ::= ("\"Standard\""|"\"Express\""|"\"Overnight\"") space
-root-shippingmethod-kv ::= "\"ShippingMethod\"" space ":" space root-shippingmethod
+```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Order-gbnf"
+M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
 ```
 
 This approach is more flexible than C# enums because:
@@ -333,22 +229,11 @@ and `WithAllowedValues`:
 ```csharp:xmldocid
 M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
-```json
-{
-    "FirstName": "⟨string value⟩",
-    "LastName": "⟨string value⟩",
-    "Age": ⟨integer value⟩,
-    "IsMember": ⟨true or false⟩
-}
+```json:xmldocid data="json"
+M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
-```gbnf
-root ::= "{" space root-firstname-kv "," space root-lastname-kv "," space root-title-kv "}" space
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-firstname-kv ::= "\"FirstName\"" space ":" space "\"" char{1, 512} "\"" space
-root-lastname-kv ::= "\"LastName\"" space ":" space "\"" char{1, 512} "\"" space
-root-title ::= ("\"Mr\""|"\"Mrs\""|"\"Ms\""|"\"Dr\""|"\"Prof\"") space
-root-title-kv ::= "\"Title\"" space ":" space root-title
+```gbnf:xmldocid data="gbnf"
+M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
 
 This allows for scenarios where the allowed values or description might not be known until runtime.

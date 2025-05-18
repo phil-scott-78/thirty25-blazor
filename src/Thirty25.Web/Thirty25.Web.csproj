@@ -16,12 +16,10 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
-    <!-- 
-    i'm not fully sure these are needed. it *seems* to work without
-    but it is faster with. 
-     -->
     <Watch Include="Content\**\*.*" />
     <Watch Include="..\..\blog-projects\**\*.cs" />
+    <Watch Remove="..\..\blog-projects\**\obj\**\*" />
+    <Watch Remove="..\..\blog-projects\**\bin\**\*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlazorStatic\BlazorStatic.csproj" />

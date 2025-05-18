@@ -108,7 +108,7 @@ public class MarkdownContentProcessor<TFrontMatter>
     /// <summary>
     /// Processes a single content file.
     /// </summary>
-    /// <param name="filePath">The file path being processed.</param>
+    /// <param name="filePath">The file to process.</param>
     /// <param name="baseContentPath">The base content path.</param>
     /// <returns>A <see cref="MarkdownContentPage{TFrontMatter}"/> object if successful, null otherwise.</returns>
     /// <exception cref="ContentProcessingException">Thrown when there is an error processing the content.</exception>
@@ -127,12 +127,11 @@ public class MarkdownContentProcessor<TFrontMatter>
             }
 
             // Parse Markdown and extract front matter
-            var (frontMatter, htmlContent, toc) = await _markdownParserService.ParseMarkdownFileAsync(
+            var (frontMatter, markdownContent, toc) = await _markdownParserService.ParseMarkdownFileAsync<TFrontMatter>(
                 filePath,
                 _options.ContentPath,
                 _options.PageUrl,
-                preProcessFile: _options.PreProcessMarkdown,
-                postProcessHtml: _options.PostProcessHtml
+                preProcessFile: _options.PreProcessMarkdown
             );
 
             // Skip draft content pages
@@ -154,7 +153,7 @@ public class MarkdownContentProcessor<TFrontMatter>
                 FrontMatter = frontMatter,
                 Url = contentUrl,
                 NavigateUrl = _contentFilesService.CreateNavigationUrl(contentUrl),
-                HtmlContent = htmlContent,
+                MarkdownContent = markdownContent,
                 Tags = tags,
                 TableOfContents = toc
             };

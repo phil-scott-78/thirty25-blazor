@@ -26,9 +26,9 @@ public class MarkdownContentPage<TFrontMatter> where TFrontMatter : class, IFron
     public required string NavigateUrl { get; init; }
 
     /// <summary>
-    ///     The HTML content of the page, rendered from Markdown, excluding the front matter section.
+    ///     The markdown content of the page, rendered from Markdown, excluding the front matter section.
     /// </summary>
-    public required string HtmlContent { get; init; }
+    public required string MarkdownContent { get; init; }
 
     /// <summary>
     /// The table of contents of the page, pulled from the Markdown using Header tags.

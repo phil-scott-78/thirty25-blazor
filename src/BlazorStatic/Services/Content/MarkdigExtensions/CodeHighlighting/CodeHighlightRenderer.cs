@@ -1,15 +1,15 @@
 ﻿using System.Text;
 using BlazorStatic.Services.Content.MarkdigExtensions.Tabs;
 using BlazorStatic.Services.Content.Roslyn;
+using static BlazorStatic.Services.AsyncHelpers;
 using Markdig.Parsers;
-using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
+using HtmlRenderer = Markdig.Renderers.HtmlRenderer;
 
 namespace BlazorStatic.Services.Content.MarkdigExtensions.CodeHighlighting;
 
 internal sealed class CodeHighlightRenderer(
-    CodeBlockRenderer codeBlockRenderer,
     RoslynHighlighterService roslynHighlighter,
     CodeHighlightRenderOptions? options = null)
     : HtmlObjectRenderer<CodeBlock>
@@ -34,54 +34,73 @@ internal sealed class CodeHighlightRenderer(
         renderer.WriteLine($"<div class=\"{containerCss}\">");
         renderer.WriteLine($"<div class=\"{preCss}\">");
 
-        var useDefaultRenderer = true;
-
         if (codeBlock is FencedCodeBlock fencedCodeBlock &&
             codeBlock.Parser is FencedCodeBlockParser fencedCodeBlockParser &&
             fencedCodeBlock.Info != null &&
             fencedCodeBlockParser.InfoPrefix != null)
         {
             var languageId = fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
-            if (!string.IsNullOrWhiteSpace(languageId))
-            {
-                var code = ExtractCode(codeBlock);
-                useDefaultRenderer = false;
-
-                // ReSharper disable SpellCheckingInspection
-                switch (languageId)
-                {
-                    case "vb" or "vbnet":
-                        renderer.Write(roslynHighlighter.Highlight(code, Language.VisualBasic));
-                        break;
-                    case "csharp" or "c#" or "cs":
-                        renderer.Write(roslynHighlighter.Highlight(code));
-                        break;
-                    case "csharp:xmldocid,bodyonly":
-                        renderer.Write(roslynHighlighter.HighlightExample(code, true));
-                        break;
-                    case "csharp:xmldocid":
-                        renderer.Write(roslynHighlighter.HighlightExample(code, false));
-                        break;
-                    case "gbnf":
-                        renderer.Write(GbnfHighlighter.HighlightGbnf(code));
-                        break;
-                    default:
-                        useDefaultRenderer = true;
-                        break;
-                }
-                // ReSharper restore SpellCheckingInspection
-            }
-        }
-
-        if (useDefaultRenderer)
-        {
-            codeBlockRenderer.Write(renderer, codeBlock);
+            var code = ExtractCode(codeBlock);
+            WriteCode(renderer, codeBlock, languageId, code);
         }
 
         // Common closing tags for all paths
         renderer.WriteLine("</div>");
         renderer.WriteLine("</div>");
         renderer.WriteLine("</div>");
+    }
+
+    private void WriteCode(HtmlRenderer renderer, CodeBlock codeBlock, string languageId, string code)
+    {
+        switch (languageId)
+        {
+            // ReSharper disable SpellCheckingInspection
+            case "vb" or "vbnet":
+                renderer.Write(roslynHighlighter.Highlight(code, Language.VisualBasic));
+                break;
+            case "csharp" or "c#" or "cs":
+                renderer.Write(roslynHighlighter.Highlight(code));
+                break;
+            case "csharp:xmldocid,bodyonly":
+                var bodyOnlySample = RunSync(async () => await roslynHighlighter.HighlightExampleAsync(code, true));
+                renderer.Write(bodyOnlySample);
+                break;
+            case "csharp:xmldocid":
+                var fullSample = RunSync(async () => await roslynHighlighter.HighlightExampleAsync(code, false));
+                renderer.Write(fullSample);
+                break;
+            case "gbnf":
+                renderer.Write(GbnfHighlighter.HighlightGbnf(code));
+                break;
+            default:
+            {
+                if (languageId.Contains(":xmldocid"))
+                {
+                    var newLanguage = languageId[..languageId.IndexOf(":xmldocid", StringComparison.Ordinal)];
+                    if (codeBlock is not FencedCodeBlock fencedCodeBlock ||
+                        !fencedCodeBlock.GetArgumentPairs().TryGetValue("data", out var arg))
+                    {
+                        arg = string.Empty;
+                    }
+
+                    var newCode = RunSync(async () => await roslynHighlighter.GetCodeOutputAsync(code, arg));
+                    WriteCode(renderer, codeBlock, newLanguage, newCode);
+                }
+                else
+                {
+                    var attr = string.IsNullOrWhiteSpace(languageId)
+                        ? string.Empty
+                        : " class=\"language-" + languageId + "\"";
+
+                    renderer.Write($"<pre><code {attr}>");
+                    renderer.Write(code);
+                    renderer.Write("</code></pre>");
+                }
+
+                break;
+            }
+        }
+        // ReSharper restore SpellCheckingInspection
     }
 
     private static string ExtractCode(LeafBlock leafBlock)

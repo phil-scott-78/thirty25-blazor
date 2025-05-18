@@ -19,7 +19,6 @@ internal static class StringExtensions
         // Normalize the string (decompose Unicode characters)
         var normalizedString = input.Normalize(NormalizationForm.FormD);
 
-        // Process everything in a single pass
         var slugBuilder = new StringBuilder(input.Length);
         var lastWasHyphen = false;
 

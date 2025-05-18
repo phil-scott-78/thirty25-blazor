@@ -12,7 +12,7 @@ public class RoslynHighlighterService : IDisposable
 {
     private readonly ILogger<RoslynHighlighterService> _logger;
     private readonly SyntaxHighlighter _highlighter;
-    private readonly DocumentProcessor? _documentProcessor;
+    private readonly RoslynExampleCoordinator? _documentProcessor;
     private readonly HighlightCache _cache;
     private readonly BlazorFileWatcher _fileWatcher;
     private bool _disposed;
@@ -20,16 +20,17 @@ public class RoslynHighlighterService : IDisposable
     /// <summary>
     /// Provides functionality for syntax highlighting of code using Roslyn.
     /// </summary>
-    public RoslynHighlighterService(RoslynHighlighterOptions options, ILogger<RoslynHighlighterService> logger, BlazorFileWatcher fileWatcher)
+    public RoslynHighlighterService(RoslynHighlighterOptions options, ILogger<RoslynHighlighterService> logger,
+        BlazorFileWatcher fileWatcher, RoslynExampleCoordinator? documentProcessor = null)
     {
         _logger = logger;
         _highlighter = new SyntaxHighlighter();
         _cache = new HighlightCache();
         _fileWatcher = fileWatcher;
+        _documentProcessor = documentProcessor;
 
         if (options.ConnectedSolution != null)
         {
-            _documentProcessor = new DocumentProcessor(options.ConnectedSolution.SolutionPath, logger);
             _fileWatcher.AddPathWatch(options.ConnectedSolution.ProjectsPath, "*.cs", OnFileChanged);
         }
     }
@@ -40,7 +41,18 @@ public class RoslynHighlighterService : IDisposable
         _documentProcessor?.InvalidateFile(filePath);
     }
 
-    internal string HighlightExample(string xmlDocIds, bool bodyOnly)
+    internal async Task<string> GetCodeOutputAsync(string xmlDocId, string value)
+    {
+        if (_documentProcessor == null)
+        {
+            throw new InvalidOperationException(
+                "Code output is only supported when ConnectedSolution is configured");
+        }
+
+        return await _documentProcessor.GetCodeResultAsync(xmlDocId, value);
+    }
+
+    internal async Task<string> HighlightExampleAsync(string xmlDocIds, bool bodyOnly)
     {
         if (_documentProcessor == null)
         {
@@ -51,13 +63,13 @@ public class RoslynHighlighterService : IDisposable
         var ids = xmlDocIds
             .ReplaceLineEndings()
             .Split(Environment.NewLine,
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         var sb = new StringBuilder();
 
         foreach (var xmlDocId in ids)
         {
-            var code = _documentProcessor.GetCodeFragment(xmlDocId, bodyOnly);
+            var code = await _documentProcessor.GetCodeFragmentAsync(xmlDocId, bodyOnly);
             code = TextFormatter.NormalizeIndents(code);
             var highlightExample = _highlighter.Highlight(code);
             sb.Append(highlightExample.TrimEnd());

@@ -5,6 +5,7 @@ series: "Intro to LlamaSharp"
 date: April 17, 2025
 tags:
   - llamasharp
+repository: https://github.com/phil-scott-78/thirty25-blazor/tree/main/blog-projects/2025/GbnfGeneration/Gbnf
 ---
 
 In the previous post, we looked at using GBNF to force our models to give us a valid json structure. But what if we took
@@ -160,14 +161,8 @@ M:Gbnf.MyApp.GetSimpleGbnf
 
 Running this, we get the following GBNF:
 
-```gbnf
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-space ::= | " " | "\n" [ \t]{0,20}
-root-firstname-kv ::= "\"FirstName\"" space ":" space "\"" char{1, 512} "\"" space
-root-lastname-kv ::= "\"LastName\"" space ":" space "\"" char{1, 512} "\"" space
-root-age-kv ::= "\"Age\"" space ":" space ("-"? [0] | [1-9] [0-9]{0,15}) space
-root-ismember-kv ::= "\"IsMember\"" space ":" space ("true" | "false") space
-root ::= "{" space root-firstname-kv "," space root-lastname-kv "," space root-age-kv "," space root-ismember-kv "}" space
+```gbnf:xmldocid
+M:Gbnf.MyApp.GetSimpleGbnf
 ```
 
 This is a bit more complex than the GBNF we were rolling by hand. Let's break down what each part does:
@@ -175,11 +170,11 @@ This is a bit more complex than the GBNF we were rolling by hand. Let's break do
 ### Character Definition
 
 ```gbnf
-char ::= [^"\\\x7F\x00-\x1F⟨⟩] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
 ```
 
 This defines what characters are allowed in our strings:
-* `[^"\\\x7F\x00-\x1F⟨⟩]` - any character except quotes, backslashes, control characters, and special brackets
+* `[^"\\\x7F\x00-\x1F\u27E8\u27E9]` - any character except quotes, backslashes, control characters, and special brackets
 * `[\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})` - escape sequences like `\"`, `\\`, `\b`, `\f`, etc., plus Unicode escapes like `\u00A9`
 
 This properly handles JSON string escaping, which our simplified version didn't cover.
@@ -251,13 +246,8 @@ M:Gbnf.MyApp.GetSimpleJson
 
 Running this will give us a templated JSON output that we can use in our prompt.
 
-```json
-{
-  "FirstName": "⟨string value⟩",
-  "LastName": "⟨string value⟩",
-  "Age": ⟨integer value⟩,
-  "IsMember": ⟨true or false⟩
-}
+```json:xmldocid
+M:Gbnf.MyApp.GetSimpleJson
 ```
 
 ## Putting It All Together

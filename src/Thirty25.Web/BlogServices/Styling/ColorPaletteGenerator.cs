@@ -62,6 +62,4 @@ public static class ColorPaletteGenerator
         
         return palette.ToImmutableDictionary();
     }
-
-
 }

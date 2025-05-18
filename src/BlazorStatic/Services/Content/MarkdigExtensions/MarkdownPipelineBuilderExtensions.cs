@@ -83,7 +83,7 @@ internal static class CodeBlockExtensions
 
             // Parse value
             string value;
-            
+
             // Skip whitespace between equals sign and value
             while (currentPosition < input.Length && char.IsWhiteSpace(input[currentPosition]))
                 currentPosition++;
@@ -97,17 +97,17 @@ internal static class CodeBlockExtensions
                 char quoteChar = input[currentPosition];
                 currentPosition++; // Skip the opening quote
                 int valueStart = currentPosition;
-                
+
                 // Find the closing quote
                 while (currentPosition < input.Length && input[currentPosition] != quoteChar)
                     currentPosition++;
-                
+
                 // If we're at the end of the string without finding the closing quote
                 if (currentPosition >= input.Length)
                     value = input.Substring(valueStart);
                 else
                     value = input.Substring(valueStart, currentPosition - valueStart);
-                
+
                 currentPosition++; // Skip the closing quote if found
             }
             else
@@ -116,7 +116,7 @@ internal static class CodeBlockExtensions
                 int valueStart = currentPosition;
                 while (currentPosition < input.Length && !char.IsWhiteSpace(input[currentPosition]))
                     currentPosition++;
-                
+
                 value = input.Substring(valueStart, currentPosition - valueStart);
             }
 

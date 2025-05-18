@@ -11,7 +11,7 @@ public class ProgrammaticallyEnhanced
         public required string Title { get; init; }
     }
     
-    public static void ProgrammaticallyEnhancingTypeModels()
+    public static IEnumerable<(string, string)> ProgrammaticallyEnhancingTypeModels()
     {
         var typeModelBuilder = new TypeModelBuilder<User>();
         var typeModel = typeModelBuilder.Build();
@@ -32,7 +32,7 @@ public class ProgrammaticallyEnhanced
         var jsonGenerator = new JsonSampleGenerator();
         var jsonSample = jsonGenerator.Generate(typeModel);
 
-        Console.WriteLine(gbnf);
-        Console.WriteLine(jsonSample);
+        yield return ("gbnf", gbnf);
+        yield return ("json", jsonSample);
     }
 }

@@ -65,10 +65,10 @@ builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOpti
 builder.Services.AddRoslynService(() => new RoslynHighlighterOptions()
 {
     ConnectedSolution = new ConnectedDotNetSolution
-    {
-        SolutionPath = "../../thirty25-blazor.sln",
-        ProjectsPath = "../../blog-projects/"
-    }
+     {
+         SolutionPath = "../../thirty25-blazor.sln",
+         ProjectsPath = "../../blog-projects/"
+     }
 });
 
 // custom service for doing CSS work

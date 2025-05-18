@@ -83,7 +83,7 @@ internal class BlazorStaticOutputGenerationService(
         // this contains styles.css which needs to be last
         pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
 
-        // Clear and recreate output directory
+        // Clear and recreate the output directory
         if (Directory.Exists(options.OutputFolderPath))
         {
             Directory.Delete(options.OutputFolderPath, true);
@@ -105,7 +105,7 @@ internal class BlazorStaticOutputGenerationService(
 
         contentToCopy = contentToCopy.AddRange(GetStaticWebAssetsToOutput(environment.WebRootFileProvider, string.Empty));
 
-        // Copy all content to output directory
+        // Copy all content to the output directory
         foreach (var pathToCopy in contentToCopy)
         {
             var targetPath = Path.Combine(options.OutputFolderPath, pathToCopy.TargetPath);
@@ -114,7 +114,7 @@ internal class BlazorStaticOutputGenerationService(
             CopyContent(pathToCopy.SourcePath, targetPath, ignoredPathsWithOutputFolder);
         }
 
-        // Create HTTP client for fetching rendered pages
+        // Create an HTTP client for fetching rendered pages
         using HttpClient client = new();
         client.BaseAddress = new Uri(appUrl);
 
@@ -186,7 +186,7 @@ internal class BlazorStaticOutputGenerationService(
     /// <param name="ignoredPaths">List of paths to ignore during copying</param>
     private void CopyContent(string sourcePath, string targetPath, List<string> ignoredPaths)
     {
-        // Check if target is in ignored paths
+        // Check if the target is in ignored paths
         if (ignoredPaths.Contains(targetPath))
         {
             return;
@@ -237,7 +237,6 @@ internal class BlazorStaticOutputGenerationService(
     /// </summary>
     private static void CopyDirectory(string sourceDir, string targetDir, List<string> ignoredPaths)
     {
-        // Create target directory
         Directory.CreateDirectory(targetDir);
 
         // Transform ignored paths to be relative to the target
@@ -261,7 +260,7 @@ internal class BlazorStaticOutputGenerationService(
         {
             var targetFilePath = GetTargetPath(filePath, sourceDir, targetDir);
 
-            // Skip if file path is ignored or parent directory doesn't exist
+            // Skip if the file path is ignored or the parent directory doesn't exist
             var targetFileDir = Path.GetDirectoryName(targetFilePath);
             if (ignoredTargetPaths.Contains(targetFilePath) || !Directory.Exists(targetFileDir))
             {

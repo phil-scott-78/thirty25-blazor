@@ -146,6 +146,6 @@ internal class SitemapRssService
             return _options.BaseUrl;
         }
 
-        return "http://example.com";
+        return "https://example.com";
     }
 }

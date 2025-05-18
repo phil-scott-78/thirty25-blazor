@@ -54,7 +54,7 @@ public class TagService<TFrontMatter>
     }
 
     /// <summary>
-    /// Extracts tags from front matter if it supports tags.
+    /// Extracts tags from the front matter if it supports tags.
     /// </summary>
     /// <param name="frontMatter">The front matter to extract tags from.</param>
     /// <returns>An immutable list of extracted tags.</returns>
@@ -85,7 +85,7 @@ public class TagService<TFrontMatter>
         catch (Exception ex) when (ex is not ArgumentException)
         {
             _logger.LogError(ex, "Error extracting tags from front matter");
-            // Return empty list instead of throwing to avoid breaking content processing
+            // Return an empty list instead of throwing to avoid breaking content processing
             return [];
         }
     }
@@ -126,7 +126,6 @@ public class TagService<TFrontMatter>
     /// <param name="posts">The collection of posts to search.</param>
     /// <param name="encodedTagName">The encoded tag name to match.</param>
     /// <returns>A collection of posts that have the specified tag.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when posts is null or encodedTagName is null or empty.</exception>
     internal ImmutableList<MarkdownContentPage<TFrontMatter>> GetPostsByTag(
         IEnumerable<MarkdownContentPage<TFrontMatter>> posts,
         string encodedTagName)

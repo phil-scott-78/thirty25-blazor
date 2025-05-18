@@ -111,6 +111,13 @@ public static class BlazorStaticExtensions
         services.AddSingleton(options);
         services.AddSingleton<RoslynHighlighterService>();
 
+        if (options.ConnectedSolution != null)
+        {
+            services.AddSingleton<RoslynExampleCoordinator>();
+            services.AddSingleton<CodeExecutionService>();
+            services.AddSingleton<AssemblyLoaderService>();
+        }
+
         return services;
     }
 

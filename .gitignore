@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 
 src/Thirty25.Web/output/
+
+# verify
+*.received.*

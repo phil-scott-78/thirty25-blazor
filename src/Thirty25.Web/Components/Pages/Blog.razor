@@ -13,16 +13,19 @@
     return;
 }
 <PageTitle>@Options.BlogTitle - @_post.FrontMatter.Title</PageTitle>
-<BlogPost MarkdownContentPage="_post" Series="_series"/>
+<BlogPost MarkdownContentPage="_post" HtmlContent="@_postContent" Series="_series"/>
 
 @code{
     [Parameter] public required string FileName { get; init; }
     MarkdownContentPage<BlogFrontMatter>? _post;
+    string? _postContent;
     List<MarkdownContentPage<BlogFrontMatter>>? _series;
 
     protected override async Task OnInitializedAsync()
     {
-        _post = await BlazorStaticMarkdownContentService.GetContentPageByUrlOrDefault(FileName);
+        var page = await BlazorStaticMarkdownContentService.GetRenderedContentPageByUrlOrDefault(FileName);
+        _post = page.Value.Page;
+        _postContent = page.Value.HtmlContent;
         
         if (_post != null && !string.IsNullOrWhiteSpace(_post.FrontMatter.Series))
         {

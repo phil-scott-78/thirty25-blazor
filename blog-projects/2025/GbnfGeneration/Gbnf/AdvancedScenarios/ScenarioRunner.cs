@@ -12,7 +12,7 @@ public class ScenarioRunner
         public required string JsonSample { get; init; }
     }
 
-    public List<ProcessResult> ProcessAllTypesInNamespace()
+    public IEnumerable<(string Key, string Value)> ProcessAllTypesInNamespace()
     {
         var results = new List<ProcessResult>();
 
@@ -27,19 +27,11 @@ public class ScenarioRunner
 
         foreach (var type in types)
         {
-            try
-            {
-                // Create a generic method to process the type
-                var result = ProcessType(type);
-                results.Add(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing type {type.FullName}: {ex.Message}");
-            }
+            // Create a generic method to process the type
+            var result = ProcessType(type);
+            yield return (type.FullName + "-gbnf", result.Gbnf);
+            yield return (type.FullName + "-json", result.JsonSample);
         }
-
-        return results;
     }
 
     private ProcessResult ProcessType(Type type)
@@ -57,7 +49,7 @@ public class ScenarioRunner
     private ProcessResult ProcessTypeGeneric<T>()
     {
         var typeModelBuilder = new TypeModelBuilder<T>();
-        var gbnfGenerator = new GbnfGenerator();
+        var gbnfGenerator = new GbnfGenerator(new GbnfGeneratorSettings(){IncludeThinkingTags = false});
         var jsonGenerator = new JsonSampleGenerator();
 
         // Generate the type model, grammar, and JSON sample for the class

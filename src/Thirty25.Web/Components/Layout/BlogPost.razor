@@ -47,7 +47,7 @@
             <div class="lg:col-span-9 lg:row-span-2 lg:pb-0">
                 <div
                     class="prose prose-stone dark:prose-invert mt-8 prose-base md:prose-lg max-w-full lg:leading-loose">
-                    @((MarkupString)MarkdownContentPage.HtmlContent)
+                    @((MarkupString)HtmlContent)
                 </div>
                 @if (_nextPost != null)
                 {
@@ -91,18 +91,13 @@
                         <ul class="list-none text-sm mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
                             @foreach (var entry in MarkdownContentPage.TableOfContents)
                             {
-                                <li class="flex"><a
-                                        class="border-neutral-200 dark:border-neutral-700 hover:text-primary-900 dark:hover:text-neutral-50/90 border-l-2 pl-4 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
-                                        href="@MarkdownContentPage.NavigateUrl#@entry.Id">@entry.Title</a></li>
+                                @TocLink((MarkdownContentPage, entry, "pl-4"))
                                 @if (entry.Children.Length > 0)
                                 {
                                     <ul class="pb-1px">
-                                        @foreach (var childEnry in entry.Children)
+                                        @foreach (var childEntry in entry.Children)
                                         {
-                                            <li class="flex"><a
-                                                    class="transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pl-8 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
-                                                    href="@MarkdownContentPage.NavigateUrl#@childEnry.Id">@childEnry.Title</a>
-                                            </li>
+                                            @TocLink((MarkdownContentPage, childEntry, "pl-8"))
                                         }
                                     </ul>
                                 }
@@ -135,9 +130,16 @@
 @code {
     [Parameter] public required MarkdownContentPage<BlogFrontMatter> MarkdownContentPage { get; init; }
     [Parameter] public required List<MarkdownContentPage<BlogFrontMatter>>? Series { get; init; }
-
+    [Parameter] public required string HtmlContent { get; init; }
     MarkdownContentPage<BlogFrontMatter>? _nextPost;
 
+    private readonly RenderFragment<(MarkdownContentPage<BlogFrontMatter> page, TocEntry childEntry, string padding)> TocLink = (v) =>
+        @<li class="flex">
+            <a
+                class="@v.padding transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
+                href="@v.page.NavigateUrl#@v.childEntry.Id">@v.childEntry.Title</a>
+         </li>;
+    
     protected override async Task OnInitializedAsync()
     {
         if (Series != null)

@@ -46,7 +46,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Gets or sets the file pattern used to identify content files in the ContentPath.
     /// </summary>
     /// <remarks>
-    /// Default value is "*.md" to match all markdown files.
+    /// The default value is "*.md" to match all Markdown files.
     /// </remarks>
     public string PostFilePattern { get; init; } = "*.md";
 
@@ -63,7 +63,7 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Using this property in code helps avoid magic strings in .razor files.
     /// </para>
     /// <para>
-    /// Default value is "blog".
+    /// The default value is "blog".
     /// </para>
     /// </remarks>
     public string PageUrl { get; init; } = "blog";
@@ -72,13 +72,13 @@ public class BlazorStaticContentOptions<TFrontMatter> : IBlazorStaticContentOpti
     /// Gets or sets a hook to process markdown content before it is rendered as HTML.
     /// </summary>
     /// <remarks>
-    /// This function takes an IServiceProvider and the raw markdown string,
-    /// and returns the processed markdown string.
+    /// This function takes an IServiceProvider and the raw Markdown string
+    /// and returns the processed Markdown string.
     /// </remarks>
     public Func<IServiceProvider, string, string> PreProcessMarkdown { get; init; } = (_, s) => s;
 
     /// <summary>
-    /// Gets or sets a hook to process the front matter and HTML after markdown parsing but before passing to Razor.
+    /// Gets or sets a hook to process the front matter and HTML after Markdown parsing but before passing to Razor.
     /// </summary>
     /// <remarks>
     /// This function takes an IServiceProvider, the parsed front matter, and the HTML content,
@@ -115,13 +115,13 @@ public class TagsOptions
     /// <remarks>
     /// <para>
     /// This value should correspond to the route specified in your Blazor page.
-    /// For example, if your tags page is defined with @page "/tags", set TagsPageUrl to "tags".
+    /// For example, if your "tags" page is defined with @page "/tags", set TagsPageUrl to "tags".
     /// </para>
     /// <para>
     /// Using this property in code helps avoid magic strings in .razor files.
     /// </para>
     /// <para>
-    /// Default value is "tags".
+    /// The default value is "tags".
     /// </para>
     /// </remarks>
     public string TagsPageUrl { get; init; } = "tags";

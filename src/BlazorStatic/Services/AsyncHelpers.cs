@@ -1,4 +1,4 @@
-﻿namespace BlazorStatic.Services.Content.Roslyn;
+﻿namespace BlazorStatic.Services;
 
 internal static class AsyncHelpers
 {

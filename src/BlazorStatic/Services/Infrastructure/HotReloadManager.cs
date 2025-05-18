@@ -6,7 +6,7 @@ using BlazorStatic.Services.Infrastructure;
 namespace BlazorStatic.Services.Infrastructure;
 
 /// <summary>
-///     Used for subscribing to the hotReload update event, which re-generates the outputed content.
+///     Used for subscribing to the hotReload update event, which re-generates the outputted content.
 /// </summary>
 internal sealed class HotReloadManager
 {

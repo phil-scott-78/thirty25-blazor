@@ -96,7 +96,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
         };
 
 
-        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(1111235);
+        var (primary, accent) = ColorPaletteGenerator.GenerateFromHue(259);
 
         return new CssFramework(new CssFrameworkSettings()
         {

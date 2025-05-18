@@ -38,118 +38,121 @@ public class MarkdownParserService
 
     /// <summary>
     /// Parses a Markdown file, extracts the YAML front matter into a strongly typed object,
-    /// and converts the remaining content to HTML. Uses caching for improved performance.
+    /// and returns the markdown content (with front matter removed) and table of contents.
     /// </summary>
     /// <typeparam name="T">Type to deserialize the YAML front matter into. Must have a parameterless constructor.</typeparam>
     /// <param name="filePath">Path to the Markdown file to be processed.</param>
     /// <param name="contentPathRoot">The root of the content for this Markdown file.</param>
     /// <param name="pageUrlRoot">The url root for this Markdown file.</param>
-    /// <param name="yamlDeserializer">
-    /// Custom YAML deserializer instance. If null, the one from BlazorStaticOptions will be used.
-    /// </param>
-    /// <param name="preProcessFile">
-    /// Optional function to preprocess the Markdown content before parsing.
-    /// Takes the service provider and raw file content as inputs and returns modified content.
-    /// </param>
-    /// <param name="postProcessHtml">
-    /// Optional function to postProcess the Markdown content before parsing.
-    /// Takes the service provider, frontMatter, and HTML content as inputs and returns modified content.
-    /// </param>
+    /// <param name="yamlDeserializer">Custom YAML deserializer instance. If null, the one from BlazorStaticOptions will be used.</param>
+    /// <param name="preProcessFile">Optional function to preprocess the Markdown content before parsing.</param>
     /// <returns>
     /// Tuple containing:
     /// - The deserialized front matter of type T
-    /// - The HTML content generated from the Markdown (without the front matter)
+    /// - The markdown content (with front matter removed)
+    /// - The table of contents
     /// </returns>
-    internal async Task<(T frontMatter, string htmlContent, TocEntry[] tableOfContent)> ParseMarkdownFileAsync<T>(
-        string filePath,
-        string contentPathRoot,
-        string pageUrlRoot,
-        IDeserializer? yamlDeserializer = null,
-        Func<IServiceProvider, string, string>? preProcessFile = null,
-        Func<IServiceProvider, T, string, (T, string)>? postProcessHtml = null
-    ) where T : IFrontMatter, new()
+internal async Task<(T frontMatter, string markdownContent, TocEntry[] tableOfContent)> ParseMarkdownFileAsync<T>(
+    string filePath,
+    string contentPathRoot,
+    string pageUrlRoot,
+    IDeserializer? yamlDeserializer = null,
+    Func<IServiceProvider, string, string>? preProcessFile = null
+) where T : IFrontMatter, new()
+{
+    // Check if the file exists
+    if (!File.Exists(filePath))
     {
-        // Check if the file exists
-        if (!File.Exists(filePath))
+        _logger.LogWarning("File not found: {filePath}", filePath);
+        return (new T(), string.Empty, []); // Use Array.Empty for clarity
+    }
+
+    yamlDeserializer ??= _options.FrontMatterDeserializer;
+    var rawMarkdownContent = await File.ReadAllTextAsync(filePath); // Renamed to distinguish from processed
+
+    var processedMarkdownContent = rawMarkdownContent;
+    // Apply pre-processing if a preprocessor function was provided
+    if (preProcessFile != null)
+    {
+        processedMarkdownContent = preProcessFile(_serviceProvider, processedMarkdownContent);
+    }
+
+    // Parse the Markdown content (the one that might have been pre-processed)
+    var document = Markdown.Parse(processedMarkdownContent, _pipeline);
+
+    // Extract the YAML front matter block and process it
+    var yamlBlock = document.Descendants<YamlFrontMatterBlock>().FirstOrDefault();
+    T frontMatter;
+    string markdownWithoutFrontMatter;
+
+    if (yamlBlock == null)
+    {
+        // No front matter found, create the default instance
+        frontMatter = new T();
+        markdownWithoutFrontMatter = processedMarkdownContent; // The whole content is markdown
+    }
+    else
+    {
+        // Extract the YAML content
+        var frontMatterYaml = yamlBlock.Lines.ToString();
+
+        try
         {
-            _logger.LogWarning("File not found: {filePath}", filePath);
-            return (new T(), string.Empty, []);
+            // Deserialize the YAML content into the specified type
+            frontMatter = yamlDeserializer.Deserialize<T>(frontMatterYaml);
         }
-
-        yamlDeserializer ??= _options.FrontMatterDeserializer;
-        var markdownContent = await File.ReadAllTextAsync(filePath);
-
-        // Apply pre-processing if a preprocessor function was provided
-        if (preProcessFile != null)
+        catch (Exception e)
         {
-            markdownContent = preProcessFile(_serviceProvider, markdownContent);
-        }
-
-        // Parse the Markdown content
-        var document = Markdown.Parse(markdownContent, _pipeline);
-
-        // Extract the YAML front matter block and process it
-        var yamlBlock = document.Descendants<YamlFrontMatterBlock>().FirstOrDefault();
-        T frontMatter;
-
-        if (yamlBlock == null)
-        {
-            // No front matter found, create the default instance
+            // Handle deserialization errors by using default values
             frontMatter = new T();
-        }
-        else
-        {
-            // Extract the YAML content
-            var frontMatterYaml = yamlBlock.Lines.ToString();
-
-            try
-            {
-                // Deserialize the YAML content into the specified type
-                frontMatter = yamlDeserializer.Deserialize<T>(frontMatterYaml);
-            }
-            catch (Exception e)
-            {
-                // Handle deserialization errors by using default values
-                frontMatter = new T();
-                _logger.LogWarning(
-                    "Cannot deserialize YAML front matter in {file}. The default one will be used! Error: {exceptionMessage}",
-                    filePath, e.Message + e.InnerException?.Message);
-            }
-
-            // Remove the YAML block from the document
-            document.Remove(yamlBlock);
+            _logger.LogWarning(
+                "Cannot deserialize YAML front matter in {file}. The default one will be used! Error: {exceptionMessage}",
+                filePath, e.Message + (e.InnerException != null ? " Inner: " + e.InnerException.Message : string.Empty)); // Improved error logging
         }
 
-        // Generate table of contents from the document
-        var toc = TocGenerator.GenerateTableOfContents(document);
+        // Get the Markdown content without the front matter using the original string
+        // yamlBlock.Span.End gives the character index in 'processedMarkdownContent'
+        // immediately *after* the YAML block.
+        var contentStartIndex = yamlBlock.Span.End + 1;
 
-        // Generate the base URL for the current file
-        var baseUrl = GetBaseUrl(filePath, contentPathRoot, pageUrlRoot);
+        // We need to be careful: Span.End is the offset of the character *after* the block.
+        // Typically, there's a newline after the closing '---' of the YAML block.
+        // We want to get the content *after* this potential newline.
+        // This will take the substring and then remove any leading whitespace
+        // (like newlines that separated the YAML block from the content).
+        markdownWithoutFrontMatter = contentStartIndex < processedMarkdownContent.Length
+            ? processedMarkdownContent[contentStartIndex..].TrimStart()
+            : string.Empty;
 
-        // Use a custom HtmlRenderer with URL rewriting capabilities
-        await using var writer = new StringWriter();
+        // Remove the YAML block from the document object *before* generating TOC
+        // This ensures TOC is generated only from the actual content.
+        document.Remove(yamlBlock);
+    }
+
+    // Generate Table of Contents from the document *without* the front matter
+    var toc = TocGenerator.GenerateTableOfContents(document);
+
+    // Ensure the variable name in return matches the declared one (case sensitivity)
+    return (frontMatter, markdownWithoutFrontMatter, toc);
+}
+    /// <summary>
+    /// Renders markdown content to HTML using the configured pipeline and base URL.
+    /// </summary>
+    /// <param name="markdownContent">The markdown content to render.</param>
+    /// <param name="baseUrl">The base URL for link rewriting.</param>
+    /// <returns>The rendered HTML string.</returns>
+    public string RenderMarkdownToHtml(string markdownContent, string baseUrl)
+    {
+        var document = Markdown.Parse(markdownContent, _pipeline);
+        using var writer = new StringWriter();
         var htmlRenderer = new HtmlRenderer(writer)
         {
-            // Use our LinkRewriter for links to handle special cases like external links
             LinkRewriter = s => LinkRewriter.RewriteUrl(s, baseUrl)
         };
-
         _pipeline.Setup(htmlRenderer);
-
-        // Render the document (now without the YAML block)
         htmlRenderer.Render(document);
-        await writer.FlushAsync();
-
-        var htmlContent = writer.ToString();
-
-        if (postProcessHtml != null)
-        {
-            (frontMatter, htmlContent) = postProcessHtml.Invoke(_serviceProvider, frontMatter, htmlContent);
-        }
-
-        _logger.LogDebug("Added/updated cache entry for {filePath}", filePath);
-
-        return (frontMatter, htmlContent, toc);
+        writer.Flush();
+        return writer.ToString();
     }
 
     /// <summary>

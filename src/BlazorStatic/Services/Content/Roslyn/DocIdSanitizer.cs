@@ -6,6 +6,8 @@ internal static class DocIdSanitizer
 {
     public static string SanitizeXmlDocId(string xmlDocId)
     {
+        xmlDocId = xmlDocId.Trim();
+
         // If the xmlDocId doesn't have parameters, return it as is
         var paramStart = xmlDocId.IndexOf('(');
         if (paramStart == -1)
@@ -98,7 +100,6 @@ internal static class DocIdSanitizer
         }
 
         return $"{beforeGeneric}{{{string.Join(",", innerParams)}}}{afterGeneric}";
-
     }
 
     private static string[] SplitGenericParams(string genericParams)

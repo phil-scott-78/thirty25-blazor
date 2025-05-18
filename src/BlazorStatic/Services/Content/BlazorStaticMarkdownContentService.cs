@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using BlazorStatic.Models;
+using BlazorStatic.Services.Content.MarkdigExtensions;
 using BlazorStatic.Services.Infrastructure;
 
 namespace BlazorStatic.Services.Content;
@@ -20,6 +21,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     private readonly TagService<TFrontMatter> _tagService;
     private readonly ContentFilesService<TFrontMatter> _contentFilesService;
     private bool _disposed;
+    private readonly MarkdownParserService _markdownParserService;
 
     /// <summary>
     ///     Initializes a new instance of the BlazorStaticContentService.
@@ -28,6 +30,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// <param name="fileWatcher">File watcher for hot-reload functionality</param>
     /// <param name="tagService">Service for handling tags</param>
     /// <param name="contentFilesService">Service for handling content files</param>
+    /// <param name="markdownParserService">Service for handling markdown parsing</param>
     /// <param name="contentProcessor">Service for processing markdown content</param>
     /// <remarks>
     ///     If hot-reload is enabled in the blazorStaticOptions, this service will watch
@@ -38,11 +41,13 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
         BlazorFileWatcher fileWatcher,
         TagService<TFrontMatter> tagService,
         ContentFilesService<TFrontMatter> contentFilesService,
+        MarkdownParserService markdownParserService,
         MarkdownContentProcessor<TFrontMatter> contentProcessor)
     {
         _tagService = tagService;
         _contentFilesService = contentFilesService;
         _contentProcessor = contentProcessor;
+        _markdownParserService = markdownParserService;
 
         // Set up the Post cache
         _contentCache =
@@ -50,9 +55,7 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
                 await _contentProcessor.ProcessContentFiles());
 
         // Set up file watching
-        fileWatcher.AddPathsWatch([
-            options.ContentPath
-        ], NeedsRefresh);
+        fileWatcher.AddPathsWatch([options.ContentPath], NeedsRefresh);
 
         HotReloadManager.Subscribe(NeedsRefresh);
     }
@@ -63,14 +66,28 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     /// </summary>
     private void NeedsRefresh() => _contentCache.Invalidate();
 
-    /// <summary>
-    /// Gets content by its URL or returns null if not found.
-    /// </summary>
-    /// <param name="url">The URL identifier of the content page to retrieve</param>
-    /// <returns>The content page with the matching URL, or null if no post matches the URL</returns>
-    public async Task<MarkdownContentPage<TFrontMatter>?> GetContentPageByUrlOrDefault(string url)
+    private async Task<MarkdownContentPage<TFrontMatter>?> GetContentPageByUrlOrDefault(string url)
     {
         return await _contentCache.TryGetValueAsync(url) is (true, var contentPage) ? contentPage : null;
+    }
+
+    /// <summary>
+    /// Gets content by its URL and renders the Markdown to HTML. Returns null if not found.
+    /// </summary>
+    /// <param name="url">The URL identifier of the content page to retrieve</param>
+    /// <returns>A tuple of the content page and rendered HTML, or null if not found</returns>
+    public async Task<(MarkdownContentPage<TFrontMatter> Page, string HtmlContent)?> GetRenderedContentPageByUrlOrDefault(string url)
+    {
+        var page = await GetContentPageByUrlOrDefault(url);
+        if (page == null) return null;
+
+        // Use the parser service to render Markdown to HTML
+        // Use the page's NavigateUrl as the base URL for link rewriting
+        var lastSlash = page.NavigateUrl.LastIndexOf('/');
+        var baseUrl = lastSlash == -1 ? page.NavigateUrl : page.NavigateUrl[..lastSlash];
+
+        var html = _markdownParserService.RenderMarkdownToHtml(page.MarkdownContent, baseUrl);
+        return (page, html);
     }
 
     /// <summary>
@@ -90,8 +107,9 @@ public class BlazorStaticMarkdownContentService<TFrontMatter> : IBlazorStaticCon
     ///     A task that represents the asynchronous operation.
     ///     The task result contains a tuple with the tag and its associated content pages if found, or null if no tag matches.
     /// </returns>
-    public async Task<(Tag Tag, ImmutableList<MarkdownContentPage<TFrontMatter>> ContentPages)?> GetTagByEncodedNameOrDefault(
-        string encodedName)
+    public async Task<(Tag Tag, ImmutableList<MarkdownContentPage<TFrontMatter>> ContentPages)?>
+        GetTagByEncodedNameOrDefault(
+            string encodedName)
     {
         var allPosts = await GetAllContentPagesAsync();
         var contentPagesForTag = _tagService.GetPostsByTag(allPosts, encodedName);

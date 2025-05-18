@@ -6,7 +6,7 @@ namespace Gbnf.AdvancedScenarios;
 
 public class Product
 {
-    [Description("The unique identifier for this product")]
+    [Description("The unique identifier for this product5")]
     public required Guid Id { get; init; }
     
     [Description("The customer-facing name of the product")]
