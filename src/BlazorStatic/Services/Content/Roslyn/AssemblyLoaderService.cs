@@ -51,6 +51,44 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
             .WithConcurrentBuild(true);
 
         compilation = compilation.WithOptions(options);
+
+        _logger.LogInformation("--- Compilation Details for Project: {ProjectFilePath} ---", project.FilePath);
+
+        var initialDiagnostics = compilation.GetDiagnostics();
+        if (initialDiagnostics.Any())
+        {
+            _logger.LogInformation("Initial diagnostics from compilation object (before Emit):");
+            foreach (var diag in initialDiagnostics.OrderBy(d => d.Severity))
+            {
+                var logLevel = diag.Severity switch
+                {
+                    DiagnosticSeverity.Error => LogLevel.Error,
+                    DiagnosticSeverity.Warning => LogLevel.Warning,
+                    _ => LogLevel.Information
+                };
+                _logger.Log(logLevel, "  Diagnostic ({Severity}) {Id}: {Message} @ {Location}", diag.Severity, diag.Id, diag.GetMessage(), diag.Location.ToString());
+            }
+        }
+        else
+        {
+            _logger.LogInformation("No initial diagnostics from compilation object (before Emit).");
+        }
+
+        _logger.LogInformation("Compilation references (before Emit):");
+        if (compilation.References.Any())
+        {
+            foreach (var reference in compilation.References)
+            {
+                string? refPath = (reference as PortableExecutableReference)?.FilePath ?? (reference as CompilationReference)?.Compilation.AssemblyName ?? "N/A";
+                _logger.LogInformation("  Reference: Display='{Display}', Path/Name='{Path}'", reference.Display, refPath);
+            }
+        }
+        else
+        {
+            _logger.LogWarning("No references found in compilation object (before Emit).");
+        }
+        _logger.LogInformation("--- End Compilation Details ---");
+
         await using var ms = new MemoryStream();
         var emitResult = compilation.Emit(peStream: ms, options: emitOptions);
         if (!emitResult.Success)
@@ -70,7 +108,7 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
                     reference.FilePath.Contains(@".Ref\") ||
                     reference.FilePath.Contains(@"\ref\"))
                 {
-                    continue;
+                    // continue;
                 }
 
                 var refName = Path.GetFileNameWithoutExtension(reference.FilePath);
