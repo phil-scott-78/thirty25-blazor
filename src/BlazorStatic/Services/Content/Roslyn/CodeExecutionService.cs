@@ -10,7 +10,7 @@ namespace BlazorStatic.Services.Content.Roslyn;
 /// <param name="logger"></param>
 public class CodeExecutionService(ILogger<CodeExecutionService> logger)
 {
-    internal async Task<Dictionary<string, string>> ExecuteMethodAsync(Assembly assembly, IMethodSymbol methodSymbol)
+    internal Dictionary<string, string> ExecuteMethod(Assembly assembly, IMethodSymbol methodSymbol)
     {
         logger.LogDebug("Executing {name}", methodSymbol.Name);
         var typeName = methodSymbol.ContainingType.ToDisplayString();

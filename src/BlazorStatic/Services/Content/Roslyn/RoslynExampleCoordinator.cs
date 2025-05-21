@@ -187,7 +187,7 @@ public class RoslynExampleCoordinator : IDisposable
             return "Failed to get semantic model for method.";
         }
 
-        var result = await _codeExecutionService.ExecuteMethodAsync(assembly, (IMethodSymbol)symbol);
+        var result = _codeExecutionService.ExecuteMethod(assembly, (IMethodSymbol)symbol);
         return result[attachmentName ?? string.Empty];
     }
 
