@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       
@@ -34,7 +34,7 @@ jobs:
          
       - name: Run webapp and generate static files
         run: |
-          export BaseHref="/"
+          set BaseHref="/"
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
       - name: Setup Pages

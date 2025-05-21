@@ -54,9 +54,27 @@ public class RoslynExampleCoordinator : IDisposable
         _codeExecutionService = codeExecutionService;
 
         // Set up MSBuild workspace
-        var msBuildInstance = MSBuildLocator.QueryVisualStudioInstances().First();
-        _logger.LogInformation("MSBuildLocator instance selected: {msBuildInstance}", msBuildInstance.MSBuildPath);
-        MSBuildLocator.RegisterInstance(msBuildInstance);
+        if (!MSBuildLocator.IsRegistered)
+        {
+            var instances = MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(instance => instance.Version).ToArray();
+            if (instances.Length == 0)
+            {
+                _logger.LogError("No MSBuild instances found. Make sure .NET SDK is installed.");
+                throw new InvalidOperationException("No MSBuild instances found.");
+            }
+
+            // Attempt to find an instance related to .NET SDK first
+            var sdkInstance = instances.FirstOrDefault(i => i.DiscoveryType == DiscoveryType.DotNetSdk);
+            var msBuildInstance = sdkInstance ?? instances.First(); // Fallback to the latest version if no SDK specific one is found
+
+            _logger.LogInformation("MSBuildLocator selected instance: Name='{Name}', Version='{Version}', Path='{Path}', DiscoveryType='{DiscoveryType}'",
+                                   msBuildInstance.Name, msBuildInstance.Version, msBuildInstance.MSBuildPath, msBuildInstance.DiscoveryType);
+            MSBuildLocator.RegisterInstance(msBuildInstance);
+        }
+        else
+        {
+            _logger.LogInformation("MSBuildLocator already registered.");
+        }
 
         _workspace = MSBuildWorkspace.Create();
         _logger.LogInformation("MSBuildWorkspace created");
