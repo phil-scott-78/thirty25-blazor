@@ -45,7 +45,7 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
         {
             throw new Exception($"Could not get compilation for {project.FilePath}");
         }
-        compilation = compilation.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+        // compilation = compilation.AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
         var options = compilation.Options
             .WithOptimizationLevel(OptimizationLevel.Release)
