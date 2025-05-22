@@ -6,6 +6,17 @@ namespace BlazorStatic;
 internal static class StringExtensions
 {
     /// <summary>
+    /// Splits on NewLines, first normalizing line endings.
+    /// </summary>
+    /// <param name="s">The string to split.</param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static string[] SplitNewLines(this string s, StringSplitOptions options = StringSplitOptions.None)
+    {
+        return s.ReplaceLineEndings(Environment.NewLine).Split(Environment.NewLine, options);
+    }
+
+    /// <summary>
     /// Converts a string to a URL-friendly slug with a single-pass algorithm.
     /// </summary>
     /// <param name="input">The string to slugify</param>

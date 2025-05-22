@@ -315,7 +315,7 @@ CommandLineApp clone http://example.com
 
 should output something like
 
-```shell
+```text
 Cloning "http://example.com"
 ```
 

@@ -25,21 +25,13 @@ public static class ColorPaletteGenerator
     /// <summary>
     /// Generates a primary and accent color palette based on a hue value in degrees (0-360)
     /// </summary>
-    public static (ImmutableDictionary<string, CssColor> Primary, ImmutableDictionary<string, CssColor> Accent) 
-        GenerateFromHue(double hue)
+    public static ImmutableDictionary<string, CssColor> GenerateFromHue(double hue)
     {
         // Normalize the hue to 0-360 range
         hue = (hue % 360 + 360) % 360;
         
         // Generate a primary palette (with the exact hue)
-        var primaryPalette = GeneratePaletteFromHue(hue);
-        
-        // Generate accent palette (30 degrees offset from primary)
-        // We choose 30 degrees as it's a common complementary offset
-        var accentHue = (hue - 90) % 360;
-        var accentPalette = GeneratePaletteFromHue(accentHue);
-        
-        return (primaryPalette, accentPalette);
+        return GeneratePaletteFromHue(hue);
     }
     
     /// <summary>

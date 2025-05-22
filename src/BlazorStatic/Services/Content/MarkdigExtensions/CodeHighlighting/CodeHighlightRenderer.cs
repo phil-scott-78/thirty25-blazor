@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using BlazorStatic.Services.Content.MarkdigExtensions.Tabs;
 using BlazorStatic.Services.Content.Roslyn;
+using Markdig.Helpers;
 using static BlazorStatic.Services.AsyncHelpers;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
@@ -11,7 +12,9 @@ namespace BlazorStatic.Services.Content.MarkdigExtensions.CodeHighlighting;
 
 internal sealed class CodeHighlightRenderer(
     RoslynHighlighterService roslynHighlighter,
-    CodeHighlightRenderOptions? options = null)
+    CodeBlockRenderer codeBlockRenderer,
+    CodeHighlightRenderOptions? options = null
+)
     : HtmlObjectRenderer<CodeBlock>
 {
     private CodeHighlightRenderOptions? _options = options;
@@ -70,7 +73,15 @@ internal sealed class CodeHighlightRenderer(
                 renderer.Write(fullSample);
                 break;
             case "gbnf":
-                renderer.Write(GbnfHighlighter.HighlightGbnf(code));
+                renderer.Write(GbnfHighlighter.Highlight(code));
+                break;
+            case "bash" or "shell":
+                renderer.Write(ShellSyntaxHighlighter.Highlight(code));
+                break;
+            case "text":
+                renderer.Write("<pre><code>");
+                renderer.Write(code);
+                renderer.Write("</code></pre>");
                 break;
             default:
             {
@@ -88,19 +99,43 @@ internal sealed class CodeHighlightRenderer(
                 }
                 else
                 {
-                    var attr = string.IsNullOrWhiteSpace(languageId)
-                        ? string.Empty
-                        : " class=\"language-" + languageId + "\"";
-
-                    renderer.Write($"<pre><code {attr}>");
-                    renderer.Write(code);
-                    renderer.Write("</code></pre>");
+                    ReplaceCodeBlockContent(codeBlock, code, languageId);
+                    codeBlockRenderer.Write(renderer, codeBlock);
                 }
 
                 break;
             }
         }
         // ReSharper restore SpellCheckingInspection
+    }
+
+    void ReplaceCodeBlockContent(CodeBlock codeBlock, string newCode, string languageId)
+    {
+        var newLines = newCode.SplitNewLines();
+
+        codeBlock.Lines.Clear();
+        foreach (var line in newLines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                codeBlock.Lines.Add(StringSlice.Empty);
+            }
+            else
+            {
+                var stringSlice = new StringSlice(line);
+                codeBlock.Lines.Add(stringSlice);
+            }
+        }
+
+        if (codeBlock is FencedCodeBlock fencedCodeBlock)
+        {
+            fencedCodeBlock.Info = languageId;
+
+            var attributes = fencedCodeBlock.GetAttributes(); // Gets or creates HtmlAttributes
+            attributes.Classes ??= new List<string>();
+            attributes.Classes.RemoveAll(c => c.StartsWith("language-", StringComparison.OrdinalIgnoreCase));
+            attributes.Classes.Add($"language-{languageId}");
+        }
     }
 
     private static string ExtractCode(LeafBlock leafBlock)
