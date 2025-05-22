@@ -22,19 +22,19 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
         var proseSettings = GetCustomProseSettings();
 
 
-        var primaryHue = 255;
+        var primaryHue = 3;
         var primary = ColorPaletteGenerator.GenerateFromHue(primaryHue);
         var accent = ColorPaletteGenerator.GenerateFromHue(primaryHue + 180);
 
         var tertiaryOne = ColorPaletteGenerator.GenerateFromHue(primaryHue + 90);
         var tertiaryTwo = ColorPaletteGenerator.GenerateFromHue(primaryHue - 90);
         
-        return new CssFramework(new CssFrameworkSettings()
+        return new CssFramework(new CssFrameworkSettings
         {
             DesignSystem = DesignSystem.Default with
             {
                 Colors = DesignSystem.Default.Colors.AddRange(
-                    new Dictionary<string, ImmutableDictionary<string, CssColor>>()
+                    new Dictionary<string, ImmutableDictionary<string, CssColor>>
                     {
                         { "primary", primary },
                         { "accent", accent },
@@ -50,26 +50,37 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                     {
                         { "code", "font-mono" },
                         { ".prose h1, .prose h2, .prose h3, .prose h4", "scroll-m-24" }, // this is to offset the header
-                        { ".pl-c", "text-base-300/50 italic" },
-                        { ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-300" }, // comments, punctuation, selectors, tags
-                        { ".pl-c1, .pl-en, .pl-entm", "text-primary-300" }, // boolean, number, constants, attributes, deleted
-                        { ".pl-s, .pl-pse, .pl-smi, .pl-smp", "text-tertiary-one-300" }, // strings, characters, attribute values, builtins, inserted
-                        { ".pl-kos, .pl-ent, .pl-v, .pl-sym, .pl-e, .pl-cce", "text-tertiary-two-300" }, // operators, entities, urls, symbols, class names
-                        { ".pl-k, .pl-kd", "text-primary-300" }, // atrules, keywords
-                        { ".pl-c1, .pl-en", "text-accent-300" }, // properties, functions
-                        { ".pl-sr, .pl-va", "text-red-300" }, // regex, important
+
+                        { ".pl-c", "text-base-800/50 italic" },
+                        { ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-800" }, // comments, punctuation, selectors, tags
+                        { ".pl-c1, .pl-en, .pl-entm", "text-primary-700" }, // boolean, number, constants, attributes, deleted
+                        { ".pl-s, .pl-pse, .pl-smi, .pl-smp", "text-tertiary-one-700" }, // strings, characters, attribute values, builtins, inserted
+                        { ".pl-kos, .pl-ent, .pl-v, .pl-sym, .pl-e, .pl-cce", "text-tertiary-two-700" }, // operators, entities, urls, symbols, class names
+                        { ".pl-k, .pl-kd", "text-primary-700" }, // atrules, keywords
+                        { ".pl-c1, .pl-en", "text-accent-700" }, // properties, functions
+                        { ".pl-sr, .pl-va", "text-red-700" }, // regex, important
+                        
+                        { ".dark .pl-c", "text-base-300/50 italic" },
+                        { ".dark .pl-cd, .dark .pl-cmnt, .dark .pl-pds, .dark .pl-sel, .dark .pl-tag", "text-base-300" }, // comments, punctuation, selectors, tags
+                        { ".dark .pl-c1, .dark .pl-en, .dark .pl-entm", "text-primary-300" }, // boolean, number, constants, attributes, deleted
+                        { ".dark .pl-s, .dark.pl-pse, .dark .pl-smi, .dark .pl-smp", "text-tertiary-one-300" }, // strings, characters, attribute values, builtins, inserted
+                        { ".dark .pl-kos, .dark .pl-ent, .dark .pl-v, .dark .pl-sym,.dark .pl-e,.dark .pl-cce", "text-tertiary-two-300" }, // operators, entities, urls, symbols, class names
+                        { ".dark .pl-k, .dark .pl-kd", "text-primary-300" }, // atrules, keywords
+                        { ".dark .pl-c1, .dark .pl-en", "text-accent-300" }, // properties, functions
+                        { ".dark .pl-sr, .dark .pl-va", "text-red-300" }, // regex, important
+                        
                     }
         });
     }
 
     private static Prose.Settings GetCustomProseSettings()
     {
-        var proseSettings = new Prose.Settings()
+        var proseSettings = new Prose.Settings
         {
-            CustomSettings = designSystem => new Dictionary<string, CssSettings>()
+            CustomSettings = designSystem => new Dictionary<string, CssSettings>
             {
                 {
-                    "DEFAULT", new CssSettings()
+                    "DEFAULT", new CssSettings
                     {
                         ChildRules =
                         [
@@ -103,7 +114,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                     }
                 },
                 {
-                    "lg", new CssSettings()
+                    "lg", new CssSettings
                     {
                         ChildRules =
                         [
@@ -113,7 +124,7 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                 },
                 {
                     // dark mode color overrides
-                    "invert", new CssSettings()
+                    "invert", new CssSettings
                     {
                         ChildRules =
                         [

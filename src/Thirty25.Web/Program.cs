@@ -29,25 +29,8 @@ builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
         return new MarkdownPipelineBuilder()
             .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
             .UseAdvancedExtensions()
-            .UseSyntaxHighlighting(roslynHighlighter, new CodeHighlightRenderOptions
-            {
-                OuterWrapperCss = "not-prose",
-                StandaloneContainerCss =
-                    "bg-base-800 dark:bg-primary-950/90 border border-primary-700/50 shadow rounded rounded-xl overflow-x-auto",
-                PreBaseCss =
-                    "p-1 overflow-x-auto scheme-dark font-mono text-xs md:text-sm font-light leading-relaxed w-full",
-                PreStandaloneCss = "text-base-100/90 py-2 px-2 md:px-4"
-            })
-            .UseTabbedCodeBlocks(new TabbedCodeBlockRenderOptions()
-            {
-                OuterWrapperCss = "not-prose",
-                ContainerCss =
-                    "flex flex-col bg-base-800 dark:bg-primary-950/25 border border-primary-700/50 shadow rounded rounded-xl overflow-x-auto",
-                TabListCss = "flex flex-row flex-wrap px-4 pt-1 bg-base-900/95 dark:bg-primary-900/25 space-x-4",
-                TabButtonCss =
-                    "whitespace-nowrap border-b border-transparent py-2 text-xs text-base-100/90 font-medium transition-colors hover:text-accent-300 disabled:pointer-events-none disabled:opacity-50 aria-selected:text-accent-400 aria-selected:border-accent-400",
-                TabPanelCss = "tab-panel hidden aria-selected:block py-3 px-2 md:px-4"
-            })
+            .UseSyntaxHighlighting(roslynHighlighter, CodeHighlightRenderOptions.Monorail)
+            .UseTabbedCodeBlocks(TabbedCodeBlockRenderOptions.Monorail)
             .UseYamlFrontMatter()
             .Build();
     }

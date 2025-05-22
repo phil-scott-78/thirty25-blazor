@@ -17,6 +17,17 @@ public record CodeHighlightRenderOptions
     };
 
     /// <summary>
+    /// Gets the Monorail specific settings for <see cref="CodeHighlightRenderOptions"/>.
+    /// </summary>
+    public static readonly CodeHighlightRenderOptions Monorail = new()
+    {
+        OuterWrapperCss = "not-prose",
+        StandaloneContainerCss = "bg-base-100 dark:bg-primary-950/90 border border-base-300/75 dark:border-primary-700/50  shadow-xs rounded rounded-xl overflow-x-auto",
+        PreBaseCss = "p-1 overflow-x-auto dark:scheme-dark font-mono text-xs md:text-sm font-light leading-relaxed w-full",
+        PreStandaloneCss = "text-base-900/90 dark:text-base-100/90 py-2 px-2 md:px-4"
+    };
+
+    /// <summary>
     /// CSS class for the outer wrapper element
     /// </summary>
     public required string OuterWrapperCss { get; init; }
