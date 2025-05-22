@@ -142,6 +142,9 @@ This isn't anything new. RedPajama builds on established approaches like
 * llama.cpp has a suite of tools for converting [JSON Schemas to GBNF](https://github.com/ggml-org/llama.cpp/blob/master/grammars/README.md#json-schemas--gbnf).
 * [gbnfgen](https://github.com/IntrinsicLabsAI/gbnfgen) is a library for generating grammars based on your typed JSON objects, described through normal TypeScript interfaces and enums.
 
+There are other C# projects like [Llama.Grammar](https://github.com/jihadkhawaja/Llama.Grammar) that also carry out the
+same.
+
 RedPajama works more closely to gbnfgen. To use it, we need to create a TypeModelBuilder for our class.
 
 ```csharp:xmldocid
