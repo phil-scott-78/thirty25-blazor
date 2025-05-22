@@ -22,7 +22,8 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
         var proseSettings = GetCustomProseSettings();
 
 
-        var primaryHue = 3;
+        var primaryHue = 260;
+        
         var primary = ColorPaletteGenerator.GenerateFromHue(primaryHue);
         var accent = ColorPaletteGenerator.GenerateFromHue(primaryHue + 180);
 
