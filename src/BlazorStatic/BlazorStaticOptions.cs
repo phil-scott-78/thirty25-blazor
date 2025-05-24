@@ -1,7 +1,12 @@
 ﻿using System.Collections.Immutable;
 using Markdig;
 using BlazorStatic.Models;
+using BlazorStatic.Services.Content.MarkdigExtensions;
+using BlazorStatic.Services.Content.MarkdigExtensions.CodeHighlighting;
+using BlazorStatic.Services.Content.MarkdigExtensions.Tabs;
+using BlazorStatic.Services.Content.Roslyn;
 using Markdig.Extensions.AutoIdentifiers;
+using Microsoft.Extensions.DependencyInjection;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -201,9 +206,15 @@ public class BlazorStaticOptions
     /// You can customize this to add additional extensions or configure different parsing options.
     /// </para>
     /// </remarks>
-    public Func<IServiceProvider, MarkdownPipeline> MarkdownPipelineBuilder { get; init; } = _ => new MarkdownPipelineBuilder()
-        .UseAdvancedExtensions()
-        .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
-        .UseYamlFrontMatter()
-        .Build();
+    public Func<IServiceProvider, MarkdownPipeline> MarkdownPipelineBuilder { get; init; } = serviceProvider =>
+    {
+        var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
+        return new MarkdownPipelineBuilder()
+            .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
+            .UseAdvancedExtensions()
+            .UseSyntaxHighlighting(roslynHighlighter, CodeHighlightRenderOptions.Monorail)
+            .UseTabbedCodeBlocks(TabbedCodeBlockRenderOptions.Monorail)
+            .UseYamlFrontMatter()
+            .Build();
+    };
 }

@@ -35,10 +35,10 @@ public static class BlazorStaticExtensions
     /// <para>The service handles parsing, loading, and providing content with the specified front matter format.</para>
     /// </remarks>
     public static IServiceCollection AddBlazorStaticContentService<TFrontMatter>(this IServiceCollection services,
-        Func<BlazorStaticContentOptions<TFrontMatter>> configureOptions)
+        Func<BlazorStaticContentOptions<TFrontMatter>>? configureOptions = null)
         where TFrontMatter : class, IFrontMatter, new()
     {
-        var options = configureOptions.Invoke();
+        var options = configureOptions?.Invoke() ?? new BlazorStaticContentOptions<TFrontMatter>();
 
         // Register options
         services.AddSingleton(options);
@@ -104,9 +104,9 @@ public static class BlazorStaticExtensions
     /// using Roslyn configuration provided in the specified options.
     /// </remarks>
     public static IServiceCollection AddRoslynService(this IServiceCollection services,
-        Func<RoslynHighlighterOptions> configureOptions)
+        Func<RoslynHighlighterOptions>? configureOptions = null)
     {
-        var options = configureOptions.Invoke();
+        var options = configureOptions?.Invoke() ?? new RoslynHighlighterOptions();
 
         services.AddSingleton(options);
         services.AddSingleton<RoslynHighlighterService>();

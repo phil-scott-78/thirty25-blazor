@@ -1,14 +1,14 @@
 ﻿@using BlazorStatic.Models
 
-<article class="flex max-w-2xl flex-col items-start justify-between text-base-950 dark:text-base-300">
+<article class="flex max-w-4xl flex-col items-start justify-between text-base-950 dark:text-base-300">
 
 <div class="flex text-xs">
     <time datetime="@MarkdownContentPage.FrontMatter.Date">@MarkdownContentPage.FrontMatter.Date.ToString("MMM dd, yyyy")</time>
 </div>
-<div class="group relative">
+<div>
     <h3 class="mt-3 text-2xl font-semibold">
         <a href="@MarkdownContentPage.NavigateUrl">
-            <span class="absolute inset-0"></span>
+            <span></span>
             @MarkdownContentPage.FrontMatter.Title
         </a>
     </h3>
