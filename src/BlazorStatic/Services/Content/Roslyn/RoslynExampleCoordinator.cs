@@ -46,7 +46,7 @@ public class RoslynExampleCoordinator : IDisposable
         CodeExecutionService codeExecutionService, ILogger<RoslynExampleCoordinator> logger)
     {
         _logger = logger;
-        _logger.LogInformation("RoslynExampleCoordinator constructor started");
+        _logger.LogDebug("RoslynExampleCoordinator constructor started");
         Debug.Assert(options.ConnectedSolution != null);
 
 
@@ -67,17 +67,18 @@ public class RoslynExampleCoordinator : IDisposable
             var sdkInstance = instances.FirstOrDefault(i => i.DiscoveryType == DiscoveryType.DotNetSdk);
             var msBuildInstance = sdkInstance ?? instances.First(); // Fallback to the latest version if no SDK specific one is found
 
-            _logger.LogInformation("MSBuildLocator selected instance: Name='{Name}', Version='{Version}', Path='{Path}', DiscoveryType='{DiscoveryType}'",
+            _logger.LogDebug("MSBuildLocator selected instance: Name='{Name}', Version='{Version}', Path='{Path}', DiscoveryType='{DiscoveryType}'",
                                    msBuildInstance.Name, msBuildInstance.Version, msBuildInstance.MSBuildPath, msBuildInstance.DiscoveryType);
             MSBuildLocator.RegisterInstance(msBuildInstance);
         }
         else
         {
-            _logger.LogInformation("MSBuildLocator already registered.");
+            _logger.LogDebug("MSBuildLocator already registered.");
         }
 
         _workspace = MSBuildWorkspace.Create();
-        _logger.LogInformation("MSBuildWorkspace created");
+        _logger.LogDebug("MSBuildWorkspace created");
+        
         _workspace.LoadMetadataForReferencedProjects = true;
         _workspace.WorkspaceFailed += (_, args) =>
         {
@@ -88,13 +89,13 @@ public class RoslynExampleCoordinator : IDisposable
         _typesAndMethodsXmlDocIdCache =
             new ThreadSafePopulatedCache<string, CachedCompiledXmlDocId>(async () =>
             {
-                _logger.LogInformation("Populating XmlDocId cache");
+                _logger.LogDebug("Populating XmlDocId cache");
                 var solution = _workspace.CurrentSolution.ProjectIds.Count == 0
                     ? await _workspace.OpenSolutionAsync(options.ConnectedSolution.SolutionPath)
                     : await ApplyPendingChangesToSolutionAsync(_workspace.CurrentSolution);
-                _logger.LogInformation("Solution loaded for XmlDocId cache");
+                _logger.LogDebug("Solution loaded for XmlDocId cache");
                 var result = await GetAllTypesAndMethodsInSolutionAsync(solution);
-                _logger.LogInformation("XmlDocId cache population complete");
+                _logger.LogDebug("XmlDocId cache population complete");
                 return result;
             });
     }
@@ -102,13 +103,13 @@ public class RoslynExampleCoordinator : IDisposable
     private async Task<Assembly> GetProjectAssembly(Project project)
     {
         var sw = Stopwatch.StartNew();
-        _logger.LogInformation("GetProjectAssembly started for {project}", project.FilePath);
+        _logger.LogDebug("GetProjectAssembly started for {project}", project.FilePath);
         _logger.LogDebug("Getting compilation for {project}", project.FilePath);
 
         var compilation = await project.GetCompilationAsync();
         if (compilation == null)
         {
-            _logger.LogInformation("Compilation is null for {project}", project.FilePath);
+            _logger.LogWarning("Compilation is null for {project}", project.FilePath);
             throw new Exception($"Could not get compilation for {project.FilePath}");
         }
 
@@ -131,17 +132,16 @@ public class RoslynExampleCoordinator : IDisposable
             emitOptions = new EmitOptions(debugInformationFormat: DebugInformationFormat.Pdb);
         }
 
-        _logger.LogInformation("Compiling assembly for {assemblyName}", project.Name);
+        _logger.LogDebug("Compiling assembly for {assemblyName}", project.Name);
         var assembly = await _assemblyLoaderService.GetProjectAssembly(project, emitOptions);
         sw.Stop();
-        _logger.LogInformation("Build project {project} in {elapsed}", project.Name, sw.Elapsed);
-        _logger.LogInformation("GetProjectAssembly finished for {project}", project.FilePath);
+        _logger.LogDebug("Build project {project} in {elapsed}", project.Name, sw.Elapsed);
         return assembly;
     }
 
     internal void InvalidateFile(string filePath)
     {
-        _logger.LogInformation("InvalidateFile called for {filePath}", filePath);
+        _logger.LogDebug("InvalidateFile called for {filePath}", filePath);
         _pendingChanges.Add(filePath);
         _assemblyLoaderService.ResetContext();
         _typesAndMethodsXmlDocIdCache.Invalidate();
@@ -191,7 +191,6 @@ public class RoslynExampleCoordinator : IDisposable
         return result[attachmentName ?? string.Empty];
     }
 
-    // Keep all the remaining methods from the original RoslynHighlighterService:
     private async Task<Solution> ApplyPendingChangesToSolutionAsync(Solution solution)
     {
         List<string> changedFiles;
@@ -223,7 +222,7 @@ public class RoslynExampleCoordinator : IDisposable
                     if (project != null)
                     {
                         var docName = Path.GetFileName(filePath);
-                        _logger.LogInformation("Adding new document {docName} to project {project}", docName,
+                        _logger.LogDebug("Adding new document {docName} to project {project}", docName,
                             project.Name);
                         var newDocId = DocumentId.CreateNewId(project.Id);
                         solution = solution.AddDocument(newDocId, docName, text, filePath: filePath);
@@ -265,27 +264,26 @@ public class RoslynExampleCoordinator : IDisposable
         _logger.LogDebug("GetAllTypesAndMethodsInSolutionAsync started");
         var result = new Dictionary<string, CachedCompiledXmlDocId>();
 
-        foreach (var project in solution.Projects)
-        {
+        await Parallel.ForEachAsync(solution.Projects, async (project, _) =>{
             var withoutAnalyzers = project.WithAnalyzerReferences(ImmutableArray<AnalyzerReference>.Empty);
 
             _logger.LogDebug("Getting types and methods {project}", project.FilePath);
             if (project.FilePath?.Contains("blog-projects") != true)
             {
                 _logger.LogDebug("Skipping {project}", project.FilePath);
-                continue;
+                return;
             }
 
             var assembly = await GetProjectAssembly(withoutAnalyzers);
 
-            await foreach (var item in ProcessProjectDocumentsAsync(withoutAnalyzers))
+            await foreach (var item in ProcessProjectDocumentsAsync(withoutAnalyzers).WithCancellation(_))
             {
                 _logger.LogDebug("Adding XmlDocId {xmlDocId} for project {project}", item.xmlDocId,
                     project.FilePath);
                 result.Add(item.xmlDocId,
                     new CachedCompiledXmlDocId(item.document, item.textSpan, item.sourceText, item.symbol, assembly));
             }
-        }
+        });
 
         sw.Stop();
         _logger.LogDebug("Rebuilt roslyn cache in {elapsed}", sw.Elapsed);

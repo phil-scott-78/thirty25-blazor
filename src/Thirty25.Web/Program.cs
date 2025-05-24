@@ -6,7 +6,6 @@ using Thirty25.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseStaticWebAssets();
 builder.Services.AddRazorComponents();
 
 // configures site wide settings
@@ -37,8 +36,6 @@ builder.Services.AddSingleton<MonorailCssService>();
 builder.Services.AddSingleton<CssClassCollector>();
 
 var app = builder.Build();
-app.UseHttpsRedirection();
-app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
 

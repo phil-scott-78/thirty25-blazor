@@ -60,7 +60,7 @@ public class MarkdownContentProcessor<TFrontMatter>
                 return results;
             }
 
-            _logger.LogInformation("Processing {Count} content files from {ContentPath}", files.Length, absContentPath);
+            _logger.LogDebug("Processing {Count} content files from {ContentPath}", files.Length, absContentPath);
 
             foreach (var file in files)
             {
@@ -86,7 +86,7 @@ public class MarkdownContentProcessor<TFrontMatter>
             }
 
             stopwatch.Stop();
-            _logger.LogInformation("Processed {Count} content files in {Elapsed}", results.Count, stopwatch.Elapsed);
+            _logger.LogDebug("Processed {Count} content files in {Elapsed}", results.Count, stopwatch.Elapsed);
 
             return results;
         }

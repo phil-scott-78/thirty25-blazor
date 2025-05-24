@@ -111,6 +111,10 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                                 new CssDeclaration(CssProperties.Color,
                                     designSystem.Colors["base"][ColorLevels._700].AsString()),
                             ]),
+                            new CssRuleSet("table",
+                            [
+                                new CssDeclaration(CssProperties.FontSize, ".80em"),
+                            ]),
                         ]
                     }
                 },
@@ -119,7 +123,11 @@ internal class MonorailCssService(CssClassCollector cssClassCollector)
                     {
                         ChildRules =
                         [
-                            new CssRuleSet("code", [new CssDeclaration(CssProperties.FontSize, "0.8em")])
+                            new CssRuleSet("code", [new CssDeclaration(CssProperties.FontSize, "0.8em")]),
+                            new CssRuleSet("table",
+                            [
+                                new CssDeclaration(CssProperties.FontSize, ".80em"),
+                            ]),
                         ]
                     }
                 },

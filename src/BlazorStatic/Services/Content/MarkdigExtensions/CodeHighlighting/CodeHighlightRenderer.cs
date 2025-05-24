@@ -57,7 +57,6 @@ internal sealed class CodeHighlightRenderer(
     {
         switch (languageId)
         {
-            // ReSharper disable SpellCheckingInspection
             case "vb" or "vbnet":
                 renderer.Write(roslynHighlighter.Highlight(code, Language.VisualBasic));
                 break;
@@ -106,10 +105,9 @@ internal sealed class CodeHighlightRenderer(
                 break;
             }
         }
-        // ReSharper restore SpellCheckingInspection
     }
 
-    void ReplaceCodeBlockContent(CodeBlock codeBlock, string newCode, string languageId)
+    private static void ReplaceCodeBlockContent(CodeBlock codeBlock, string newCode, string languageId)
     {
         var newLines = newCode.SplitNewLines();
 
@@ -127,13 +125,15 @@ internal sealed class CodeHighlightRenderer(
             }
         }
 
-        if (codeBlock is FencedCodeBlock fencedCodeBlock)
-        {
-            fencedCodeBlock.Info = languageId;
+        if (codeBlock is not FencedCodeBlock fencedCodeBlock) return;
 
-            var attributes = fencedCodeBlock.GetAttributes(); // Gets or creates HtmlAttributes
-            attributes.Classes ??= new List<string>();
-            attributes.Classes.RemoveAll(c => c.StartsWith("language-", StringComparison.OrdinalIgnoreCase));
+        fencedCodeBlock.Info = languageId;
+
+        var attributes = fencedCodeBlock.GetAttributes(); // Gets or creates HtmlAttributes
+        attributes.Classes ??= [];
+        attributes.Classes.RemoveAll(c => c.StartsWith("language-", StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(languageId))
+        {
             attributes.Classes.Add($"language-{languageId}");
         }
     }

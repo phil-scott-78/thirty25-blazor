@@ -4,7 +4,6 @@ internal static class TextFormatter
 {
     public static string NormalizeIndents(string code)
     {
-        // Same implementation as in the original class
         if (string.IsNullOrWhiteSpace(code))
             return code;
 

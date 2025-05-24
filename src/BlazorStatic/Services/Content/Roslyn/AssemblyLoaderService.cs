@@ -64,7 +64,6 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
                 var logLevel = diag.Severity switch
                 {
                     DiagnosticSeverity.Error => LogLevel.Error,
-                    DiagnosticSeverity.Warning => LogLevel.Warning,
                     _ => LogLevel.Debug
                 };
                 _logger.Log(logLevel, "  Diagnostic ({Severity}) {Id}: {Message} @ {Location}", diag.Severity, diag.Id, diag.GetMessage(), diag.Location.ToString());
