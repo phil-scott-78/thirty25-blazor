@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
@@ -14,7 +15,7 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
     private readonly ILogger _logger = logger;
     private RoslynAssemblyLoadContext? _loadContext;
     private bool _needsReset;
-    private static readonly Dictionary<string, byte[]> AssemblyBytesCache = new();
+    private static readonly ConcurrentDictionary<string, byte[]> AssemblyBytesCache = new();
 
     internal void ResetContext()
     {

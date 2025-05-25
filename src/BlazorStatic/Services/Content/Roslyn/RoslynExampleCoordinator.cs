@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
 using BlazorStatic.Services.Infrastructure;
@@ -151,8 +152,7 @@ public class RoslynExampleCoordinator : IDisposable
     {
         _logger.LogDebug("Getting code fragment for {xmlDocId}", xmlDocId);
 
-        var sanitizedXmlDocId = DocIdSanitizer.SanitizeXmlDocId(xmlDocId);
-        if (await _typesAndMethodsXmlDocIdCache.TryGetValueAsync(sanitizedXmlDocId) is
+        if (await _typesAndMethodsXmlDocIdCache.TryGetValueAsync(xmlDocId) is
             { Found: true, Value: var (document, originalSpan, sourceText, _, _) })
         {
             _logger.LogDebug("Code fragment found in cache for {xmlDocId}", xmlDocId);
@@ -160,14 +160,13 @@ public class RoslynExampleCoordinator : IDisposable
                 bodyOnly);
         }
 
-        _logger.LogWarning("Failed to find {sanitizedXmlDocId}", sanitizedXmlDocId);
+        _logger.LogWarning("Failed to find {sanitizedXmlDocId}", xmlDocId);
         return "Code not found for specified documentation ID.";
     }
 
     internal async Task<string> GetCodeResultAsync(string xmlDocId, string? attachmentName = null)
     {
-        var sanitizedXmlDocId = DocIdSanitizer.SanitizeXmlDocId(xmlDocId);
-        if (await _typesAndMethodsXmlDocIdCache.TryGetValueAsync(sanitizedXmlDocId) is not
+        if (await _typesAndMethodsXmlDocIdCache.TryGetValueAsync(xmlDocId) is not
             { Found: true, Value: var (document, _, _, symbol, assembly) })
         {
             return "";
@@ -257,14 +256,14 @@ public class RoslynExampleCoordinator : IDisposable
         return solution;
     }
 
-    private async Task<Dictionary<string, CachedCompiledXmlDocId>>
+    private async Task<ConcurrentDictionary<string, CachedCompiledXmlDocId>>
         GetAllTypesAndMethodsInSolutionAsync(Solution solution)
     {
         var sw = Stopwatch.StartNew();
         _logger.LogDebug("GetAllTypesAndMethodsInSolutionAsync started");
-        var result = new Dictionary<string, CachedCompiledXmlDocId>();
+        var result = new ConcurrentDictionary<string, CachedCompiledXmlDocId>();
 
-        await Parallel.ForEachAsync(solution.Projects, async (project, _) =>{
+        await Parallel.ForEachAsync(solution.Projects, async (project, ctx) =>{
             var withoutAnalyzers = project.WithAnalyzerReferences(ImmutableArray<AnalyzerReference>.Empty);
 
             _logger.LogDebug("Getting types and methods {project}", project.FilePath);
@@ -276,12 +275,11 @@ public class RoslynExampleCoordinator : IDisposable
 
             var assembly = await GetProjectAssembly(withoutAnalyzers);
 
-            await foreach (var item in ProcessProjectDocumentsAsync(withoutAnalyzers).WithCancellation(_))
+            await foreach (var item in ProcessProjectDocumentsAsync(withoutAnalyzers).WithCancellation(ctx))
             {
                 _logger.LogDebug("Adding XmlDocId {xmlDocId} for project {project}", item.xmlDocId,
                     project.FilePath);
-                result.Add(item.xmlDocId,
-                    new CachedCompiledXmlDocId(item.document, item.textSpan, item.sourceText, item.symbol, assembly));
+                result.TryAdd(item.xmlDocId, new CachedCompiledXmlDocId(item.document, item.textSpan, item.sourceText, item.symbol, assembly));
             }
         });
 
@@ -362,8 +360,6 @@ public class RoslynExampleCoordinator : IDisposable
 
             var xmlDocId = methodSymbol.GetDocumentationCommentId();
             if (string.IsNullOrEmpty(xmlDocId)) continue;
-
-            xmlDocId = DocIdSanitizer.SanitizeXmlDocId(xmlDocId);
 
             var textSpan = CreateExtendedTextSpan(methodDeclaration);
 

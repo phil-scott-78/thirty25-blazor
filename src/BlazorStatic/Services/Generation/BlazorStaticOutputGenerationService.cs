@@ -135,11 +135,12 @@ internal class BlazorStaticOutputGenerationService(
 
             await Parallel.ForEachAsync(pagesToGenerateByPriority, async (page, ctx) =>
             {
-                logger.LogInformation("Generating {pageUrl} into {pageOutputFile}", page.Url, page.OutputFile);
                 string content;
                 try
                 {
                     content = await client.GetStringAsync(page.Url, ctx);
+                    logger.LogInformation("Generated {pageUrl} into {pageOutputFile}", page.Url, page.OutputFile);
+
                 }
                 catch (HttpRequestException ex)
                 {

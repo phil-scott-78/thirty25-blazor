@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Text;
 using System.Web;
 using BlazorStatic.Services.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ public class RoslynHighlighterService : IDisposable
     private readonly ILogger<RoslynHighlighterService> _logger;
     private readonly SyntaxHighlighter _highlighter;
     private readonly RoslynExampleCoordinator? _documentProcessor;
-    private readonly HighlightCache _cache;
+    private readonly ConcurrentDictionary<int, string> _cache;
     private readonly BlazorFileWatcher _fileWatcher;
     private bool _disposed;
 
@@ -25,7 +26,7 @@ public class RoslynHighlighterService : IDisposable
     {
         _logger = logger;
         _highlighter = new SyntaxHighlighter();
-        _cache = new HighlightCache();
+        _cache = new ConcurrentDictionary<int, string>();
         _fileWatcher = fileWatcher;
         _documentProcessor = documentProcessor;
 
@@ -82,7 +83,7 @@ public class RoslynHighlighterService : IDisposable
 
     internal string Highlight(string codeContent, Language language = Language.CSharp)
     {
-        var highlightExample = _cache.GetOrAdd(codeContent, () =>
+        var highlightExample = _cache.GetOrAdd(codeContent.GetHashCode(), _ =>
             _highlighter.Highlight(HttpUtility.HtmlDecode(codeContent), language));
         return $"<pre><code>{highlightExample}</code></pre>";
     }
