@@ -28,6 +28,7 @@ public class AssemblyLoaderService(ILogger<AssemblyLoaderService> logger)
             _loadContext?.Unload();
             _loadContext = new RoslynAssemblyLoadContext();
             AssemblyBytesCache.Clear();
+            _needsReset = false;
         }
         else
         {
