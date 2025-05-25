@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using BlazorStatic.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -63,25 +64,25 @@ internal class BlazorStaticOutputGenerationService(
     internal async Task GenerateStaticPages(string appUrl)
     {
         // Collect pages to generate from content services and options
-        var pagesToGenerate =  ImmutableList<PageToGenerate>.Empty;
+        var pagesToGenerate = ImmutableList<(PageToGenerate Page, Priority Priority)>.Empty;
         foreach (var content in blazorStaticContentServiceCollection)
         {
-            pagesToGenerate = pagesToGenerate.AddRange(await content.GetPagesToGenerateAsync());
+            pagesToGenerate = pagesToGenerate.AddRange(await content.GetPagesToGenerateAsync(), Priority.Nomral);
 
         }
 
         // Optionally discover and add non-parametrized Razor pages
         if (options.AddPagesWithoutParameters)
         {
-            pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetRoutesToRender());
+            pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetRoutesToRender(), Priority.Nomral);
         }
 
         // add explicitly defined pages to generate
-        pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate);
+        pagesToGenerate = pagesToGenerate.AddRange(options.PagesToGenerate, Priority.Nomral);
 
         // add pages that have been mapped via app.MapGet()
         // this contains styles.css which needs to be last
-        pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes());
+        pagesToGenerate = pagesToGenerate.AddRange(routeHelper.GetMapGetRoutes(), Priority.MustBeLast);
 
         // Clear and recreate the output directory
         if (Directory.Exists(options.OutputFolderPath))
@@ -118,31 +119,48 @@ internal class BlazorStaticOutputGenerationService(
         using HttpClient client = new();
         client.BaseAddress = new Uri(appUrl);
 
+        var sw = Stopwatch.StartNew();
         // Generate each page by making HTTP requests and saving the response
-        foreach (var page in pagesToGenerate)
+        foreach (var priority in pagesToGenerate.Select(i => i.Priority).Distinct().OrderBy(i => i))
         {
-            logger.LogInformation("Generating {pageUrl} into {pageOutputFile}", page.Url, page.OutputFile);
-            string content;
-            try
+            var pagesToGenerateByPriority = pagesToGenerate
+                .Where(i => i.Priority == priority)
+                .Select(i => i.Page)
+                .ToList();
+
+            if (pagesToGenerateByPriority.Count == 0)
             {
-                content = await client.GetStringAsync(page.Url);
-            }
-            catch (HttpRequestException ex)
-            {
-                logger.LogWarning("Failed to retrieve page at {pageUrl}. StatusCode:{statusCode}. Error: {exceptionMessage}", page.Url, ex.StatusCode, ex.Message);
                 continue;
             }
 
-            var outFilePath = Path.Combine(options.OutputFolderPath, page.OutputFile.TrimStart('/'));
-
-            var directoryPath = Path.GetDirectoryName(outFilePath);
-            if (!string.IsNullOrEmpty(directoryPath))
+            await Parallel.ForEachAsync(pagesToGenerateByPriority, async (page, ctx) =>
             {
-                Directory.CreateDirectory(directoryPath);
-            }
+                logger.LogInformation("Generating {pageUrl} into {pageOutputFile}", page.Url, page.OutputFile);
+                string content;
+                try
+                {
+                    content = await client.GetStringAsync(page.Url, ctx);
+                }
+                catch (HttpRequestException ex)
+                {
+                    logger.LogWarning("Failed to retrieve page at {pageUrl}. StatusCode:{statusCode}. Error: {exceptionMessage}", page.Url, ex.StatusCode, ex.Message);
+                    return;
+                }
 
-            await File.WriteAllTextAsync(outFilePath, content);
+                var outFilePath = Path.Combine(options.OutputFolderPath, page.OutputFile.TrimStart('/'));
+
+                var directoryPath = Path.GetDirectoryName(outFilePath);
+                if (!string.IsNullOrEmpty(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+
+                await File.WriteAllTextAsync(outFilePath, content, ctx);
+            });
         }
+        
+        sw.Stop();
+        logger.LogInformation("All pages generated in {elapsedMilliseconds}ms", sw.ElapsedMilliseconds);
     }
 
     /// <summary>
@@ -275,5 +293,24 @@ internal class BlazorStaticOutputGenerationService(
     {
         var relativePath = sourcePath[sourceDir.Length..].TrimStart(Path.DirectorySeparatorChar);
         return Path.Combine(targetDir, relativePath);
+    }
+
+    enum Priority
+    {
+        MustBeFirst = 0,
+        Nomral = 50,
+        MustBeLast = 100,
+        
+    }
+
+}
+
+internal static class ListExtensions
+{
+    public static ImmutableList<(TItem, TPriority)> AddRange<TItem, TPriority>(
+        this ImmutableList<(TItem, TPriority)> queue,
+        IEnumerable<TItem> items, TPriority priority)
+    {
+        return items.Aggregate(queue, (current, item) => current.Add((item, priority)));
     }
 }
