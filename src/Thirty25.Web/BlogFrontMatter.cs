@@ -1,8 +1,8 @@
-﻿using BlazorStatic.Models;
+﻿using MyLittleContentEngine.Models;
 
 namespace Thirty25.Web;
 
-public class BlogFrontMatter : IFrontMatter, IFrontMatterWithTags
+public class BlogFrontMatter : IFrontMatter
 {
     /// <summary>Title of the blog post.</summary>
     public string Title { get; init; } = "Empty title";
@@ -31,4 +31,6 @@ public class BlogFrontMatter : IFrontMatter, IFrontMatterWithTags
             RssItem = true
         };
     }
+
+    public string? Uid { get; init; } = null;
 }

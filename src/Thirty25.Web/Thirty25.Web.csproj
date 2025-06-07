@@ -7,21 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-
-    <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.54" />
-    <PackageReference Include="System.Formats.Asn1" Version="9.0.4" />
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.5" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
+  
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
     <Watch Include="..\..\blog-projects\**\*.cs" />
-    <Watch Remove="..\..\blog-projects\**\obj\**\*" />
-    <Watch Remove="..\..\blog-projects\**\bin\**\*" />
+    <!--
+     ignore obj and bin folders in sample files, assemblyinfo.cs gets generated dynamically
+     and we don't want that to force a refresh.
+     -->
+    <Content Update="..\..\blog-projects\**\obj\**\*" Watch="false" />
+    <Content Update="..\..\blog-projects\**\bin\**\*" Watch="false" />
   </ItemGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\BlazorStatic\BlazorStatic.csproj" />
+    <ProjectReference Include="..\MyLittleContentEngine.MonorailCss\MyLittleContentEngine.MonorailCss.csproj" />
+    <ProjectReference Include="..\MyLittleContentEngine\MyLittleContentEngine.csproj" />
+    <ProjectReference Include="..\MyLittleContentEngine.UI\MyLittleContentEngine.UI.csproj" />
   </ItemGroup>
 </Project>

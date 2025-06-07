@@ -1,5 +1,7 @@
-﻿@using BlazorStatic
-@inject BlazorStaticOptions Options
+﻿@using Microsoft.AspNetCore.WebUtilities
+@using MyLittleContentEngine
+@inject ContentEngineOptions Options
+@inject IWebHostEnvironment WebHostEnvironment
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,9 +14,10 @@
     
     @* ReSharper disable once Html.PathError - this is generated dynamically via MapGet *@
     <link type="application/rss+xml" rel="alternate" title="Thirty25" href="rss.xml" />
-    <link rel="stylesheet" href="styles.css?v=@DateTime.Now.Ticks">
+    <link rel="stylesheet" href="@GetVersioned("styles.css")">
+    <script src="_content/MyLittleContentEngine.UI/scripts.js" defer></script>
 
-    <meta name="description" content="@Options.BlogDescription">
+    <meta name="description" content="@Options.SiteDescription">
 
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -24,365 +27,28 @@
         }
     </script>
     <HeadOutlet/>
-    <PageTitle>@Options.BlogTitle</PageTitle>
+    <PageTitle>@Options.SiteTitle</PageTitle>
 </head>
 
-<body class="antialiased font-sans bg-base-50 dark:bg-neutral-900 scheme-light dark:scheme-dark  transition-colors ">
-<div class="dark:bg-primary-950/50 min-h-screen pb-4 md:pb-16">
+<body class="antialiased font-sans bg-base-50 dark:bg-base-950 scheme-light dark:scheme-dark  transition-colors ">
+<div class="dark:bg-primary-950/25 min-h-screen pb-4 md:pb-16">
     <Routes/>
 </div>
 </body>
-<script>
-    /**
-     * Page Manager - Centralized JavaScript functionality
-     * Handles theme switching, table of contents, tabs, and syntax highlighting
-     */
-    class PageManager {
-        constructor() {
-            this.init();
-        }
-
-        init() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => this.initializeComponents());
-            } else {
-                this.initializeComponents();
-            }
-        }
-
-        initializeComponents() {
-            this.themeManager = new ThemeManager();
-            this.tocManager = new TOCManager();
-            this.tabManager = new TabManager();
-            this.syntaxHighlighter = new SyntaxHighlighter();
-
-            // Initialize all components
-            this.tocManager.init();
-            this.tabManager.init();
-            this.syntaxHighlighter.init();
-        }
-    }
-
-    /**
-     * Theme Manager - Handles dark/light theme switching
-     */
-    class ThemeManager {
-        constructor() {
-            // Make swapTheme globally available for backwards compatibility
-            window.swapTheme = this.swapTheme.bind(this);
-        }
-
-        swapTheme() {
-            const isDark = document.documentElement.classList.contains('dark');
-
-            if (isDark) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
-
-        getCurrentTheme() {
-            return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        }
-
-        setTheme(theme) {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            } else {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            }
-        }
-    }
-
-    /**
-     * Table of Contents Manager - Handles TOC navigation and active section highlighting
-     */
-    class TOCManager {
-        constructor() {
-            this.tocLinks = [];
-            this.sectionMap = new Map();
-            this.observer = null;
-        }
-
-        init() {
-            this.setupTOCLinks();
-            if (this.tocLinks.length > 0) {
-                this.setupIntersectionObserver();
-            }
-        }
-
-        setupTOCLinks() {
-            this.tocLinks = Array.from(document.querySelectorAll('aside ul li a[href^="blog/"]'));
-
-            // Initialize all links and build section map
-            this.tocLinks.forEach(link => {
-                link.setAttribute('aria-selected', 'false');
-
-                const id = this.extractIdFromHref(link.getAttribute('href'));
-                if (id) {
-                    const section = document.getElementById(id);
-                    if (section) {
-                        this.sectionMap.set(section, link);
-                    }
-                }
-            });
-        }
-
-        extractIdFromHref(href) {
-            return href?.split('#')[1] || null;
-        }
-
-        setupIntersectionObserver() {
-            this.observer = new IntersectionObserver(
-                this.handleIntersection.bind(this),
-                {
-                    rootMargin: '-10% 0px -70% 0px',
-                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-                }
-            );
-
-            // Observe all sections
-            this.sectionMap.forEach((link, section) => {
-                this.observer.observe(section);
-            });
-        }
-
-        handleIntersection(entries) {
-            const visibleEntries = entries
-                .filter(entry => entry.isIntersecting)
-                .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-            if (visibleEntries.length === 0) return;
-
-            // Reset all links
-            this.resetAllLinks();
-
-            // Activate the most visible section
-            const mostVisibleSection = visibleEntries[0].target;
-            const correspondingLink = this.sectionMap.get(mostVisibleSection);
-
-            if (correspondingLink) {
-                this.activateLink(correspondingLink);
-            }
-        }
-
-        resetAllLinks() {
-            this.tocLinks.forEach(link => {
-                link.setAttribute('aria-selected', 'false');
-                link.parentElement?.classList.remove('active');
-            });
-        }
-
-        activateLink(link) {
-            link.setAttribute('aria-selected', 'true');
-            link.parentElement?.classList.add('active');
-        }
-
-        destroy() {
-            if (this.observer) {
-                this.observer.disconnect();
-            }
-        }
-    }
-
-    /**
-     * Tab Manager - Handles tab navigation and content switching
-     */
-    class TabManager {
-        constructor() {
-            this.tablists = [];
-        }
-
-        init() {
-            this.tablists = Array.from(document.querySelectorAll('[role="tablist"]'));
-            this.tablists.forEach(tablist => this.setupTablist(tablist));
-        }
-
-        setupTablist(tablist) {
-            const tablistId = tablist.id;
-            if (!tablistId) return;
-
-            const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
-            if (tabs.length === 0) return;
-
-            // Set up event listeners
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => this.activateTab(tab, tabs));
-            });
-
-            // Initialize active state
-            this.initializeActiveTab(tablist, tabs);
-        }
-
-        initializeActiveTab(tablist, tabs) {
-            const activeTab = tablist.querySelector('[aria-selected="true"]');
-
-            if (!activeTab && tabs.length > 0) {
-                this.activateTab(tabs[0], tabs);
-            } else if (activeTab) {
-                this.showTabContent(activeTab);
-            }
-        }
-
-        activateTab(selectedTab, allTabs) {
-            // Deactivate all tabs
-            allTabs.forEach(tab => {
-                tab.setAttribute('aria-selected', 'false');
-                tab.setAttribute('data-state', 'inactive');
-                tab.setAttribute('tabindex', '-1');
-            });
-
-            // Activate selected tab
-            selectedTab.setAttribute('aria-selected', 'true');
-            selectedTab.setAttribute('data-state', 'active');
-            selectedTab.setAttribute('tabindex', '0');
-
-            // Show corresponding content
-            this.showTabContent(selectedTab);
-        }
-
-        showTabContent(tab) {
-            const contentId = tab.getAttribute('aria-controls');
-            if (!contentId) return;
-
-            const contentPanel = document.getElementById(contentId);
-            if (!contentPanel) return;
-
-            // Hide all related content panels
-            this.hideRelatedContentPanels(tab);
-
-            // Show selected content panel
-            contentPanel.removeAttribute('hidden');
-            contentPanel.setAttribute('aria-selected', 'true');
-        }
-
-        hideRelatedContentPanels(tab) {
-            const tabId = tab.id;
-            const match = tabId.match(/^tabButton(.*)-\d+$/);
-
-            if (match) {
-                const baseId = match[1];
-                const allContentPanels = document.querySelectorAll(`[id^="tab-content${baseId}-"]`);
-
-                allContentPanels.forEach(panel => {
-                    panel.setAttribute('aria-selected', 'false');
-                    panel.setAttribute('hidden', '');
-                });
-            }
-        }
-    }
-
-    /**
-     * Syntax Highlighter - Handles code syntax highlighting with starry-night
-     */
-    class SyntaxHighlighter {
-        constructor() {
-            this.prefix = 'language-';
-            this.starryNight = null;
-        }
-
-        async init() {
-            const codeNodes = this.getRelevantCodeNodes();
-            if (codeNodes.length === 0) return;
-
-            try {
-                await this.setupStarryNight(codeNodes);
-                await this.highlightCodeNodes(codeNodes);
-            } catch (error) {
-                console.error('Failed to initialize syntax highlighting:', error);
-            }
-        }
-
-        getRelevantCodeNodes() {
-            const codeNodes = Array.from(document.body.querySelectorAll('code'));
-            return codeNodes.filter(node =>
-                Array.from(node.classList).some(cls => cls.startsWith(this.prefix))
-            );
-        }
-
-        async setupStarryNight(codeNodes) {
-            const languages = this.extractLanguages(codeNodes);
-
-            const [{common, createStarryNight}, {toDom}] = await Promise.all([
-                import('https://esm.sh/@@wooorm/starry-night@3?bundle'),
-                import('https://esm.sh/hast-util-to-dom@4?bundle')
-            ]);
-
-            this.toDom = toDom;
-
-            const langImports = await this.loadLanguageGrammars(languages, common);
-            this.starryNight = await createStarryNight([...common, ...langImports]);
-        }
-
-        extractLanguages(codeNodes) {
-            const languages = new Set();
-
-            for (const node of codeNodes) {
-                const langClass = Array.from(node.classList)
-                    .find(cls => cls.startsWith(this.prefix));
-
-                if (langClass && langClass !== "text") {
-                    languages.add(langClass.slice(this.prefix.length));
-                }
-            }
-
-            return languages;
-        }
-
-        async loadLanguageGrammars(languages, common) {
-            const langImports = [];
-
-            for (const lang of languages) {
-                // Skip languages already in common
-                if (common.some(gram => gram.names.includes(lang))) continue;
-
-                try {
-                    const mod = await import(`https://esm.sh/@@wooorm/starry-night@3/lang/source.${lang}?bundle`);
-                    langImports.push(mod.default);
-                } catch (err) {
-                    console.warn(`Could not load language grammar for: ${lang}`, err);
-                }
-            }
-
-            return langImports;
-        }
-
-        async highlightCodeNodes(codeNodes) {
-            for (const node of codeNodes) {
-                try {
-                    await this.highlightSingleNode(node);
-                } catch (error) {
-                    console.error(`Failed to highlight code node:`, error);
-                }
-            }
-        }
-
-        async highlightSingleNode(node) {
-            const className = Array.from(node.classList)
-                .find(cls => cls.startsWith(this.prefix));
-
-            if (!className) return;
-
-            const language = className.slice(this.prefix.length);
-            const scope = this.starryNight.flagToScope(language);
-
-            if (!scope) return;
-
-            const tree = this.starryNight.highlight(node.textContent, scope);
-            node.replaceChildren(this.toDom(tree, {fragment: true}));
-        }
-    }
-
-    // Initialize the page manager
-    const pageManager = new PageManager();
-</script>
 </html>
 
 @code{
-    readonly string _baseHref = Environment.GetEnvironmentVariable("BaseHref") ?? "/";
+    private string _baseHref = null!;
+    static readonly string Version = DateTime.Now.Ticks.ToString();
+    
+    string GetVersioned(string url) => WebHostEnvironment.IsDevelopment()
+            ? url 
+            : QueryHelpers.AddQueryString(url, "v", Version);
+
+    protected override void OnInitialized()
+    {
+        _baseHref = Options.BaseUrl;
+        base.OnInitialized();
+    }
+
 }

@@ -1,7 +1,7 @@
-using BlazorStatic;
-using BlazorStatic.Services.Content.Roslyn;
+using MyLittleContentEngine;
+using MyLittleContentEngine.MonorailCss;
+using MyLittleContentEngine.Services.Content.Roslyn;
 using Thirty25.Web;
-using Thirty25.Web.BlogServices.Styling;
 using Thirty25.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,38 +10,38 @@ builder.Services.AddRazorComponents();
 
 // configures site wide settings
 // hot reload note - these will not be reflected until the application restarts
-builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
+builder.Services.AddContentEngineService(() => new ContentEngineOptions
 {
-    BlogTitle = "Thirty25",
-    BlogDescription = "Quite exciting this computer magic",
-    BaseUrl = "https://thirty25.blog",
+    SiteTitle = "Thirty25",
+    SiteDescription = "Quite exciting this computer magic",
+    BaseUrl =  Environment.GetEnvironmentVariable("BaseHref") ?? "/",
+    CanonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref") ?? "https://thity25.blog",
 });
 
 // configures individual sections of the blog. PageUrl should match the configured razor pages route,
 // and contentPath should match the location on disk.
 // you can have multiple of these per site.
-builder.Services.AddBlazorStaticContentService<BlogFrontMatter>();
-
+builder.Services.AddContentEngineStaticContentService(() => new ContentEngineContentOptions<BlogFrontMatter>()
+{
+    ContentPath = "Content/Blog",
+    BasePageUrl = "/blog",
+});
+builder.Services.AddMonorailCss(new MonorailCssOptions { PrimaryHue = () => 250 });
 builder.Services.AddRoslynService(() => new RoslynHighlighterOptions()
 {
     ConnectedSolution = new ConnectedDotNetSolution
-     {
-         SolutionPath = "../../thirty25-blazor.sln",
-         ProjectsPath = "../../blog-projects/"
-     }
+    {
+        SolutionPath = "../../thirty25-blazor.sln",
+        ProjectsPath = "../../blog-projects/"
+    }
 });
 
 // custom service for doing CSS work
-builder.Services.AddSingleton<MonorailCssService>();
-builder.Services.AddSingleton<CssClassCollector>();
+
 
 var app = builder.Build();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
-
-// custom CSS. the blazor static service will discover the mapped url automatically
-// and include it with the static generation.
-app.UseMiddleware<CssClassCollectorMiddleware>();
-app.MapGet("/styles.css", (MonorailCssService cssService) => Results.Content(cssService.GetStyleSheet(), "text/css"));
-
-await app.RunOrBuildBlazorStaticSite(args);
+app.UseMonorailCss();
+app.MapStaticAssets();
+await app.RunOrBuildContent(args);

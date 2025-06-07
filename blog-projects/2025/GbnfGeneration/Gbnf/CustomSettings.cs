@@ -14,7 +14,7 @@ public class CustomSettingsExample
             ClosingDelimiter = '>'   // Change from default ⟩
         };
 
-// Custom JSON sample generator settings
+        // Custom JSON sample generator settings
         var jsonSettings = new JsonSampleGeneratorSettings
         {
             OpeningDelimiter = '<',

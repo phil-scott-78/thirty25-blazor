@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet test:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet sln add:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(rg:*)",
+      "Bash(/home/phil/.nvm/versions/node/v22.15.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/x64-linux/rg \"StaticWebAsset|EmbeddedResource|FileProvider\" /mnt/b/thirty25-blazor/src/ --type-add \"csproj:*.csproj\" --type csproj)",
+      "Bash(timeout:*)",
+      "Bash(git reset:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "model": "sonnet",
+  "enableAllProjectMcpServers": false
+}

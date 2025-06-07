@@ -1,17 +1,17 @@
 ﻿@page "/"
-@using BlazorStatic
-@using BlazorStatic.Models
-@using BlazorStatic.Services.Content
+@using MyLittleContentEngine
+@using MyLittleContentEngine.Models
+@using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlazorStaticMarkdownContentService
-@inject BlazorStaticOptions BlazorStaticOptions
+@inject MarkdownContentService<BlogFrontMatter> MarkdownContentService
+@inject ContentEngineOptions ContentEngineOptions
 
 @if (_posts == null)
 {
     <div>Posts not found 🤷</div>
     return;
 }
-<PageTitle>@BlazorStaticOptions.BlogTitle - Recent Posts</PageTitle>
+<PageTitle>@ContentEngineOptions.SiteTitle - Recent Posts</PageTitle>
 
 <div>
     <PageHeader Title="Welcome">
@@ -31,7 +31,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = (await BlazorStaticMarkdownContentService.GetAllContentPagesAsync()).OrderByDescending(i => i.FrontMatter.Date).ToList();
+        _posts = (await MarkdownContentService.GetAllContentPagesAsync()).OrderByDescending(i => i.FrontMatter.Date).ToList();
     }
 
 }

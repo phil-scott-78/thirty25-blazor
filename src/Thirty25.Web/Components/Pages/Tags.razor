@@ -1,13 +1,12 @@
 @page "/tags"
 @using System.Collections.Immutable
-@using BlazorStatic
-@using BlazorStatic.Services.Content
-@using Thirty25.Web.Components.Layout
-@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlogService
-@inject BlazorStaticOptions BlazorStaticOptions
+@using MyLittleContentEngine
+@using MyLittleContentEngine.Services.Content
+@inject MarkdownContentService<BlogFrontMatter> BlogService
+@inject ContentEngineOptions ContentEngineOptions
 
 
-<PageTitle>@BlazorStaticOptions.BlogTitle - Tags</PageTitle>
+<PageTitle>@ContentEngineOptions.SiteTitle - Tags</PageTitle>
 <PageHeader Title="All Tags"></PageHeader>
 
 @if (_tagsWithCount == null)
@@ -28,7 +27,7 @@
 
 
 @code {
-    private ImmutableList<(BlazorStatic.Models.Tag Tag, int Count)>? _tagsWithCount;
+    private ImmutableList<(MyLittleContentEngine.Models.Tag Tag, int Count)>? _tagsWithCount;
 
     protected override async Task OnInitializedAsync()
     {

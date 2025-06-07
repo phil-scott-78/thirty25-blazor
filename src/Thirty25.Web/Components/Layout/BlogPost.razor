@@ -1,5 +1,5 @@
 ﻿@using System.Globalization
-@using BlazorStatic.Models
+@using MyLittleContentEngine.Models
 
 <article>
     <div class="divide-y  divide-primary-700">
@@ -46,7 +46,7 @@
             class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 lg:divide-y-0">
             <div class="lg:col-span-9 lg:row-span-2 lg:pb-0">
                 <div
-                    class="prose prose-stone dark:prose-invert mt-8 prose-base md:prose-lg max-w-full lg:leading-loose">
+                    class="prose prose-stone dark:prose-invert mt-8 prose-base prose-headings:scroll-m-24 md:prose-lg max-w-full lg:leading-loose">
                     @((MarkupString)HtmlContent)
                 </div>
                 @if (_nextPost != null)
@@ -83,27 +83,9 @@
                     </div>
                 </div>
 
-                @if (MarkdownContentPage.TableOfContents.Length > 1)
+                @if (MarkdownContentPage.Outline.Length > 1)
                 {
-                    <div class="hidden lg:block">
-                        <h2 class="text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400">On This
-                            Page</h2>
-                        <ul class="list-none text-sm mt-6 text-neutral-900 font-light dark:font-semilight dark:text-neutral-50/60">
-                            @foreach (var entry in MarkdownContentPage.TableOfContents)
-                            {
-                                @TocLink((MarkdownContentPage, entry, "pl-4"))
-                                @if (entry.Children.Length > 0)
-                                {
-                                    <ul class="pb-1px">
-                                        @foreach (var childEntry in entry.Children)
-                                        {
-                                            @TocLink((MarkdownContentPage, childEntry, "pl-8"))
-                                        }
-                                    </ul>
-                                }
-                            }
-                        </ul>
-                    </div>
+                    <OutlineNavigation Outline="@MarkdownContentPage.Outline" BaseUrl="@MarkdownContentPage.NavigateUrl" />
                 }
 
                 @if (string.IsNullOrWhiteSpace(MarkdownContentPage.FrontMatter.Repository) == false)
@@ -132,13 +114,6 @@
     [Parameter] public required string HtmlContent { get; init; }
     MarkdownContentPage<BlogFrontMatter>? _nextPost;
 
-    private readonly RenderFragment<(MarkdownContentPage<BlogFrontMatter> page, TocEntry childEntry, string padding)> TocLink = (v) =>
-        @<li class="flex">
-            <a
-                class="@v.padding transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700  border-l-2 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
-                href="@v.page.NavigateUrl#@v.childEntry.Id">@v.childEntry.Title</a>
-         </li>;
-    
     protected override async Task OnInitializedAsync()
     {
         if (Series != null)

@@ -1,10 +1,10 @@
 ﻿@page "/blog/{*fileName:nonfile}"
-@using BlazorStatic
-@using BlazorStatic.Models
-@using BlazorStatic.Services.Content
+@using MyLittleContentEngine
+@using MyLittleContentEngine.Models
+@using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticOptions Options
-@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlazorStaticMarkdownContentService
+@inject ContentEngineOptions Options
+@inject MarkdownContentService<BlogFrontMatter> MarkdownContentService
 
 @* Show specific post by filename param *@
 @if (_post == null)
@@ -12,7 +12,7 @@
     <div>Post not found 🤷</div>
     return;
 }
-<PageTitle>@Options.BlogTitle - @_post.FrontMatter.Title</PageTitle>
+<PageTitle>@Options.SiteTitle - @_post.FrontMatter.Title</PageTitle>
 <BlogPost MarkdownContentPage="_post" HtmlContent="@_postContent" Series="_series"/>
 
 @code{
@@ -23,13 +23,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var page = await BlazorStaticMarkdownContentService.GetRenderedContentPageByUrlOrDefault(FileName);
+        var page = await MarkdownContentService.GetRenderedContentPageByUrlOrDefault(FileName);
+        if (page == null)
+        {
+            _post = null;
+            _postContent = null;
+            return;
+        }
+        
         _post = page.Value.Page;
         _postContent = page.Value.HtmlContent;
         
         if (_post != null && !string.IsNullOrWhiteSpace(_post.FrontMatter.Series))
         {
-            var allPosts = await BlazorStaticMarkdownContentService.GetAllContentPagesAsync();
+            var allPosts = await MarkdownContentService.GetAllContentPagesAsync();
             _series = allPosts
                 .Where(i => string.Equals(i.FrontMatter.Series, _post.FrontMatter.Series, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FrontMatter.Date)

@@ -14,8 +14,6 @@ public class ScenarioRunner
 
     public IEnumerable<(string Key, string Value)> ProcessAllTypesInNamespace()
     {
-        var results = new List<ProcessResult>();
-
         // Get the assembly that contains the namespace
         var assembly = Assembly.GetExecutingAssembly();
 

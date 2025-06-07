@@ -1,11 +1,11 @@
 ﻿@page "/tags/{TagEncodedName}"
 @using System.Collections.Immutable
-@using BlazorStatic
-@using BlazorStatic.Models
-@using BlazorStatic.Services.Content
+@using MyLittleContentEngine
+@using MyLittleContentEngine.Models
+@using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject BlazorStaticMarkdownContentService<BlogFrontMatter> BlogService
-@inject BlazorStaticOptions BlazorStaticOptions
+@inject MarkdownContentService<BlogFrontMatter> BlogService
+@inject ContentEngineOptions ContentEngineOptions
 
 @if (_tag == null)
 {
@@ -13,7 +13,7 @@
     return;
 }
 
-<PageTitle>@BlazorStaticOptions.BlogTitle - @(_tag.Name)</PageTitle>
+<PageTitle>@ContentEngineOptions.SiteTitle - @(_tag.Name)</PageTitle>
 <div>
     <PageHeader Title="@(_tag.Name)">
         Blog posts tagged by <span class="text-primary-800 dark:text-primary-300">@(_tag.Name)</span>
@@ -25,7 +25,7 @@
 
     [Parameter] public required string TagEncodedName { get; set; }
 
-    private BlazorStatic.Models.Tag? _tag;
+    private MyLittleContentEngine.Models.Tag? _tag;
     private ImmutableList<MarkdownContentPage<BlogFrontMatter>>? _posts;
 
     protected override async Task OnInitializedAsync()
