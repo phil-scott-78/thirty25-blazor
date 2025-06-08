@@ -16,7 +16,7 @@ public static class MarkdownPipelineBuilderExtensions
     /// </summary>
     /// <returns>The <see cref="MarkdownPipelineBuilder"/> configured with ColorCode.</returns>
     public static MarkdownPipelineBuilder UseSyntaxHighlighting(this MarkdownPipelineBuilder markdownPipelineBuilder,
-        RoslynHighlighterService roslynHighlighter, Func<CodeHighlightRenderOptions> options)
+        RoslynHighlighterService? roslynHighlighter, Func<CodeHighlightRenderOptions>? options)
     {
         markdownPipelineBuilder.Extensions.AddIfNotAlready(new ColorCodingHighlighter(roslynHighlighter, options));
 
@@ -30,7 +30,7 @@ public static class MarkdownPipelineBuilderExtensions
     /// <param name="options">The options for rendering the tabbed code block.</param>
     /// <returns>The <paramref name="markdownPipelineBuilder"/> after the tabbed code block extension has been added.</returns>
     public static MarkdownPipelineBuilder UseTabbedCodeBlocks(this MarkdownPipelineBuilder markdownPipelineBuilder,
-        Func<TabbedCodeBlockRenderOptions> options)
+        Func<TabbedCodeBlockRenderOptions>? options)
     {
         markdownPipelineBuilder.Extensions.AddIfNotAlready(new TabbedCodeBlocksExtension(options));
         return markdownPipelineBuilder;

@@ -14,9 +14,9 @@ namespace MyLittleContentEngine.Services.Content.MarkdigExtensions.Tabs
         /// <summary>
         /// Extension for Markdig that transforms consecutive code blocks into tabbed containers
         /// </summary>
-        public TabbedCodeBlocksExtension(Func<TabbedCodeBlockRenderOptions> options)
+        public TabbedCodeBlocksExtension(Func<TabbedCodeBlockRenderOptions>? options)
         {
-            _options = options;
+            _options = options ?? (() => TabbedCodeBlockRenderOptions.MonorailMono);
         }
 
         public void Setup(MarkdownPipelineBuilder pipeline)

@@ -67,6 +67,8 @@ class OutlineManager {
         this.outlineLinks = [];
         this.sectionMap = new Map();
         this.observer = null;
+        this.visibleSections = new Set();
+        this.passedSections = new Set(); // Track sections that have been scrolled past
     }
 
     init() {
@@ -101,8 +103,8 @@ class OutlineManager {
         this.observer = new IntersectionObserver(
             this.handleIntersection.bind(this),
             {
-                rootMargin: '-10% 0px -70% 0px',
-                threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+                rootMargin: '10% 0px -5% 0px', // Very generous - catch sections with small margins
+                threshold: [0] // Just needs any part visible
             }
         );
 
@@ -113,22 +115,75 @@ class OutlineManager {
     }
 
     handleIntersection(entries) {
-        const visibleEntries = entries
-            .filter(entry => entry.isIntersecting)
-            .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visibleEntries.length === 0) return;
-
-        // Reset all links
-        this.resetAllLinks();
-
-        // Activate the most visible section
-        const mostVisibleSection = visibleEntries[0].target;
-        const correspondingLink = this.sectionMap.get(mostVisibleSection);
-
-        if (correspondingLink) {
-            this.activateLink(correspondingLink);
+        let hasChanges = false;
+        
+        entries.forEach(entry => {
+            const section = entry.target;
+            
+            if (entry.isIntersecting) {
+                this.visibleSections.add(section);
+                this.passedSections.add(section);
+                hasChanges = true;
+            } else {
+                this.visibleSections.delete(section);
+                // Keep in passedSections - it was scrolled past
+                hasChanges = true;
+            }
+        });
+        
+        if (hasChanges) {
+            this.updateActiveLinks();
         }
+    }
+    
+    updateActiveLinks() {
+        // Reset all links first
+        this.resetAllLinks();
+        
+        if (this.visibleSections.size > 0) {
+            // Activate all visible sections
+            this.visibleSections.forEach(section => {
+                const link = this.sectionMap.get(section);
+                if (link) {
+                    this.activateLink(link);
+                }
+            });
+        } else if (this.passedSections.size > 0) {
+            // No sections visible, find the closest one (most recently passed)
+            const closestSection = this.findClosestPassedSection();
+            if (closestSection) {
+                const link = this.sectionMap.get(closestSection);
+                if (link) {
+                    this.activateLink(link);
+                }
+            }
+        }
+    }
+    
+    findClosestPassedSection() {
+        if (this.passedSections.size === 0) return null;
+        
+        // Convert to array and sort by position in document
+        const sectionsArray = Array.from(this.passedSections);
+        const sectionPositions = sectionsArray.map(section => ({
+            section,
+            top: section.getBoundingClientRect().top
+        }));
+        
+        // Find the section closest to the top of the viewport (but likely above it)
+        // Sort by distance from top - we want the one that was most recently visible
+        sectionPositions.sort((a, b) => Math.abs(a.top) - Math.abs(b.top));
+        
+        // If we have sections above the viewport, prefer the one closest to the top
+        const sectionsAbove = sectionPositions.filter(s => s.top < 0);
+        if (sectionsAbove.length > 0) {
+            // Sort by top position descending (closest to 0, meaning most recently passed)
+            sectionsAbove.sort((a, b) => b.top - a.top);
+            return sectionsAbove[0].section;
+        }
+        
+        // Fallback to closest section overall
+        return sectionPositions[0].section;
     }
 
     resetAllLinks() {
@@ -570,12 +625,12 @@ class MobileNavManager {
 }
 
 /**
- * Syntax Highlighter - Handles code syntax highlighting with starry-night
+ * Syntax Highlighter - Handles code syntax highlighting with highlight.js
  */
 class SyntaxHighlighter {
     constructor() {
         this.prefix = 'language-';
-        this.starryNight = null;
+        this.hljs = null;
     }
 
     async init() {
@@ -583,8 +638,8 @@ class SyntaxHighlighter {
         if (codeNodes.length === 0) return;
 
         try {
-            await this.setupStarryNight(codeNodes);
-            await this.highlightCodeNodes(codeNodes);
+            await this.setupHighlightJs();
+            this.highlightCodeNodes(codeNodes);
         } catch (error) {
             console.error('Failed to initialize syntax highlighting:', error);
         }
@@ -597,77 +652,78 @@ class SyntaxHighlighter {
         );
     }
 
-    async setupStarryNight(codeNodes) {
-        const languages = this.extractLanguages(codeNodes);
+    async setupHighlightJs() {
+        // Load highlight.js from CDN
+        this.hljs = await import('https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js');
+        
+        // Configure highlight.js
+        this.hljs.default.configure({
+            ignoreUnescapedHTML: true,
+            throwUnescapedHTML: false
+        });
 
-        const [{common, createStarryNight}, {toDom}] = await Promise.all([
-            import('https://esm.sh/@wooorm/starry-night@3?bundle'),
-            import('https://esm.sh/hast-util-to-dom@4?bundle')
-        ]);
-
-        this.toDom = toDom;
-
-        const langImports = await this.loadLanguageGrammars(languages, common);
-        this.starryNight = await createStarryNight([...common, ...langImports]);
-    }
-
-    extractLanguages(codeNodes) {
-        const languages = new Set();
-
-        for (const node of codeNodes) {
-            const langClass = Array.from(node.classList)
-                .find(cls => cls.startsWith(this.prefix));
-
-            if (langClass) {
-                console.log(langClass.slice(this.prefix.length))
-                languages.add(langClass.slice(this.prefix.length));
-            }
-        }
-
-        return languages;
-    }
-
-    async loadLanguageGrammars(languages, common) {
-        const langImports = [];
+        // Load common languages
+        const languages = [
+            'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c',
+            'css', 'html', 'xml', 'json', 'yaml', 'bash', 'shell', 'sql',
+            'php', 'ruby', 'go', 'rust', 'kotlin', 'swift', 'markdown'
+        ];
 
         for (const lang of languages) {
-            // Skip languages already in common
-            if (common.some(gram => gram.names.includes(lang))) continue;
-
             try {
-                const mod = await import(`https://esm.sh/@wooorm/starry-night@3/lang/source.${lang}?bundle`);
-                langImports.push(mod.default);
+                const langModule = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/${lang}.min.js`);
+                this.hljs.default.registerLanguage(lang, langModule.default);
             } catch (err) {
-                console.warn(`Could not load language grammar for: ${lang}`, err);
+                // Language not available, skip silently
             }
         }
-
-        return langImports;
     }
 
-    async highlightCodeNodes(codeNodes) {
+    highlightCodeNodes(codeNodes) {
         for (const node of codeNodes) {
             try {
-                await this.highlightSingleNode(node);
+                this.highlightSingleNode(node);
             } catch (error) {
                 console.error(`Failed to highlight code node:`, error);
             }
         }
     }
 
-    async highlightSingleNode(node) {
+    highlightSingleNode(node) {
         const className = Array.from(node.classList)
             .find(cls => cls.startsWith(this.prefix));
 
         if (!className) return;
 
         const language = className.slice(this.prefix.length);
-        const scope = this.starryNight.flagToScope(language);
+        
+        // Map some common language aliases
+        const languageMap = {
+            'js': 'javascript',
+            'ts': 'typescript',
+            'cs': 'csharp',
+            'py': 'python',
+            'sh': 'bash',
+            'yml': 'yaml'
+        };
 
-        if (!scope) return;
+        const mappedLanguage = languageMap[language] || language;
 
-        const tree = this.starryNight.highlight(node.textContent, scope);
-        node.replaceChildren(this.toDom(tree, {fragment: true}));
+        try {
+            // Check if language is registered
+            if (this.hljs.default.getLanguage(mappedLanguage)) {
+                const result = this.hljs.default.highlight(node.textContent, { language: mappedLanguage });
+                node.innerHTML = result.value;
+                node.classList.add('hljs');
+            } else {
+                // Use auto-detection as fallback
+                const result = this.hljs.default.highlightAuto(node.textContent);
+                node.innerHTML = result.value;
+                node.classList.add('hljs');
+            }
+        } catch (error) {
+            console.warn(`Failed to highlight ${language}:`, error);
+        }
     }
 }
 

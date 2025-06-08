@@ -6,8 +6,8 @@ using MyLittleContentEngine.Services.Content.Roslyn;
 namespace MyLittleContentEngine.Services.Content.MarkdigExtensions.CodeHighlighting
 {
     internal class ColorCodingHighlighter(
-        RoslynHighlighterService roslynHighlighter,
-        Func<CodeHighlightRenderOptions> options) : IMarkdownExtension
+        RoslynHighlighterService? roslynHighlighter,
+        Func<CodeHighlightRenderOptions>? options) : IMarkdownExtension
     {
         public void Setup(MarkdownPipelineBuilder pipeline)
         {

@@ -20,12 +20,12 @@ internal static partial class ShellSyntaxHighlighter
             // Highlight comments first
             if (CommentRegex().IsMatch(line))
             {
-                sb.Append($"<span class=\"pl-c\">{System.Net.WebUtility.HtmlEncode(line)}</span>\n");
+                sb.Append($"<span class=\"hljs-comment\">{System.Net.WebUtility.HtmlEncode(line)}</span>\n");
                 continue;
             }
             if (RemCommentRegex().IsMatch(line))
             {
-                sb.Append($"<span  class=\"pl-c\">{System.Net.WebUtility.HtmlEncode(line)}</span>\n");
+                sb.Append($"<span class=\"hljs-comment\">{System.Net.WebUtility.HtmlEncode(line)}</span>\n");
                 continue;
             }
 
@@ -38,7 +38,7 @@ internal static partial class ShellSyntaxHighlighter
                 // Leading whitespace
                 sb.Append(System.Net.WebUtility.HtmlEncode(match.Groups[1].Value));
                 // Command itself
-                sb.Append($"<span  class=\"pl-v\">{System.Net.WebUtility.HtmlEncode(match.Groups[2].Value)}</span>");
+                sb.Append($"<span class=\"hljs-built_in\">{System.Net.WebUtility.HtmlEncode(match.Groups[2].Value)}</span>");
                 index = match.Length;
             }
 
@@ -46,10 +46,10 @@ internal static partial class ShellSyntaxHighlighter
             var rest = line[index..];
 
             // Strings (in single or double quotes)
-            rest = StringRegex().Replace(rest, m => $"<span  class=\"pl-s\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
+            rest = StringRegex().Replace(rest, m => $"<span class=\"hljs-string\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
 
             // Flags/options
-            rest = FlagsRegex().Replace(rest, m => $"<span  class=\"pl-c1\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
+            rest = FlagsRegex().Replace(rest, m => $"<span class=\"hljs-params\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
 
             sb.Append(rest);
             sb.Append('\n');

@@ -26,14 +26,14 @@
     [Parameter] public OutlineEntry[]? Outline { get; set; }
     [Parameter] public string Title { get; set; } = "On This Page";
     [Parameter] public string ContainerClass { get; set; } = "hidden lg:block";
-    [Parameter] public string TitleClass { get; set; } = "text-xs uppercase tracking-wide text-primary-500 dark:text-primary-400";
-    [Parameter] public string ListClass { get; set; } = "list-none text-sm mt-6 text-neutral-900 dark:font-light dark:font-semilight dark:text-neutral-50/60";
+    [Parameter] public string TitleClass { get; set; } = "text-xs uppercase tracking-wide font-bold text-primary-500 dark:text-primary-500";
+    [Parameter] public string ListClass { get; set; } = "list-none text-sm mt-6 text-neutral-900 dark:text-neutral-400";
     [Parameter] public string BaseUrl { get; set; } = "";
 
     private RenderFragment OutlineLink(OutlineEntry entry, string padding) =>
         @<li class="flex">
             <a
-                class="@padding transition-colors border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700 border-l-2 pt-1 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
+                class="@padding transition-all border-neutral-200 hover:text-primary-900 dark:hover:text-neutral-50/90 dark:border-neutral-700 border-l-2 pt-2 aria-selected:text-primary-800 aria-selected:border-accent-700 dark:aria-selected:text-primary-400 aria-selected:border-accent-400"
                 href="@(BaseUrl)#@entry.Id">@entry.Title</a>
         </li>;
 }

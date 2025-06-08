@@ -26,13 +26,13 @@ builder.Services.AddContentEngineService(() => new ContentEngineOptions
 // you can have multiple of these per site.
 builder.Services.AddContentEngineStaticContentService(() => new ContentEngineContentOptions<DocsFrontMatter>()
 {
-    ContentPath = "Content/Docs",
+    ContentPath = "Content",
     BasePageUrl = string.Empty
 });
 
 builder.Services.AddMonorailCss(new MonorailCssOptions
 {
-    PrimaryHue = () => 20,
+    PrimaryHue = () => 220,
     BaseColorName = () => ColorNames.Neutral,
 });
 builder.Services.AddRoslynService(() => new RoslynHighlighterOptions()

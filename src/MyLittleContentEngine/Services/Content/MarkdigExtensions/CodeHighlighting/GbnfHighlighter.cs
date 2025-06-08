@@ -20,22 +20,22 @@ internal static partial class GbnfHighlighter
             switch (token.Type)
             {
                 case TokenType.RuleName:
-                    html.Append($"<span class=\"pl-v\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-variable\">{escapedText}</span>");
                     break;
                 case TokenType.Comment:
-                    html.Append($"<span class=\"pl-c\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-comment\">{escapedText}</span>");
                     break;
                 case TokenType.StringLiteral:
-                    html.Append($"<span class=\"pl-s\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-string\">{escapedText}</span>");
                     break;
                 case TokenType.CharRange:
-                    html.Append($"<span class=\"gbnf-char-range\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-regexp\">{escapedText}</span>");
                     break;
                 case TokenType.Operator:
-                    html.Append($"<span class=\"gbnf-operator\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-operator\">{escapedText}</span>");
                     break;
                 case TokenType.Identifier:
-                    html.Append($"<span class=\"gbnf-identifier\">{escapedText}</span>");
+                    html.Append($"<span class=\"hljs-name\">{escapedText}</span>");
                     break;
                 case TokenType.Whitespace:
                 default:

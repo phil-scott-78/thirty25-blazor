@@ -98,16 +98,16 @@ internal class SyntaxHighlighter : IDisposable
 
         foreach (var range in ranges)
         {
-            var cssClass = ClassificationTypeToStarryNightClass(range.ClassificationType);
+            var cssClass = ClassificationTypeToHighlightJsClass(range.ClassificationType);
             if (string.IsNullOrWhiteSpace(cssClass))
             {
                 sb.Append(range.Text);
             }
             else
             {
-                // Include the prism CSS class and roslyn classification
+                // Include the highlight.js CSS class and roslyn classification
                 sb.Append($"""
-                           <span class="token {cssClass} roslyn-{range.ClassificationType.Replace(" ", "-")}">{range.Text}</span>
+                           <span class="hljs-{cssClass} roslyn-{range.ClassificationType.Replace(" ", "-")}">{range.Text}</span>
                            """);
             }
         }
@@ -172,53 +172,51 @@ internal class SyntaxHighlighter : IDisposable
         public TextSpan TextSpan => _classifiedSpan.TextSpan;
     }
 
-    private static string ClassificationTypeToStarryNightClass(string classificationType)
+    private static string ClassificationTypeToHighlightJsClass(string classificationType)
     {
         return classificationType switch
         {
-            // Variable/symbol
-            ClassificationTypeNames.Identifier => "pl-v",
+            // Variables and identifiers
+            ClassificationTypeNames.Identifier => "function",
+            ClassificationTypeNames.LocalName or ClassificationTypeNames.ParameterName => "variable",
 
-            // Variable
-            ClassificationTypeNames.LocalName or ClassificationTypeNames.ParameterName => "",
-
-            // Constant/property
+            // Properties and constants
             ClassificationTypeNames.PropertyName or ClassificationTypeNames.EnumMemberName
-                or ClassificationTypeNames.FieldName => "pl-c1",
+                or ClassificationTypeNames.FieldName => "attr",
 
-            // Namespace
+            // Types and classes
             ClassificationTypeNames.ClassName or ClassificationTypeNames.StructName
                 or ClassificationTypeNames.RecordClassName or ClassificationTypeNames.RecordStructName
                 or ClassificationTypeNames.InterfaceName or ClassificationTypeNames.DelegateName
-                or ClassificationTypeNames.EnumName or ClassificationTypeNames.ModuleName => "pl-n",
+                or ClassificationTypeNames.EnumName or ClassificationTypeNames.ModuleName => "type",
 
-            // Entity name (types)
-            ClassificationTypeNames.TypeParameterName => "pl-e",
+            // Type parameters
+            ClassificationTypeNames.TypeParameterName => "type",
 
-            // Keyword, used for function names in many starry-night themes
-            ClassificationTypeNames.MethodName or ClassificationTypeNames.ExtensionMethodName => "pl-k",
+            // Methods and functions
+            ClassificationTypeNames.MethodName or ClassificationTypeNames.ExtensionMethodName => "function",
 
-            // Comment
-            ClassificationTypeNames.Comment => "pl-c",
+            // Comments
+            ClassificationTypeNames.Comment => "comment",
 
-            // Keyword
+            // Keywords
             ClassificationTypeNames.Keyword or ClassificationTypeNames.ControlKeyword
-                or ClassificationTypeNames.PreprocessorKeyword => "pl-k",
+                or ClassificationTypeNames.PreprocessorKeyword => "keyword",
 
-            // String
-            ClassificationTypeNames.StringLiteral or ClassificationTypeNames.VerbatimStringLiteral => "pl-s",
+            // Strings
+            ClassificationTypeNames.StringLiteral or ClassificationTypeNames.VerbatimStringLiteral => "string",
 
-            // Constant (numbers)
-            ClassificationTypeNames.NumericLiteral => "pl-c1",
+            // Numbers
+            ClassificationTypeNames.NumericLiteral => "number",
 
-            // Keyword operators and separators
-            ClassificationTypeNames.Operator or ClassificationTypeNames.StringEscapeCharacter => "pl-kos",
+            // Operators
+            ClassificationTypeNames.Operator or ClassificationTypeNames.StringEscapeCharacter => "operator",
 
-            // Punctuation delimiter string
-            ClassificationTypeNames.Punctuation => "pl-pds",
+            // Punctuation
+            ClassificationTypeNames.Punctuation => "punctuation",
             ClassificationTypeNames.StaticSymbol => string.Empty,
 
-            // Comments in starry-night
+            // XML Documentation comments
             ClassificationTypeNames.XmlDocCommentComment or ClassificationTypeNames.XmlDocCommentDelimiter
                 or ClassificationTypeNames.XmlDocCommentName or ClassificationTypeNames.XmlDocCommentText
                 or ClassificationTypeNames.XmlDocCommentAttributeName
@@ -226,8 +224,9 @@ internal class SyntaxHighlighter : IDisposable
                 or ClassificationTypeNames.XmlDocCommentAttributeValue
                 or ClassificationTypeNames.XmlDocCommentEntityReference
                 or ClassificationTypeNames.XmlDocCommentProcessingInstruction
-                or ClassificationTypeNames.XmlDocCommentCDataSection => "pl-c",
-            _ => "pl-" + classificationType.ToLower().Replace(" ", "-")
+                or ClassificationTypeNames.XmlDocCommentCDataSection => "comment",
+            
+            _ => classificationType.ToLower().Replace(" ", "-")
         };
     }
 

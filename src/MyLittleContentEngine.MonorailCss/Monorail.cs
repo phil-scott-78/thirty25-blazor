@@ -67,42 +67,79 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
             PluginSettings = new List<ISettings> { proseSettings },
             Applies =
                 new
-                    Dictionary<string, string> /* these are just for a custom starry-night theme using tailwind colors */
+                    Dictionary<string, string> /* these are for a custom highlight.js theme using tailwind colors */
                     {
-                        { ".pl-c", "text-base-800/50 italic" }, // comments
-                        {
-                            ".pl-cd, .pl-cmnt, .pl-pds, .pl-sel, .pl-tag", "text-base-800"
-                        }, // comments, punctuation, selectors, tags
-                        {
-                            ".pl-c1, .pl-en, .pl-entm", "text-primary-700"
-                        }, // boolean, number, constants, attributes, deleted
-                        {
-                            ".pl-s, .pl-pse, .pl-smi, .pl-smp", "text-tertiary-one-700"
-                        }, // strings, characters, attribute values, builtins, inserted
-                        {
-                            ".pl-kos, .pl-ent, .pl-v, .pl-sym, .pl-e, .pl-cce", "text-tertiary-two-700"
-                        }, // operators, entities, urls, symbols, class names
-                        { ".pl-tag, .pl-k, .pl-kd", "text-primary-700" }, // atrules, keywords
-                        { ".pl-c1, .pl-en", "text-accent-700" }, // properties, functions
-                        { ".pl-sr, .pl-va", "text-red-700" }, // regex, important
+                        // Base highlight.js styles
+                        { ".hljs", "text-base-900 dark:text-base-200" },
+                        
+                        // Comments
+                        { ".hljs-comment", "text-base-800/50 italic" },
+                        { ".hljs-quote", "text-base-800/50 italic" },
+                        
+                        // Keywords and control flow
+                        { ".hljs-keyword", "text-primary-700" },
+                        { ".hljs-selector-tag", "text-primary-700" },
+                        { ".hljs-literal", "text-primary-700" },
+                        { ".hljs-type", "text-base-700" },
+                        
+                        // Strings and characters
+                        { ".hljs-string", "text-tertiary-one-700" },
+                        { ".hljs-number", "text-tertiary-one-700" },
+                        { ".hljs-regexp", "text-tertiary-one-700" },
+                        
+                        // Functions and methods
+                        { ".hljs-function", "text-accent-700" },
+                        { ".hljs-title", "text-accent-700" },
+                        { ".hljs-params", "text-accent-700" },
+                        
+                        // Variables and identifiers
+                        { ".hljs-variable", "text-tertiary-two-700" },
+                        { ".hljs-name", "text-tertiary-two-700" },
+                        { ".hljs-attr", "text-tertiary-two-700" },
+                        { ".hljs-symbol", "text-tertiary-two-700" },
+                        
+                        // Operators and punctuation
+                        { ".hljs-operator", "text-base-800" },
+                        { ".hljs-punctuation", "text-base-800" },
+                        
+                        // Special elements
+                        { ".hljs-built_in", "text-accent-700" },
+                        { ".hljs-class", "text-primary-700" },
+                        { ".hljs-meta", "text-base-700" },
+                        { ".hljs-tag", "text-primary-700" },
+                        { ".hljs-attribute", "text-tertiary-two-700" },
+                        { ".hljs-addition", "text-green-700" },
+                        { ".hljs-deletion", "text-red-700" },
+                        { ".hljs-link", "text-blue-700" },
 
-                        { ".dark .pl-c", "text-base-300/50 italic" },
-                        {
-                            ".dark .pl-cd, .dark .pl-cmnt, .dark .pl-pds, .dark .pl-sel, .dark .pl-tag", "text-base-300"
-                        }, // comments, punctuation, selectors, tags
-                        {
-                            ".dark .pl-c1, .dark .pl-en, .dark .pl-entm", "text-primary-300"
-                        }, // boolean, number, constants, attributes, deleted
-                        {
-                            ".dark .pl-s, .dark.pl-pse, .dark .pl-smi, .dark .pl-smp", "text-tertiary-one-300"
-                        }, // strings, characters, attribute values, builtins, inserted
-                        {
-                            ".dark .pl-kos, .dark .pl-ent, .dark .pl-v, .dark .pl-sym,.dark .pl-e,.dark .pl-cce",
-                            "text-tertiary-two-300"
-                        }, // operators, entities, urls, symbols, class names
-                        { ".dark .pl-tag, .dark .pl-k, .dark .pl-kd", "text-primary-300" }, // atrules, keywords
-                        { ".dark .pl-c1, .dark .pl-en", "text-accent-300" }, // properties, functions
-                        { ".dark .pl-sr, .dark .pl-va", "text-red-300" }, // regex, important
+                        // Dark mode styles
+                        { ".dark .hljs", "text-base-200" },
+                        { ".dark .hljs-comment", "text-base-300/50 italic" },
+                        { ".dark .hljs-quote", "text-base-300/50 italic" },
+                        { ".dark .hljs-keyword", "text-primary-300" },
+                        { ".dark .hljs-selector-tag", "text-primary-300" },
+                        { ".dark .hljs-literal", "text-primary-300" },
+                        { ".dark .hljs-type", "text-base-300" },
+                        { ".dark .hljs-string", "text-tertiary-one-300" },
+                        { ".dark .hljs-number", "text-tertiary-one-300" },
+                        { ".dark .hljs-regexp", "text-tertiary-one-300" },
+                        { ".dark .hljs-function", "text-accent-300" },
+                        { ".dark .hljs-title", "text-accent-300" },
+                        { ".dark .hljs-params", "text-accent-300" },
+                        { ".dark .hljs-variable", "text-tertiary-two-300" },
+                        { ".dark .hljs-name", "text-tertiary-two-300" },
+                        { ".dark .hljs-attr", "text-tertiary-two-300" },
+                        { ".dark .hljs-symbol", "text-tertiary-two-300" },
+                        { ".dark .hljs-operator", "text-base-300" },
+                        { ".dark .hljs-punctuation", "text-base-300" },
+                        { ".dark .hljs-built_in", "text-accent-300" },
+                        { ".dark .hljs-class", "text-primary-300" },
+                        { ".dark .hljs-meta", "text-base-300" },
+                        { ".dark .hljs-tag", "text-primary-300" },
+                        { ".dark .hljs-attribute", "text-tertiary-two-300" },
+                        { ".dark .hljs-addition", "text-green-300" },
+                        { ".dark .hljs-deletion", "text-red-300" },
+                        { ".dark .hljs-link", "text-blue-300" },
                     }
         };
 

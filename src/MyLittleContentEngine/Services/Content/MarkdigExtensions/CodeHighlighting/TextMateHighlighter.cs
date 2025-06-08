@@ -19,89 +19,89 @@ public static class TextMateHighlighter
         RegistryOptions = new RegistryOptions(ThemeName.DarkPlus);
         Registry = new Registry(RegistryOptions);
 
-        // Initialize the mapping from TextMate scopes to "pl-*" CSS classes.
+        // Initialize the mapping from TextMate scopes to highlight.js CSS classes.
         ScopeMappings =
         [
-            Tuple.Create("comment.line.double-slash", "pl-c"), // C#, Java, JS comments
-            Tuple.Create("comment.block.documentation", "pl-cd"), // Documentation comments
-            Tuple.Create("comment.block", "pl-c"),
-            Tuple.Create("comment", "pl-c"),
-            Tuple.Create("punctuation.definition.comment", "pl-c"),
+            Tuple.Create("comment.line.double-slash", "hljs-comment"), // C#, Java, JS comments
+            Tuple.Create("comment.block.documentation", "hljs-comment"), // Documentation comments
+            Tuple.Create("comment.block", "hljs-comment"),
+            Tuple.Create("comment", "hljs-comment"),
+            Tuple.Create("punctuation.definition.comment", "hljs-comment"),
 
             // Entities (functions, types, tags, attributes)
-            Tuple.Create("entity.name.function", "pl-en"), // functions
-            Tuple.Create("entity.name.type", "pl-e"), // types (classes, structs, interfaces)
-            Tuple.Create("entity.name.class", "pl-e"),
-            Tuple.Create("entity.name.interface", "pl-e"),
-            Tuple.Create("entity.name.struct", "pl-e"),
-            Tuple.Create("entity.name.enum", "pl-e"),
-            Tuple.Create("entity.name.tag", "pl-tag"), // HTML/XML tags
-            Tuple.Create("entity.other.attribute-name", "pl-e"), // HTML/XML attributes
-            Tuple.Create("entity.other.inherited-class", "pl-e"),
-            Tuple.Create("meta.attribute.cs", "pl-en"), // C# attributes
+            Tuple.Create("entity.name.function", "hljs-title"), // functions
+            Tuple.Create("entity.name.type", "hljs-type"), // types (classes, structs, interfaces)
+            Tuple.Create("entity.name.class", "hljs-type"),
+            Tuple.Create("entity.name.interface", "hljs-type"),
+            Tuple.Create("entity.name.struct", "hljs-type"),
+            Tuple.Create("entity.name.enum", "hljs-type"),
+            Tuple.Create("entity.name.tag", "hljs-tag"), // HTML/XML tags
+            Tuple.Create("entity.other.attribute-name", "hljs-attr"), // HTML/XML attributes
+            Tuple.Create("entity.other.inherited-class", "hljs-type"),
+            Tuple.Create("meta.attribute.cs", "hljs-meta"), // C# attributes
 
             // Keywords
-            Tuple.Create("keyword.control", "pl-k"),
-            Tuple.Create("keyword.operator.new", "pl-k"), // `new` operator
-            Tuple.Create("keyword.operator", "pl-kos"), // other operators
-            Tuple.Create("keyword", "pl-k"), // general keywords
+            Tuple.Create("keyword.control", "hljs-keyword"),
+            Tuple.Create("keyword.operator.new", "hljs-keyword"), // `new` operator
+            Tuple.Create("keyword.operator", "hljs-operator"), // other operators
+            Tuple.Create("keyword", "hljs-keyword"), // general keywords
 
             // Storage (type keywords, modifiers)
-            Tuple.Create("storage.type", "pl-k"), // `int`, `string`, `var`
-            Tuple.Create("storage.modifier", "pl-k"), // `public`, `static`, `async`
+            Tuple.Create("storage.type", "hljs-keyword"), // `int`, `string`, `var`
+            Tuple.Create("storage.modifier", "hljs-keyword"), // `public`, `static`, `async`
 
             // Constants and Literals
-            Tuple.Create("constant.numeric", "pl-c1"), // numbers
-            Tuple.Create("constant.language", "pl-c1"), // `true`, `false`, `null`
-            Tuple.Create("constant.character.escape", "pl-pse"), // character escapes (e.g. \\n, \\t)
-            Tuple.Create("constant.other", "pl-c1"),
+            Tuple.Create("constant.numeric", "hljs-number"), // numbers
+            Tuple.Create("constant.language", "hljs-literal"), // `true`, `false`, `null`
+            Tuple.Create("constant.character.escape", "hljs-regexp"), // character escapes (e.g. \\n, \\t)
+            Tuple.Create("constant.other", "hljs-literal"),
 
             // Strings
-            Tuple.Create("string.quoted.interpolated", "pl-s"), // interpolated string content
-            Tuple.Create("string.regexp", "pl-sr"), // regular expressions
-            Tuple.Create("string", "pl-s"), // general strings
-            Tuple.Create("punctuation.definition.string", "pl-s"), // quotes for strings
+            Tuple.Create("string.quoted.interpolated", "hljs-string"), // interpolated string content
+            Tuple.Create("string.regexp", "hljs-regexp"), // regular expressions
+            Tuple.Create("string", "hljs-string"), // general strings
+            Tuple.Create("punctuation.definition.string", "hljs-string"), // quotes for strings
 
             // Punctuation
-            Tuple.Create("punctuation.definition.tag", "pl-tag"), // <, > in HTML/XML
-            Tuple.Create("punctuation.separator", "pl-pds"), // commas, colons
-            Tuple.Create("punctuation.terminator", "pl-pds"), // semicolons
-            Tuple.Create("punctuation.accessor", "pl-pds"), // . in member access
-            Tuple.Create("punctuation.section.embedded.begin", "pl-pse"), // e.g. { in C# interpolated string
-            Tuple.Create("punctuation.section.embedded.end", "pl-pse"), // e.g. } in C# interpolated string
-            Tuple.Create("punctuation", "pl-pds"), // General punctuation
+            Tuple.Create("punctuation.definition.tag", "hljs-tag"), // <, > in HTML/XML
+            Tuple.Create("punctuation.separator", "hljs-punctuation"), // commas, colons
+            Tuple.Create("punctuation.terminator", "hljs-punctuation"), // semicolons
+            Tuple.Create("punctuation.accessor", "hljs-punctuation"), // . in member access
+            Tuple.Create("punctuation.section.embedded.begin", "hljs-punctuation"), // e.g. { in C# interpolated string
+            Tuple.Create("punctuation.section.embedded.end", "hljs-punctuation"), // e.g. } in C# interpolated string
+            Tuple.Create("punctuation", "hljs-punctuation"), // General punctuation
 
             // Variables
-            Tuple.Create("variable.parameter", "pl-v"),
-            Tuple.Create("variable.language", "pl-v"), // `this`, `self`
-            Tuple.Create("variable.other.member", "pl-smi"), // instance variables/members
-            Tuple.Create("variable.other.object.property", "pl-smi"), // object properties
-            Tuple.Create("variable.other.constant", "pl-c1"), // constants defined as variables
-            Tuple.Create("variable.other.enummember", "pl-smi"), // enum members
-            Tuple.Create("variable", "pl-v"), // general variables
+            Tuple.Create("variable.parameter", "hljs-variable"),
+            Tuple.Create("variable.language", "hljs-variable"), // `this`, `self`
+            Tuple.Create("variable.other.member", "hljs-attr"), // instance variables/members
+            Tuple.Create("variable.other.object.property", "hljs-attr"), // object properties
+            Tuple.Create("variable.other.constant", "hljs-literal"), // constants defined as variables
+            Tuple.Create("variable.other.enummember", "hljs-attr"), // enum members
+            Tuple.Create("variable", "hljs-variable"), // general variables
 
             // Support (built-in functions, classes, constants)
-            Tuple.Create("support.function", "pl-en"),
-            Tuple.Create("support.class", "pl-e"),
-            Tuple.Create("support.type", "pl-k"), // primitive types if not `storage.type`
-            Tuple.Create("support.constant", "pl-c1"),
+            Tuple.Create("support.function", "hljs-built_in"),
+            Tuple.Create("support.class", "hljs-type"),
+            Tuple.Create("support.type", "hljs-keyword"), // primitive types if not `storage.type`
+            Tuple.Create("support.constant", "hljs-literal"),
 
             // Markup
-            Tuple.Create("markup.inserted", "pl-smp"),
-            Tuple.Create("markup.deleted", "pl-entm"),
+            Tuple.Create("markup.inserted", "hljs-addition"),
+            Tuple.Create("markup.deleted", "hljs-deletion"),
 
             // Meta scopes
-            Tuple.Create("meta.selector", "pl-sel"), // CSS selectors
-            Tuple.Create("meta.tag", "pl-tag"),
-            Tuple.Create("meta.definition.method", "pl-en"), // For method definitions
-            Tuple.Create("meta.definition.type", "pl-e"), // For class/struct/interface definitions
+            Tuple.Create("meta.selector", "hljs-selector-tag"), // CSS selectors
+            Tuple.Create("meta.tag", "hljs-tag"),
+            Tuple.Create("meta.definition.method", "hljs-function"), // For method definitions
+            Tuple.Create("meta.definition.type", "hljs-type"), // For class/struct/interface definitions
 
             // Fallback
-            Tuple.Create("entity", "pl-ent")
+            Tuple.Create("entity", "hljs-name")
         ];
     }
 
-    private static string? GetPlClassForScopes(List<string> scopes)
+    private static string? GetHljsClassForScopes(List<string> scopes)
     {
         if (scopes.Count == 0)
             return null;
@@ -200,11 +200,11 @@ public static class TextMateHighlighter
 
                     var tokenText = line.Substring(token.StartIndex, length);
                     var escapedTokenText = WebUtility.HtmlEncode(tokenText);
-                    var plClass = GetPlClassForScopes(token.Scopes);
+                    var hljsClass = GetHljsClassForScopes(token.Scopes);
 
-                    if (!string.IsNullOrEmpty(plClass))
+                    if (!string.IsNullOrEmpty(hljsClass))
                     {
-                        sb.Append($"<span class=\"{plClass}\">{escapedTokenText}</span>");
+                        sb.Append($"<span class=\"{hljsClass}\">{escapedTokenText}</span>");
                     }
                     else
                     {

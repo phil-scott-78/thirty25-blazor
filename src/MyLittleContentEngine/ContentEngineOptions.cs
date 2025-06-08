@@ -211,14 +211,14 @@ public class ContentEngineOptions
     /// </remarks>
     public Func<IServiceProvider, MarkdownPipeline> MarkdownPipelineBuilder { get; init; } = serviceProvider =>
     {
-        var roslynHighlighter = serviceProvider.GetRequiredService<RoslynHighlighterService>();
-        var roslynHighlighterOptions = serviceProvider.GetRequiredService<RoslynHighlighterOptions>();
+        var roslynHighlighter = serviceProvider.GetService<RoslynHighlighterService>();
+        var roslynHighlighterOptions = serviceProvider.GetService<RoslynHighlighterOptions>();
         return new MarkdownPipelineBuilder()
             .UseAutoIdentifiers(AutoIdentifierOptions.GitHub) // This sets up GitHub-style header IDs
             .UseAdvancedExtensions()
             .UseDiagrams()
-            .UseSyntaxHighlighting(roslynHighlighter, roslynHighlighterOptions.CodeHighlightRenderOptionsFactory)
-            .UseTabbedCodeBlocks(roslynHighlighterOptions.TabbedCodeBlockRenderOptionsFactory)
+            .UseSyntaxHighlighting(roslynHighlighter, roslynHighlighterOptions?.CodeHighlightRenderOptionsFactory)
+            .UseTabbedCodeBlocks(roslynHighlighterOptions?.TabbedCodeBlockRenderOptionsFactory)
             .UseYamlFrontMatter()
             .Build();
     };

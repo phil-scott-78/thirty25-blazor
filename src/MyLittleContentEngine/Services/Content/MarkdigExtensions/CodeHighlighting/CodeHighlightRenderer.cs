@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Markdig.Helpers;
 using static MyLittleContentEngine.Services.AsyncHelpers;
 using Markdig.Parsers;
 using Markdig.Renderers.Html;
@@ -11,14 +10,15 @@ using HtmlRenderer = Markdig.Renderers.HtmlRenderer;
 namespace MyLittleContentEngine.Services.Content.MarkdigExtensions.CodeHighlighting;
 
 internal sealed class CodeHighlightRenderer(
-    RoslynHighlighterService roslynHighlighter,
-    Func<CodeHighlightRenderOptions> options
-)
+    RoslynHighlighterService? roslynHighlighter,
+    Func<CodeHighlightRenderOptions>? options)
     : HtmlObjectRenderer<CodeBlock>
 {
+    private readonly Func<CodeHighlightRenderOptions> _optionsFactory = options ?? (() => CodeHighlightRenderOptions.MonorailMono);
+
     protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
     {
-        var options1 = options();
+        var options1 = _optionsFactory();
 
         var preCss = options1.PreBaseCss;
         var containerCss = "";
@@ -41,7 +41,15 @@ internal sealed class CodeHighlightRenderer(
         {
             var languageId = fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
             var code = ExtractCode(codeBlock);
-            WriteCode(renderer, codeBlock, languageId, code);
+
+            if (roslynHighlighter != null)
+            {
+                WriteCode(renderer, codeBlock, languageId, code, roslynHighlighter);
+            }
+            else
+            {
+                WriteCodeWithoutRoslyn(renderer, languageId, code);
+            }
         }
 
         // Common closing tags for all paths
@@ -50,7 +58,7 @@ internal sealed class CodeHighlightRenderer(
         renderer.WriteLine("</div>");
     }
 
-    private void WriteCode(HtmlRenderer renderer, CodeBlock codeBlock, string languageId, string code)
+    private static void WriteCode(HtmlRenderer renderer, CodeBlock codeBlock, string languageId, string code, RoslynHighlighterService roslynHighlighter)
     {
         switch (languageId.Trim())
         {
@@ -91,11 +99,11 @@ internal sealed class CodeHighlightRenderer(
                     }
 
                     var newCode = RunSync(async () => await roslynHighlighter.GetCodeOutputAsync(code, arg));
-                    WriteCode(renderer, codeBlock, newLanguage, newCode);
+                    WriteCode(renderer, codeBlock, newLanguage, newCode,  roslynHighlighter);
                 }
                 else
                 {
-                    renderer.Write(TextMateHighlighter.Highlight(code,languageId));
+                    renderer.Write(TextMateHighlighter.Highlight(code, languageId));
                 }
 
                 break;
@@ -103,34 +111,26 @@ internal sealed class CodeHighlightRenderer(
         }
     }
 
-    private static void ReplaceCodeBlockContent(CodeBlock codeBlock, string newCode, string languageId)
+    private static void WriteCodeWithoutRoslyn(HtmlRenderer renderer, string languageId, string code)
     {
-        var newLines = newCode.SplitNewLines();
-
-        codeBlock.Lines.Clear();
-        foreach (var line in newLines)
+        switch (languageId.Trim())
         {
-            if (string.IsNullOrWhiteSpace(line))
+            case "gbnf":
+                renderer.Write(GbnfHighlighter.Highlight(code));
+                break;
+            case "bash" or "shell":
+                renderer.Write(ShellSyntaxHighlighter.Highlight(code));
+                break;
+            case "text" or "":
+                renderer.Write("<pre><code>");
+                renderer.Write(code);
+                renderer.Write("</code></pre>");
+                break;
+            default:
             {
-                codeBlock.Lines.Add(StringSlice.Empty);
+                renderer.Write(TextMateHighlighter.Highlight(code, languageId));
+                break;
             }
-            else
-            {
-                var stringSlice = new StringSlice(line);
-                codeBlock.Lines.Add(stringSlice);
-            }
-        }
-
-        if (codeBlock is not FencedCodeBlock fencedCodeBlock) return;
-
-        fencedCodeBlock.Info = languageId;
-
-        var attributes = fencedCodeBlock.GetAttributes(); // Gets or creates HtmlAttributes
-        attributes.Classes ??= [];
-        attributes.Classes.RemoveAll(c => c.StartsWith("language-", StringComparison.OrdinalIgnoreCase));
-        if (!string.IsNullOrWhiteSpace(languageId))
-        {
-            attributes.Classes.Add($"language-{languageId}");
         }
     }
 

@@ -6,9 +6,9 @@ namespace MyLittleContentEngine.MonorailCss;
 
 public static class MonorailServiceExtensions
 {
-    public static IServiceCollection AddMonorailCss(this IServiceCollection services, MonorailCssOptions options)
+    public static IServiceCollection AddMonorailCss(this IServiceCollection services, MonorailCssOptions? options = null)
     {
-        services.AddSingleton(options);
+        services.AddSingleton(options ?? new MonorailCssOptions());
         services.AddSingleton<CssClassCollector>();
         services.AddSingleton<MonorailCssService>();
 
