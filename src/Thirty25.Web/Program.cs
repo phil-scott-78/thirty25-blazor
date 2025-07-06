@@ -24,7 +24,7 @@ builder.Services.AddContentEngineService(_ => new ContentEngineOptions
 builder.Services.AddContentEngineStaticContentService(_ => new ContentEngineContentOptions<BlogFrontMatter>()
 {
     ContentPath = "Content/Blog",
-    BasePageUrl = "/blog",
+    BasePageUrl = "/Blog",
     Tags = new TagsOptions()
     {
         TagsPageUrl = "/tags"
