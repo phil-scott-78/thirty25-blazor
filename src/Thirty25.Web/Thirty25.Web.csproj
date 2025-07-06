@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Formats.Asn1" Version="9.0.5" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0" />
+    <PackageReference Include="MyLittleContentEngine" Version="0.0.0-alpha.0.50" />
+    <PackageReference Include="MyLittleContentEngine.MonorailCss" Version="0.0.0-alpha.0.50" />
+    <PackageReference Include="MyLittleContentEngine.UI" Version="0.0.0-alpha.0.50" />
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.0-preview.5.25277.114" />
   </ItemGroup>
   
   <ItemGroup>
@@ -19,11 +23,5 @@
      -->
     <Content Update="..\..\blog-projects\**\obj\**\*" Watch="false" />
     <Content Update="..\..\blog-projects\**\bin\**\*" Watch="false" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\MyLittleContentEngine.MonorailCss\MyLittleContentEngine.MonorailCss.csproj" />
-    <ProjectReference Include="..\MyLittleContentEngine\MyLittleContentEngine.csproj" />
-    <ProjectReference Include="..\MyLittleContentEngine.UI\MyLittleContentEngine.UI.csproj" />
   </ItemGroup>
 </Project>

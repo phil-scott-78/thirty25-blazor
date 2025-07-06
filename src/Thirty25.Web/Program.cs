@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents();
 
 // configures site wide settings
 // hot reload note - these will not be reflected until the application restarts
-builder.Services.AddContentEngineService(() => new ContentEngineOptions
+builder.Services.AddContentEngineService(_ => new ContentEngineOptions
 {
     SiteTitle = "Thirty25",
     SiteDescription = "Quite exciting this computer magic",
@@ -21,18 +21,17 @@ builder.Services.AddContentEngineService(() => new ContentEngineOptions
 // configures individual sections of the blog. PageUrl should match the configured razor pages route,
 // and contentPath should match the location on disk.
 // you can have multiple of these per site.
-builder.Services.AddContentEngineStaticContentService(() => new ContentEngineContentOptions<BlogFrontMatter>()
+builder.Services.AddContentEngineStaticContentService(_ => new ContentEngineContentOptions<BlogFrontMatter>()
 {
     ContentPath = "Content/Blog",
     BasePageUrl = "/blog",
 });
-builder.Services.AddMonorailCss(new MonorailCssOptions { PrimaryHue = () => 250 });
-builder.Services.AddRoslynService(() => new RoslynHighlighterOptions()
+builder.Services.AddMonorailCss(_ => new MonorailCssOptions { PrimaryHue = () => 250 });
+builder.Services.AddRoslynService(_ => new RoslynHighlighterOptions()
 {
     ConnectedSolution = new ConnectedDotNetSolution
     {
         SolutionPath = "../../thirty25-blazor.sln",
-        ProjectsPath = "../../blog-projects/"
     }
 });
 

@@ -3,7 +3,7 @@
 @using MyLittleContentEngine.Models
 @using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject MarkdownContentService<BlogFrontMatter> MarkdownContentService
+@inject IMarkdownContentService<BlogFrontMatter> MarkdownContentService
 @inject ContentEngineOptions ContentEngineOptions
 
 @if (_posts == null)
@@ -14,11 +14,12 @@
 <PageTitle>@ContentEngineOptions.SiteTitle - Recent Posts</PageTitle>
 
 <div>
-    <PageHeader Title="Welcome">
+    <div>
+        <h1 class="text-3xl lg:text-5xl dark:text-primary-100 font-extrabold mt-4">Welcome!</h1>
         <div class="prose lg:prose-lg dark:prose-invert">
             @Globals.HeroContent
         </div>
-    </PageHeader>
+    </div>
     <h3 class="text-base-900 border-b border-primary-500/50 pb-4 dark:text-base-200 text-2xl lg:text-4xl font-bold">
         Recent Posts</h3>
     <BlogPostsList Posts="_posts"/>

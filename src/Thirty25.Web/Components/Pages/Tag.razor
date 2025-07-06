@@ -4,7 +4,7 @@
 @using MyLittleContentEngine.Models
 @using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
-@inject MarkdownContentService<BlogFrontMatter> BlogService
+@inject IMarkdownContentService<BlogFrontMatter> BlogService
 @inject ContentEngineOptions ContentEngineOptions
 
 @if (_tag == null)

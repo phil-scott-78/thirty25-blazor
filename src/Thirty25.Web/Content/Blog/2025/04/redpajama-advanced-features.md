@@ -100,7 +100,7 @@ output because we are going to never allow them.
 One of the simplest enhancements is adding descriptions to properties. These descriptions don't affect the GBNF grammar
 but appear as comments in the generated JSON sample, providing valuable context to guide the model.
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Product
 ```
 ```json:xmldocid data="Gbnf.AdvancedScenarios.Product-json"
@@ -122,7 +122,7 @@ forever.
 But often you'll also want to limit the length of string fields, particularly for values like usernames, postal codes, 
 or other standardized data.
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.User
 ```
 ```json:xmldocid data="Gbnf.AdvancedScenarios.User-json"
@@ -140,7 +140,7 @@ must be exactly five characters, the model physically cannot generate anything e
 RedPajama handles array properties gracefully, ensuring both the array structure and its elements follow the correct
 format:
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.ShoppingCart
 T:Gbnf.AdvancedScenarios.CartItem
 ```
@@ -159,7 +159,7 @@ context.
 
 For strings that should follow specific patterns, RedPajama provides several formatting options:
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Contact
 ```
 ```json:xmldocid data="Gbnf.AdvancedScenarios.Contact-json"
@@ -185,7 +185,7 @@ RedPajama supports several built-in formats:
 
 For absolute control, RedPajama allows you to specify custom GBNF patterns directly:
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Document
 ```
 ```json:xmldocid data="Gbnf.AdvancedScenarios.Document-json"
@@ -203,7 +203,7 @@ the format, you'll want to use `[Description]` to help direct the model in its g
 
 For properties that should only accept specific values, RedPajama supports constraining to a predefined set:
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Order
 ```
 
@@ -226,7 +226,7 @@ This approach is more flexible than C# enums because:
 In addition to using attributes, RedPajama allows you to enhance your type models programmatically via `WithDescription`
 and `WithAllowedValues`:
 
-```csharp:xmldocid
+```csharp:xmldocid tabs=true
 M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
 ```json:xmldocid data="json"

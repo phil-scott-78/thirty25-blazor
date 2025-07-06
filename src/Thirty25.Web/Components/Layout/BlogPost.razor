@@ -85,7 +85,7 @@
 
                 @if (MarkdownContentPage.Outline.Length > 1)
                 {
-                    <OutlineNavigation Outline="@MarkdownContentPage.Outline" BaseUrl="@MarkdownContentPage.NavigateUrl" />
+                    <OutlineNavigation Outline="@MarkdownContentPage.Outline"  />
                 }
 
                 @if (string.IsNullOrWhiteSpace(MarkdownContentPage.FrontMatter.Repository) == false)

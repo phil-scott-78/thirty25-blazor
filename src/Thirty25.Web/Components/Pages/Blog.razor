@@ -4,7 +4,7 @@
 @using MyLittleContentEngine.Services.Content
 @using Thirty25.Web.Components.Layout
 @inject ContentEngineOptions Options
-@inject MarkdownContentService<BlogFrontMatter> MarkdownContentService
+@inject IMarkdownContentService<BlogFrontMatter> MarkdownContentService
 
 @* Show specific post by filename param *@
 @if (_post == null)
