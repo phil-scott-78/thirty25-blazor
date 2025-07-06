@@ -7,17 +7,17 @@
 </div>
 <div>
     <h3 class="mt-3 text-2xl font-semibold">
-        <a href="@MarkdownContentPage.NavigateUrl">
+        <RefLink Href="@MarkdownContentPage.NavigateUrl">
             <span></span>
             @MarkdownContentPage.FrontMatter.Title
-        </a>
+        </RefLink>
     </h3>
     <p class="mt-5 prose dark:prose-invert ">@MarkdownContentPage.FrontMatter.Description</p>
 </div>
 <div class="flex gap-x-2 lg:gap-x-4 mt-4 md:mt-8 text-xs">
     @foreach (var tag in MarkdownContentPage.Tags)
     {
-        <a class="rounded-lg bg-primary-200/25 dark:bg-neutral-900/25 border-primary-200 dark:border-primary-700 border px-2 py-1 md:px-3 md:py-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-primary-200/50 dark:hover:bg-primary-900/25" href="@tag.NavigateUrl">@tag.Name</a>
+        <RefLink CssClass="rounded-lg bg-primary-200/25 dark:bg-neutral-900/25 border-primary-200 dark:border-primary-700 border px-2 py-1 md:px-3 md:py-1.5 text-neutral-700 dark:text-neutral-300 hover:bg-primary-200/50 dark:hover:bg-primary-900/25" Href="@tag.NavigateUrl">@tag.Name</RefLink>
     }
 </div>
 </article>

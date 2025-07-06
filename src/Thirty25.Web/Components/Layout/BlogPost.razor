@@ -35,7 +35,7 @@
                         }
                         else
                         {
-                            <li><a href="@post.NavigateUrl">@post.FrontMatter.Title</a></li>
+                            <li><RefLink Href="@post.NavigateUrl">@post.FrontMatter.Title</RefLink></li>
                         }
                     }
                 </ul>
@@ -51,7 +51,7 @@
                 </div>
                 @if (_nextPost != null)
                 {
-                    <a href="@_nextPost.NavigateUrl">
+                    <RefLink href="@_nextPost.NavigateUrl">
                         <div
                             class="flex flex-row items-center justify-between hover:ring-1 hover:ring-primary-500/25 px-6 py-4 rounded rounded-xl mt-8 bg-primary-50 dark:bg-primary-900/10 border border-base-400 dark:border-primary-700/75 text-primary-700 dark:text-primary-100">
                             <div>Ready for the next article in the series? <span
@@ -65,7 +65,7 @@
                             </g>
                         </svg>
                         </div>
-                    </a>
+                    </RefLink>
                 }
             </div>
             <aside class="sticky scroll-m-32 lg:col-span-3 lg:top-20 max-h-screen ">
@@ -76,8 +76,8 @@
                         <div class="flex flex-wrap">
                             @foreach (var tag in MarkdownContentPage.Tags)
                             {
-                                <a class="text-primary-900 dark:text-neutral-100 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
-                                   href="@tag.NavigateUrl">@tag.Name</a>
+                                <RefLink CssClass="text-primary-900 dark:text-neutral-100 hover:text-primary-400 mr-3 text-sm font-medium uppercase"
+                                   Href="@tag.NavigateUrl">@tag.Name</RefLink>
                             }
                         </div>
                     </div>
@@ -101,7 +101,7 @@
                 }
 
                 <div class="pt-4 lg:pt-8">
-                    <a class="text-primary-500 hover:text-primary-400" aria-label="Back to the home" href="">← Back home</a>
+                    <RefLink CssClass="text-primary-500 hover:text-primary-400" Href="/">← Back home</RefLink>
                 </div>
             </aside>
         </div>

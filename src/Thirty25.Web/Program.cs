@@ -25,6 +25,10 @@ builder.Services.AddContentEngineStaticContentService(_ => new ContentEngineCont
 {
     ContentPath = "Content/Blog",
     BasePageUrl = "/blog",
+    Tags = new TagsOptions()
+    {
+        TagsPageUrl = "/tags"
+    }
 });
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions { PrimaryHue = () => 250 });
 builder.Services.AddRoslynService(_ => new RoslynHighlighterOptions()

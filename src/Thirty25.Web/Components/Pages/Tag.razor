@@ -15,9 +15,10 @@
 
 <PageTitle>@ContentEngineOptions.SiteTitle - @(_tag.Name)</PageTitle>
 <div>
-    <PageHeader Title="@(_tag.Name)">
+    <h1 class="text-3xl lg:text-5xl dark:text-primary-100 font-extrabold mt-4">@(_tag.Name)</h1>
+    <p class="my-4 text-base-900 dark:text-base-200">
         Blog posts tagged by <span class="text-primary-800 dark:text-primary-300">@(_tag.Name)</span>
-    </PageHeader>
+    </p>
     <BlogPostsList Posts="_posts"/>
 </div>
 

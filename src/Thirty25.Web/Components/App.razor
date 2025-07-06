@@ -1,8 +1,9 @@
 ﻿@using Microsoft.AspNetCore.WebUtilities
 @using MyLittleContentEngine
+@using MyLittleContentEngine.Services.Content
 @inject ContentEngineOptions Options
 @inject IWebHostEnvironment WebHostEnvironment
-
+@inject LinkService LinkService
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,12 +11,11 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     
-    <base href="@_baseHref"/>
     
     @* ReSharper disable once Html.PathError - this is generated dynamically via MapGet *@
-    <link type="application/rss+xml" rel="alternate" title="Thirty25" href="rss.xml" />
-    <link rel="stylesheet" href="@GetVersioned("styles.css")">
-    <script src="_content/MyLittleContentEngine.UI/scripts.js" defer></script>
+    <link type="application/rss+xml" rel="alternate" title="Thirty25" href="@LinkService.GetLink("rss.xml")" />
+    <link rel="stylesheet" href="@LinkService.GetLink(GetVersioned("/styles.css"))">
+    <script src="@LinkService.GetLink(GetVersioned("/_content/MyLittleContentEngine.UI/scripts.js"))" defer></script>
 
     <meta name="description" content="@Options.SiteDescription">
 
