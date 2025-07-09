@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MyLittleContentEngine;
 using MyLittleContentEngine.MonorailCss;
+using MyLittleContentEngine.Services.Content;
 using MyLittleContentEngine.Services.Content.Roslyn;
 using Thirty25.Web;
 using Thirty25.Web.Components;
@@ -17,7 +19,8 @@ builder.Services.AddContentEngineService(_ => new ContentEngineOptions
     BaseUrl =  Environment.GetEnvironmentVariable("BaseHref") ?? "/",
     CanonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref") ?? "https://thity25.blog",
 });
-
+builder.Services.AddSingleton<SocialImageService>();
+builder.Services.AddSingleton<IContentService>(provider => provider.GetRequiredService<SocialImageService>());
 // configures individual sections of the blog. PageUrl should match the configured razor pages route,
 // and contentPath should match the location on disk.
 // you can have multiple of these per site.
@@ -46,5 +49,5 @@ var app = builder.Build();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.MapStaticAssets();
+// app.MapStaticAssets();
 await app.RunOrBuildContent(args);

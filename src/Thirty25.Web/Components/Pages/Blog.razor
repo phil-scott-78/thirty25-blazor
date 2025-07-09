@@ -13,6 +13,24 @@
     return;
 }
 <PageTitle>@Options.SiteTitle - @_post.FrontMatter.Title</PageTitle>
+
+@* Open Graph meta tags *@
+<HeadContent>
+    <meta property="og:title" content="@_post.FrontMatter.Title" />
+    <meta property="og:description" content="@(_post.FrontMatter.Description ?? "")" />
+    <meta property="og:image" content="@GetSocialImageUrl()" />
+    <meta property="og:url" content="@GetFullUrl()" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="@Options.SiteTitle" />
+    <meta property="article:published_time" content="@_post.FrontMatter.Date.ToString("yyyy-MM-ddTHH:mm:ssZ")" />
+    
+    @* Twitter Card meta tags *@
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@_post.FrontMatter.Title" />
+    <meta name="twitter:description" content="@(_post.FrontMatter.Description ?? "")" />
+    <meta name="twitter:image" content="@GetSocialImageUrl()" />
+</HeadContent>
+
 <BlogPost MarkdownContentPage="_post" HtmlContent="@_postContent" Series="_series"/>
 
 @code{
@@ -42,5 +60,25 @@
                 .OrderBy(i => i.FrontMatter.Date)
                 .ToList();
         }
+    }
+    
+    private string GetSocialImageUrl()
+    {
+        if (_post == null) return "";
+        
+        var filename = GenerateFilename(_post.Url);
+        return $"{Options.CanonicalBaseUrl}/social-images/{filename}";
+    }
+    
+    private string GetFullUrl()
+    {
+        if (_post == null) return "";
+        return $"{Options.CanonicalBaseUrl}/blog/{_post.Url}";
+    }
+    
+    private static string GenerateFilename(string url)
+    {
+        var sanitized = url.Replace("/", "-").Replace("\\", "-").Trim('-');
+        return string.IsNullOrEmpty(sanitized) ? "index.png" : $"{sanitized}.png";
     }
 }
