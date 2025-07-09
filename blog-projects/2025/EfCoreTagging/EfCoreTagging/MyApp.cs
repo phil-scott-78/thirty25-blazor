@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace EfCoreTagging;
 
 [SuppressMessage("ReSharper", "UnusedVariable")]
-internal static class MyApp
+public static class MyApp
 {
     public static async Task BasicQueryWithTag()
     {
