@@ -6,7 +6,7 @@ using MyLittleContentEngine.Services.Content.TableOfContents;
 
 namespace Thirty25.Web;
 
-public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content) : IContentService
+public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content, ILogger<SocialImageService> logger) : IContentService
 {
     public Task<ImmutableList<PageToGenerate>> GetPagesToGenerateAsync() =>
         Task.FromResult(ImmutableList<PageToGenerate>.Empty);
@@ -26,8 +26,13 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
         
         var contentToCreate = new List<ContentToCreate>();
 
+        logger.LogInformation("Starting social media card generation");
+
         using var playwright = await Playwright.CreateAsync();
+        logger.LogDebug("Playwright created.");
         await using var browser = await playwright.Chromium.LaunchAsync();
+        logger.LogDebug("Browser launched.");
+
         var browserContext = await browser.NewContextAsync(new BrowserNewContextOptions
             { ViewportSize = new ViewportSize { Width = 1200, Height = 630 } });
         var page = await browserContext.NewPageAsync();
@@ -37,7 +42,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
         {
             var filename = GenerateFilename(contentPage.Url);
             var title = contentPage.FrontMatter.Title;
-            var description = contentPage.FrontMatter.Description ?? "";
+            var description = contentPage.FrontMatter.Description;
             var date = contentPage.FrontMatter.Date.ToString("yyyy MMMM dd");
 
             var html = BuildSocialCardHtml(title, description, date, png);
@@ -59,30 +64,29 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
         return string.IsNullOrEmpty(sanitized) ? "index.png" : $"{sanitized}.png";
     }
 
-    static string ConvertPngToBase64ImgTag(string imagePath)
+    private static string ConvertPngToBase64ImgTag(string imagePath)
     {
         if (!File.Exists(imagePath))
             throw new FileNotFoundException("Image file not found.", imagePath);
 
-        byte[] imageBytes = File.ReadAllBytes(imagePath);
-        string base64String = Convert.ToBase64String(imageBytes);
+        var imageBytes = File.ReadAllBytes(imagePath);
+        var base64String = Convert.ToBase64String(imageBytes);
         return $"data:image/png;base64,{base64String}";
     }
     
     private static string BuildSocialCardHtml(string title, string description, string date, string backgroundImage)
     {
-        
-        
-        return $$$"""
+        // we could move this to a blazor page and use HtmlRenderer, but fine for now. 
+        return $$"""
                   <!DOCTYPE html>
                   <html>
                   <head>
-                  <link rel="preconnect" href="https://fonts.googleapis.com">
-                  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+                      <link rel="preconnect" href="https://fonts.googleapis.com">
+                      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
                   
                       <style>
-                                 body {
+                          body {
                               margin: 0;
                               padding: 30px;
                               font-family: Quicksand, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -112,13 +116,13 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                               display: flex;
                               flex-direction: column;
                               align-items: flex-start;
-                              gap: clamp(15px, 3vh, 30px);
+                              gap: 30px;
                               flex-grow: 1;
-                              max-width: 85%;
+                              max-width: 75%;
                           }
                           
                           .title {
-                              font-size: 48px;
+                              font-size: 68px;
                               font-weight: 900;
                               line-height: 1.3;
                               margin: 0;
@@ -127,7 +131,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                           }
                           
                           .description {
-                              font-size: 20px;
+                              font-size: 32px;
                               font-weight: 300;
                               line-height: 1.3;
                               margin: 0;
@@ -140,11 +144,11 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                           }
                           
                           .date {
-                              font-size: clamp(12px, 2vw, 20px);
+                              font-size: 20px;
                               font-weight: 300;
                               opacity: 0.8;
                               text-transform: uppercase;
-                              letter-spacing: clamp(1px, 0.2vw, 2px);
+                              letter-spacing: 2px;
                               margin: 0;
                               align-self: flex-start;
                           }
@@ -155,8 +159,8 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                     width:100vw;
                     top:0;
                     left:0;
-                    height: 100vh; /* Full screen height */
-                    background-color: #1e1e1e; /* Fallback background */
+                    height: 100vh; 
+                    background-color: #1e1e1e;
                     overflow: hidden;
                   }
 
@@ -164,7 +168,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                     position: absolute;
                     top: 0;
                     left: 0;
-                    width: 50vw; /* Adjust how far the gradient extends */
+                    width: 50vw;
                     height: 100%;
                     background: linear-gradient(to right, #1e1e1e 0%, #1e1e1e 50%, transparent 100%);
                     z-index: 99;
@@ -183,16 +187,15 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                   <body>
                       <div class="container">
                           <div class="content-top">
-                              <div class="title">{{{title}}}</div>
-                              <div class="description">{{{description}}}</div>
+                              <div class="title">{{title}}</div>
+                              <div class="description">{{description}}</div>
                           </div>
-                          <div class="date">{{{date}}}</div>
+                          <div class="date">{{date}}</div>
                       </div>
-                  <div class="image">
-                    <img src="{{{backgroundImage}}}"/>
-                      <div class="gradient-overlay"></div>
-
-                  </div>
+                      <div class="image">
+                        <img src="{{backgroundImage}}"/>
+                        <div class="gradient-overlay"></div>
+                      </div>
                   </body>
                   </html>
                   """;
