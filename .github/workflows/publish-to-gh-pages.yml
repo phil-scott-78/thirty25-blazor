@@ -31,11 +31,19 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-         
+
+      - name: Build the Project
+        run: |
+          dotnet build
+
+      - name: Install Playwright.NET
+        uses: phil-scott-78/setup-playwright-dotnet@v0.1.0-alpha
+        with:
+          global-json-file: global.json
+
       - name: Run webapp and generate static files
         run: |
           set BaseHref="/"
-          dotnet build
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
       - name: Setup Pages
