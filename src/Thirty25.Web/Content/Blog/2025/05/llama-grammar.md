@@ -8,7 +8,7 @@ tags:
 repository: https://github.com/phil-scott-78/thirty25-blazor/tree/main/blog-projects/2025/GbnfGeneration/Gbnf
 ---
 
-In our previous posts, we delved into [RedPajama](strong-typed-gbnf) and its [advanced features](redpajama-advanced-features) for generating GBNF grammars and JSON samples from C# classes. This approach provides strong typing and control over LLM outputs. However, the .NET ecosystem offers other tools that might be a better fit depending on your specific needs. Today, we'll explore one such alternative: [Llama.Grammar](https://github.com/jihadkhawaja/Llama.Grammar).
+In our previous posts, we delved into [RedPajama](../04/strong-typed-gbnf) and its [advanced features](../04/redpajama-advanced-features) for generating GBNF grammars and JSON samples from C# classes. This approach provides strong typing and control over LLM outputs. However, the .NET ecosystem offers other tools that might be a better fit depending on your specific needs. Today, we'll explore one such alternative: [Llama.Grammar](https://github.com/jihadkhawaja/Llama.Grammar).
 
 Llama.Grammar is a C# library designed to help you work with structured outputs from AI models by converting JSON Schemas or C# objects into GBNF grammars. This can be particularly useful when you need to ensure that an LLM's output conforms to a predefined structure.
 

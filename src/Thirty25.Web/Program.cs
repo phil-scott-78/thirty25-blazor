@@ -43,7 +43,9 @@ builder.Services.AddMonorailCss(_ =>
         {
             DesignSystem = settings.DesignSystem with
             {
-                FontFamilies = settings.DesignSystem.FontFamilies.Add("display", new FontFamilyDefinition("\"Montserrat\", sans-serif"))
+                FontFamilies = settings.DesignSystem.FontFamilies
+                    .Add("display", new FontFamilyDefinition("\"Lexend Deca\", sans-serif"))
+                    .SetItem("sans", new FontFamilyDefinition("\"Lexend Deca\", sans-serif"))
             }
         }
     };

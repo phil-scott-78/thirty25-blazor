@@ -4,11 +4,11 @@
 <article>
     <div class="divide-y  divide-primary-700">
         <header class="pt-6 lg:pb-6">
-            <div class="space-y-1 text-center">
+            <div class="space-y-1 md:text-center">
                 <dl class="space-y-10">
                     <div>
                         <dt class="sr-only">Published on</dt>
-                        <dd class="text-base font-medium leading-6 text-primary-800 dark:text-primary-400">
+                        <dd class="text-base text-sm md:text-base font-medium leading-6 text-primary-800 dark:text-primary-400">
                             <time
                                 datetime="@MarkdownContentPage.FrontMatter.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)">
                                 @MarkdownContentPage.FrontMatter.Date.ToString("MMMM d, yyyy", new CultureInfo("en-US"))
@@ -16,7 +16,7 @@
                         </dd>
                     </div>
                 </dl>
-                <div class="prose prose-stone prose-headings:font-display dark:prose-invert mx-auto">
+                <div class="prose prose-stone prose-headings:font-display prose-sm md:prose-base dark:prose-invert mx-auto">
                     <h1>@MarkdownContentPage.FrontMatter.Title</h1>
                 </div>
             </div>
@@ -24,9 +24,9 @@
 
         @if (Series != null)
         {
-            <div class="p-4 text-neutral-700 dark:text-neutral-100/75">
+            <div class="p-4 font-light text-sm md:text-base text-base-600 dark:text-base-400">
                 <p>This post is part of a series</p>
-                <ul class="mt-4 space-y-2 list-disc  pl-6">
+                <ul class="mt-2 md:mt-4 space-y-1 list-disc pl-6">
                     @foreach (var post in Series)
                     {
                         @if (post.Url == MarkdownContentPage.Url)
@@ -46,7 +46,7 @@
             class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 lg:divide-y-0">
             <div class="lg:col-span-9 lg:row-span-2 lg:pb-0">
                 <div
-                    class="prose prose-stone dark:prose-invert  prose-headings:font-display mt-8 prose-base prose-headings:scroll-m-24 md:prose-lg max-w-full lg:leading-loose">
+                    class="prose prose-stone dark:prose-invert  prose-headings:font-display font-light  mt-8 prose-sm prose-headings:scroll-m-24 md:prose-base max-w-full lg:leading-loose">
                     @((MarkupString)HtmlContent)
                 </div>
                 @if (_nextPost != null)
@@ -85,7 +85,9 @@
 
                 @if (MarkdownContentPage.Outline.Length > 1)
                 {
-                    <OutlineNavigation Outline="@MarkdownContentPage.Outline"  />
+                    <div class="font-light">
+                        <OutlineNavigation Outline="@MarkdownContentPage.Outline"  />
+                    </div>
                 }
 
                 @if (string.IsNullOrWhiteSpace(MarkdownContentPage.FrontMatter.Repository) == false)
