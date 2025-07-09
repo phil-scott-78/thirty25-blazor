@@ -17,7 +17,7 @@ builder.Services.AddContentEngineService(_ => new ContentEngineOptions
     SiteTitle = "Thirty25",
     SiteDescription = "Quite exciting this computer magic",
     BaseUrl =  Environment.GetEnvironmentVariable("BaseHref") ?? "/",
-    CanonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref") ?? "https://thity25.blog",
+    CanonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref") ?? "https://thirty25.blog",
 });
 builder.Services.AddSingleton<SocialImageService>();
 builder.Services.AddSingleton<IContentService>(provider => provider.GetRequiredService<SocialImageService>());
