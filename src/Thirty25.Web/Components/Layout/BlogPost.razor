@@ -16,8 +16,8 @@
                         </dd>
                     </div>
                 </dl>
-                <div class="prose prose-stone dark:prose-invert mx-auto">
-                    <h1 class="">@MarkdownContentPage.FrontMatter.Title</h1>
+                <div class="prose prose-stone prose-headings:font-display dark:prose-invert mx-auto">
+                    <h1>@MarkdownContentPage.FrontMatter.Title</h1>
                 </div>
             </div>
         </header>
@@ -46,7 +46,7 @@
             class="grid-rows-[auto_1fr] divide-y pb-8 divide-primary-700 lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20 lg:divide-y-0">
             <div class="lg:col-span-9 lg:row-span-2 lg:pb-0">
                 <div
-                    class="prose prose-stone dark:prose-invert mt-8 prose-base prose-headings:scroll-m-24 md:prose-lg max-w-full lg:leading-loose">
+                    class="prose prose-stone dark:prose-invert  prose-headings:font-display mt-8 prose-base prose-headings:scroll-m-24 md:prose-lg max-w-full lg:leading-loose">
                     @((MarkupString)HtmlContent)
                 </div>
                 @if (_nextPost != null)

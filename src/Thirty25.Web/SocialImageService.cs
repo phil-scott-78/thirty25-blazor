@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.Playwright;
 using MyLittleContentEngine.Models;
@@ -24,7 +25,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
     {
         var png = ConvertPngToBase64ImgTag("social-bg.png");
         
-        var contentToCreate = new List<ContentToCreate>();
+        var contentToCreate = new ConcurrentBag<ContentToCreate>();
 
         logger.LogInformation("Starting social media card generation");
 
@@ -35,11 +36,12 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
 
         var browserContext = await browser.NewContextAsync(new BrowserNewContextOptions
             { ViewportSize = new ViewportSize { Width = 1200, Height = 630 } });
-        var page = await browserContext.NewPageAsync();
 
         var pages = await content.GetAllContentPagesAsync();
-        foreach (var contentPage in pages)
+        await Parallel.ForEachAsync(pages, async (contentPage, token) =>
         {
+            var page = await browserContext.NewPageAsync();
+
             var filename = GenerateFilename(contentPage.Url);
             var title = contentPage.FrontMatter.Title;
             var description = contentPage.FrontMatter.Description;
@@ -53,7 +55,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
             var imageBytes = await page.ScreenshotAsync(new PageScreenshotOptions { Type = ScreenshotType.Png });
 
             contentToCreate.Add(new ContentToCreate($"social-images/{filename}", imageBytes));
-        }
+        });
 
         return contentToCreate.ToImmutableList();
     }

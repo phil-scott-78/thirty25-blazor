@@ -14,14 +14,13 @@
 <PageTitle>@ContentEngineOptions.SiteTitle - Recent Posts</PageTitle>
 
 <div>
-    <div>
-        <h1 class="text-3xl lg:text-5xl dark:text-primary-100 font-extrabold mt-4">Welcome!</h1>
+    <div class="mt-8 lg:mt-14">
+        <h1 class="font-display text-3xl lg:text-6xl text-primary-900 dark:text-primary-50 leading-tight font-extrabold mt-4">Welcome!</h1>
         <div class="prose lg:prose-lg dark:prose-invert">
             @Globals.HeroContent
         </div>
     </div>
-    <h3 class="text-base-900 border-b border-primary-500/50 pb-4 dark:text-base-200 text-2xl lg:text-4xl font-bold">
-        Recent Posts</h3>
+
     <BlogPostsList Posts="_posts"/>
 </div>
 

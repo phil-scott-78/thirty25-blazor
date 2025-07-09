@@ -1,4 +1,5 @@
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using MonorailCss;
 using MyLittleContentEngine;
 using MyLittleContentEngine.MonorailCss;
 using MyLittleContentEngine.Services.Content;
@@ -33,7 +34,21 @@ builder.Services.AddContentEngineStaticContentService(_ => new ContentEngineCont
         TagsPageUrl = "/tags"
     }
 });
-builder.Services.AddMonorailCss(_ => new MonorailCssOptions { PrimaryHue = () => 250 });
+builder.Services.AddMonorailCss(_ =>
+{
+    return new MonorailCssOptions
+    {
+        PrimaryHue = () => 250 ,
+        CustomCssFrameworkSettings = settings => settings with
+        {
+            DesignSystem = settings.DesignSystem with
+            {
+                FontFamilies = settings.DesignSystem.FontFamilies.Add("display", new FontFamilyDefinition("\"Montserrat\", sans-serif"))
+            }
+        }
+    };
+});
+
 builder.Services.AddRoslynService(_ => new RoslynHighlighterOptions()
 {
     ConnectedSolution = new ConnectedDotNetSolution
@@ -49,5 +64,5 @@ var app = builder.Build();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-// app.MapStaticAssets();
+app.UseStaticFiles();
 await app.RunOrBuildContent(args);
