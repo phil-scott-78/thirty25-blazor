@@ -64,5 +64,5 @@ var app = builder.Build();
 app.UseAntiforgery();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UseStaticFiles();
+app.MapStaticAssets();
 await app.RunOrBuildContent(args);
