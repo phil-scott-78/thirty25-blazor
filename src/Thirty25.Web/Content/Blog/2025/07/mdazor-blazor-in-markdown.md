@@ -201,3 +201,5 @@ I've only started experimenting with this, so there are plenty of areas for impr
 ## Conclusion
 
 Mdazor represents a bridge between the simplicity of Markdown and the power of Blazor components. While it started as a skunkworks project for my static site generator, it's proven invaluable for creating rich, interactive documentation.
+
+Thanks to Andrew Lock for [this article](https://andrewlock.net/exploring-the-dotnet-8-preview-rendering-blazor-components-to-a-string/) which explains how to get HtmlRenderer working. 
