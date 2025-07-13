@@ -16,7 +16,9 @@
       "Bash(/home/phil/.nvm/versions/node/v22.15.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/x64-linux/rg \"StaticWebAsset|EmbeddedResource|FileProvider\" /mnt/b/thirty25-blazor/src/ --type-add \"csproj:*.csproj\" --type csproj)",
       "Bash(timeout:*)",
       "Bash(git reset:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:phil-scott-78.github.io)"
     ]
   },
   "model": "sonnet",

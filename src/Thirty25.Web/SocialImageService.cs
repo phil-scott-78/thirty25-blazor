@@ -1,13 +1,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.Playwright;
+using MyLittleContentEngine.BlogSite;
 using MyLittleContentEngine.Models;
 using MyLittleContentEngine.Services.Content;
 using MyLittleContentEngine.Services.Content.TableOfContents;
 
 namespace Thirty25.Web;
 
-public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content, ILogger<SocialImageService> logger) : IContentService
+public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> content, ILogger<SocialImageService> logger) : IContentService
 {
     public Task<ImmutableList<PageToGenerate>> GetPagesToGenerateAsync() =>
         Task.FromResult(ImmutableList<PageToGenerate>.Empty);
@@ -42,7 +43,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
         {
             var page = await browserContext.NewPageAsync();
 
-            var filename = GenerateFilename(contentPage.Url);
+            var filename = GenerateSocialFilename(contentPage.Url);
             var title = contentPage.FrontMatter.Title;
             var description = contentPage.FrontMatter.Description;
             var date = contentPage.FrontMatter.Date.ToString("yyyy MMMM dd");
@@ -60,7 +61,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
         return contentToCreate.ToImmutableList();
     }
 
-    private static string GenerateFilename(string url)
+    public static string GenerateSocialFilename(string url)
     {
         var sanitized = url.Replace("/", "-").Replace("\\", "-").Trim('-');
         return string.IsNullOrEmpty(sanitized) ? "index.png" : $"{sanitized}.png";
@@ -162,7 +163,7 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                     top:0;
                     left:0;
                     height: 100vh; 
-                    background-color: #1e1e1e;
+                    background-color: #000;
                     overflow: hidden;
                   }
 
@@ -170,9 +171,9 @@ public class SocialImageService(IMarkdownContentService<BlogFrontMatter> content
                     position: absolute;
                     top: 0;
                     left: 0;
-                    width: 50vw;
+                    width: 70vw;
                     height: 100%;
-                    background: linear-gradient(to right, #1e1e1e 0%, #1e1e1e 50%, transparent 100%);
+                    background: linear-gradient(to right, #09090b 0%, #09090bcc 50%, transparent 100%);
                     z-index: 99;
                   }
 

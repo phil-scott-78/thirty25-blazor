@@ -7,23 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 
+     Microsoft.CodeAnalysis.Workspaces.MSBuild shouldn't be directly needed, but something is messed up in the nuget
+     library where if you don't reference it directly they don't include the BuildHost folders. Include for now.
+     -->
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0" />
     <PackageReference Include="Microsoft.Playwright" Version="1.53.0" />
-    <PackageReference Include="MyLittleContentEngine" Version="0.0.0-alpha.0.71" />
-    <PackageReference Include="MyLittleContentEngine.MonorailCss" Version="0.0.0-alpha.0.71" />
-    <PackageReference Include="MyLittleContentEngine.UI" Version="0.0.0-alpha.0.71" />
+    <PackageReference Include="MyLittleContentEngine.BlogSite" Version="0.0.0-alpha.0.85" />
     <PackageReference Include="System.Formats.Asn1" Version="10.0.0-preview.5.25277.114" />
   </ItemGroup>
   
   <ItemGroup>
-    <Watch Include="Content\**\*.*" />
+    <Watch Include="Content\**\*.*;..\..\blog-projects\**\*.cs" Exclude="..\..\**\obj\**\*;..\..\**\bin\**\*" />
     <Watch Include="..\..\blog-projects\**\*.cs" />
-    <!--
-     ignore obj and bin folders in sample files, assemblyinfo.cs gets generated dynamically
-     and we don't want that to force a refresh.
-     -->
-    <Content Update="..\..\blog-projects\**\obj\**\*" Watch="false" />
-    <Content Update="..\..\blog-projects\**\bin\**\*" Watch="false" />
+
   </ItemGroup>
   
   <ItemGroup>
