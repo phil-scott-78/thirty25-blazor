@@ -47,6 +47,20 @@ jobs:
           set BaseHref="/"
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
+      - name: Minify CSS and JavaScript files
+        run: |
+          # Find and minify all CSS files
+          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.css" | while read cssfile; do
+            /usr/local/bin/minify -o "$cssfile" "$cssfile"
+            echo "Minified $cssfile"
+          done
+
+          # Find and minify all JavaScript files
+          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.js" | while read jsfile; do
+            /usr/local/bin/minify -o "$jsfile" "$jsfile"
+            echo "Minified $jsfile"
+          done
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         

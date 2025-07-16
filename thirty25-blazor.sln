@@ -19,6 +19,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gbnf", "blog-projects\2025\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GbnfGeneration", "GbnfGeneration", "{4F5686FF-6D68-4298-9FA1-708CA8989D34}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{5236EBFC-6535-4CC0-A506-8B30F0FB3D2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{05213F6C-FD75-45CE-8B5D-79D9749E9392}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{99DD7F06-8DD7-4DC6-B549-4D2C6A873138}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\publish-to-gh-pages.yml = .github\workflows\publish-to-gh-pages.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,5 +59,7 @@ Global
 		{8C8A278B-0944-8166-A8CB-1CF960ADC306} = {BD4CDE4B-011E-FE7C-D31A-E78593DFB4A8}
 		{4F5686FF-6D68-4298-9FA1-708CA8989D34} = {8C8A278B-0944-8166-A8CB-1CF960ADC306}
 		{AC2AFB45-948C-4F7F-AC21-9446B0E29503} = {4F5686FF-6D68-4298-9FA1-708CA8989D34}
+		{05213F6C-FD75-45CE-8B5D-79D9749E9392} = {5236EBFC-6535-4CC0-A506-8B30F0FB3D2F}
+		{99DD7F06-8DD7-4DC6-B549-4D2C6A873138} = {05213F6C-FD75-45CE-8B5D-79D9749E9392}
 	EndGlobalSection
 EndGlobal
