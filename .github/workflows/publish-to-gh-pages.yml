@@ -27,11 +27,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Cache .NET packages and NuGet cache
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj', '**/global.json', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-dotnet-
       
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+
+      # Cache Playwright browsers
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/AppData/Local/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
 
       - name: Build the Project
         run: |
