@@ -48,6 +48,11 @@ jobs:
           set BaseHref="/"
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
+      - name: Install minify
+        run: |
+          curl -sfL https://github.com/tdewolff/minify/releases/latest/download/minify_linux_amd64.tar.gz | tar -xzf - -C /tmp
+          sudo mv /tmp/minify /usr/local/bin/
+
       - name: Minify CSS and JavaScript files
         run: |
           # Find and minify all CSS files
