@@ -42,6 +42,7 @@ builder.Services.AddBlogSite(_ => new BlogSiteOptions(args)
         new Project("MonorailCSS", "MonorailCSS is a utility-first CSS library inspired heavily by Tailwind for .NET", "https://github.com/monorailcss/MonorailCss.Framework"),
         new Project("Mdazor", "A Markdig extension that lets you embed Blazor components directly in Markdown", "https://github.com/phil-scott-78/Mdazor"),
         new Project("RedPajama", "Gbnf Generator from C# types.", "https://github.com/phil-scott-78/RedPajama"),
+        new Project("CooklangSharp", "A .NET parser for the Cooklang recipe markup language.", "https://github.com/phil-scott-78/CooklangSharp"),
     ],
     Socials = new[]
     {
