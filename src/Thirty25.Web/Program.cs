@@ -7,8 +7,9 @@ using Thirty25.Web;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddBlogSite(_ => new BlogSiteOptions(args)
+builder.Services.AddBlogSite(_ => new BlogSiteOptions()
 {
+    ApplicationArgs = args,
     SiteTitle = "Thirty25",
     AuthorName = "Phil Scott",
     Description = "Quite exciting this computer magic",
@@ -17,7 +18,6 @@ builder.Services.AddBlogSite(_ => new BlogSiteOptions(args)
     BaseColorName = ColorNames.Zinc,
     AdditionalRoutingAssemblies = [typeof(Program).Assembly],
     SolutionPath = "../../thirty25-blazor.sln",
-    ContentRootPath = "Content",
     BlogContentPath = "blog",
     BlogBaseUrl = "/blog",
     TagsPageUrl = "/tags",
