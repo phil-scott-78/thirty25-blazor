@@ -67,7 +67,6 @@ jobs:
 
       - name: Run webapp and generate static files
         run: |
-          set BaseHref="/"
           dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build
 
       - name: Install minify

@@ -7,12 +7,11 @@ using Thirty25.Web;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
+builder.Services.AddBlogSite(_ => new BlogSiteOptions(args)
 {
     SiteTitle = "Thirty25",
     AuthorName = "Phil Scott",
     Description = "Quite exciting this computer magic",
-    BaseUrl = Environment.GetEnvironmentVariable("BaseHref") ?? "/",
     CanonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref") ?? "https://thirty25.blog",
     PrimaryHue = 240,
     BaseColorName = ColorNames.Zinc,
