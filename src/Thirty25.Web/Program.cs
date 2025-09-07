@@ -39,7 +39,7 @@ builder.Services.AddBlogSite(_ =>
         EnableSitemap = true,
         // Custom hero content
         HeroContent = new HeroContent("Software dev, tinkerer, and stay-at-home dad.",
-            "I'm <strong>Phil Scott</strong>, a software designer and entrepreneur based in Ohio. I was once a .NET developer and a current stay-at-home Dad. I clean up their messes then create my own here. Honestly? I'm just trying to learn to develop video games to impress my toddlers."),
+            "I'm <strong>Phil Scott</strong>. I was once a .NET developer and a current stay-at-home Dad. I clean up their messes then create my own here. But, honestly? I'm just trying to learn to develop video games to impress my toddlers."),
         MyWork =
         [
             new Project("MyLittleContentEngine",
