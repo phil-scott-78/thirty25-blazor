@@ -1,6 +1,7 @@
-﻿using MonorailCss;
+﻿using MonorailCss.Theme;
 using MyLittleContentEngine.BlogSite;
 using MyLittleContentEngine.BlogSite.Components;
+using MyLittleContentEngine.MonorailCss;
 using MyLittleContentEngine.Services.Content;
 using Thirty25.Web;
 
@@ -16,8 +17,11 @@ builder.Services.AddBlogSite(_ =>
         AuthorName = "Phil Scott",
         Description = "Quite exciting this computer magic",
         CanonicalBaseUrl = canonicalBaseUrl,
-        PrimaryHue = 240,
-        BaseColorName = ColorNames.Zinc,
+        ColorScheme = new AlgorithmicColorScheme()
+        {
+            PrimaryHue = 240,
+            BaseColorName = ColorNames.Zinc
+        },
         AdditionalRoutingAssemblies = [typeof(Program).Assembly],
         SolutionPath = "../../thirty25-blazor.sln",
         BlogContentPath = "blog",
