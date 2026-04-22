@@ -1,5 +1,5 @@
 ﻿---
-Title: Automatic Query Tagging in EF Core Using Source Generator Interceptors
+title: Automatic Query Tagging in EF Core Using Source Generator Interceptors
 description: How to automatically tag your EF Core queries with source location using .NET 8's source generators and interceptors.
 date: 2025-04-09
 tags:

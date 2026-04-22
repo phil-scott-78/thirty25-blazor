@@ -1,29 +1,27 @@
-﻿using MonorailCss.Theme;
-using MyLittleContentEngine.BlogSite;
-using MyLittleContentEngine.BlogSite.Components;
-using MyLittleContentEngine.MonorailCss;
-using MyLittleContentEngine.Services.Content;
+using Pennington.BlogSite;
+using Pennington.BlogSite.Components;
+using Pennington.Content;
+using Pennington.MonorailCss;
+using Pennington.Roslyn;
 using Thirty25.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddBlogSite(_ =>
+builder.Services.AddBlogSite(() =>
 {
     var canonicalBaseUrl = Environment.GetEnvironmentVariable("CanonicalBaseHref")?.TrimEnd('/') ?? "https://thirty25.blog";
-    return new BlogSiteOptions()
+    return new BlogSiteOptions
     {
         SiteTitle = "Thirty25",
         AuthorName = "Phil Scott",
         Description = "Quite exciting this computer magic",
         CanonicalBaseUrl = canonicalBaseUrl,
-        ColorScheme = new AlgorithmicColorScheme()
+        ColorScheme = new AlgorithmicColorScheme
         {
             PrimaryHue = 240,
-            BaseColorName = ColorNames.Zinc
+            BaseColorName = ColorName.Zinc
         },
         AdditionalRoutingAssemblies = [typeof(Program).Assembly],
-        SolutionPath = "../../thirty25-blazor.sln",
         BlogContentPath = "blog",
         BlogBaseUrl = "/blog",
         TagsPageUrl = "/tags",
@@ -41,7 +39,6 @@ builder.Services.AddBlogSite(_ =>
                       """,
         EnableRss = true,
         EnableSitemap = true,
-        // Custom hero content
         HeroContent = new HeroContent("Software dev, tinkerer, and stay-at-home dad.",
             "I'm <strong>Phil Scott</strong>. I was once a .NET developer and a current stay-at-home Dad. I clean up their messes then create my own here. But, honestly? I'm just trying to learn to develop video games to impress my toddlers."),
         MyWork =
@@ -58,14 +55,19 @@ builder.Services.AddBlogSite(_ =>
             new Project("CooklangSharp", "A .NET parser for the Cooklang recipe markup language.",
                 "https://github.com/phil-scott-78/CooklangSharp"),
         ],
-        Socials = new[]
-        {
+        Socials =
+        [
             new SocialLink(SocialIcons.GithubIcon, "https://github.com/phil-scott-78"),
             new SocialLink(SocialIcons.BlueskyIcon, "https://bsky.app/profile/philco.bsky.social")
-        },
+        ],
         MainSiteLinks = [],
         SocialMediaImageUrlFactory = page => $"{canonicalBaseUrl}/social-images/{SocialImageService.GenerateSocialFilename(page.Url)}"
     };
+});
+
+builder.Services.AddPenningtonRoslyn(opts =>
+{
+    opts.SolutionPath = "../../thirty25-blazor.sln";
 });
 
 builder.Services.AddSingleton<SocialImageService>();
@@ -77,4 +79,3 @@ app.MapStaticAssets();
 app.UseBlogSite();
 
 await app.RunBlogSiteAsync(args);
-

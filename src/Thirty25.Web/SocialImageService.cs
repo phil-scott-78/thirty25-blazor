@@ -1,17 +1,23 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.Playwright;
-using MyLittleContentEngine.BlogSite;
-using MyLittleContentEngine.Models;
-using MyLittleContentEngine.Services.Content;
-using MyLittleContentEngine.Services.Content.TableOfContents;
+using Pennington.BlogSite.Services;
+using Pennington.Content;
+using Pennington.Pipeline;
 
 namespace Thirty25.Web;
 
-public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> content, ILogger<SocialImageService> logger) : IContentService
+public class SocialImageService(IServiceProvider serviceProvider, ILogger<SocialImageService> logger) : IContentService
 {
-    public Task<ImmutableList<PageToGenerate>> GetPagesToGenerateAsync() =>
-        Task.FromResult(ImmutableList<PageToGenerate>.Empty);
+    public string DefaultSectionLabel => "";
+
+    public int SearchPriority => 0;
+
+    public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+    {
+        await Task.CompletedTask;
+        yield break;
+    }
 
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() =>
         Task.FromResult(ImmutableList<ContentTocItem>.Empty);
@@ -22,10 +28,13 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() =>
         Task.FromResult(ImmutableList<CrossReference>.Empty);
 
+    public Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync() =>
+        Task.FromResult(ImmutableList<DiscoveredItem>.Empty);
+
     public async Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
     {
         var png = ConvertPngToBase64ImgTag("social-bg.png");
-        
+
         var contentToCreate = new ConcurrentBag<ContentToCreate>();
 
         logger.LogInformation("Starting social media card generation");
@@ -38,15 +47,16 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
         var browserContext = await browser.NewContextAsync(new BrowserNewContextOptions
             { ViewportSize = new ViewportSize { Width = 1200, Height = 630 } });
 
-        var pages = await content.GetAllContentPagesAsync();
-        await Parallel.ForEachAsync(pages, async (contentPage, token) =>
+        var blogContentResolver = serviceProvider.GetRequiredService<BlogContentResolver>();
+        var posts = await blogContentResolver.GetAllPostsAsync();
+        await Parallel.ForEachAsync(posts, async (post, token) =>
         {
             var page = await browserContext.NewPageAsync();
 
-            var filename = GenerateSocialFilename(contentPage.Url);
-            var title = contentPage.FrontMatter.Title;
-            var description = contentPage.FrontMatter.Description;
-            var date = contentPage.FrontMatter.Date.ToString("yyyy MMMM dd");
+            var filename = GenerateSocialFilename(post.Url);
+            var title = post.FrontMatter.Title;
+            var description = post.FrontMatter.Description ?? string.Empty;
+            var date = post.FrontMatter.Date?.ToString("yyyy MMMM dd") ?? string.Empty;
 
             var html = BuildSocialCardHtml(title, description, date, png);
 
@@ -55,7 +65,10 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
 
             var imageBytes = await page.ScreenshotAsync(new PageScreenshotOptions { Type = ScreenshotType.Png });
 
-            contentToCreate.Add(new ContentToCreate($"social-images/{filename}", imageBytes));
+            contentToCreate.Add(new ContentToCreate(
+                $"social-images/{filename}",
+                () => Task.FromResult(imageBytes),
+                "image/png"));
         });
 
         return contentToCreate.ToImmutableList();
@@ -76,10 +89,9 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
         var base64String = Convert.ToBase64String(imageBytes);
         return $"data:image/png;base64,{base64String}";
     }
-    
+
     private static string BuildSocialCardHtml(string title, string description, string date, string backgroundImage)
     {
-        // we could move this to a blazor page and use HtmlRenderer, but fine for now. 
         return $$"""
                   <!DOCTYPE html>
                   <html>
@@ -87,7 +99,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                       <link rel="preconnect" href="https://fonts.googleapis.com">
                       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                       <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-                  
+
                       <style>
                           body {
                               margin: 0;
@@ -103,7 +115,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               align-items: flex-start;
                               color: #fff;
                           }
-                          
+
                           .container {
                               z-index:50;
                               width: 100%;
@@ -114,7 +126,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               max-width: none;
                               margin: 0;
                           }
-                          
+
                           .content-top {
                               display: flex;
                               flex-direction: column;
@@ -123,7 +135,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               flex-grow: 1;
                               max-width: 75%;
                           }
-                          
+
                           .title {
                               font-size: 68px;
                               font-weight: 900;
@@ -132,7 +144,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               text-shadow: #000 1px 0 10px;
                               width: 100%;
                           }
-                          
+
                           .description {
                               font-size: 32px;
                               font-weight: 300;
@@ -145,7 +157,7 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               -webkit-box-orient: vertical;
                               overflow: hidden;
                           }
-                          
+
                           .date {
                               font-size: 20px;
                               font-weight: 300;
@@ -155,14 +167,14 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                               margin: 0;
                               align-self: flex-start;
                           }
-                          
+
                   .image {
                     position: absolute;
                     z-index:10;
                     width:100vw;
                     top:0;
                     left:0;
-                    height: 100vh; 
+                    height: 100vh;
                     background-color: #000;
                     overflow: hidden;
                   }
@@ -203,6 +215,4 @@ public class SocialImageService(IMarkdownContentService<BlogSiteFrontMatter> con
                   </html>
                   """;
     }
-
-    public int SearchPriority { get; } = 0;
 }

@@ -1,5 +1,5 @@
 ---
-Title: Rebuilding Spectre.Console Documentation with .NET-Only Tools
+title: Rebuilding Spectre.Console Documentation with .NET-Only Tools
 description: How I rebuilt Spectre.Console's docs using MyLittleContentEngine, MonorailCSS, and VCR# - ditching Node.js for pure .NET
 date: 2026-01-07
 tags:

@@ -1,5 +1,5 @@
 ---
-Title: UsedImplicitly on External Libraries
+title: UsedImplicitly on External Libraries
 description: How to use ExternalAnnotations to apply UsedImplicitly on third party libraries in your CQRS application.
 date: 2020-09-10
 tags:
