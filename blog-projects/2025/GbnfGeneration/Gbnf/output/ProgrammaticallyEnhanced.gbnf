@@ -1,0 +1,10 @@
+root ::= ("<think>" think-content "</think>" space "{" space root-firstname-kv "," space root-lastname-kv "," space root-title-kv "}" space) | "{" space root-firstname-kv "," space root-lastname-kv "," space root-title-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+think-content ::= ( normal-char | safe-lt ){1,4086}
+normal-char ::= [^<]
+safe-lt ::= "<" ( [^/] | "/" [^t] | "/t" [^h] | "/th" [^i] | "/thi" [^n] | "/thin" [^k] | "/think" [^>] )
+root-firstname-kv ::= "\"FirstName\"" space ":" space "\"" char{1, 512} "\"" space
+root-lastname-kv ::= "\"LastName\"" space ":" space "\"" char{1, 512} "\"" space
+root-title ::= ("\"Mr\""|"\"Mrs\""|"\"Ms\""|"\"Dr\""|"\"Prof\"") space
+root-title-kv ::= "\"Title\"" space ":" space root-title

@@ -106,6 +106,18 @@ When creating a new blog post with code examples:
 3. Reference it in your blog post markdown using xmldocid syntax
 4. Link to it in front matter with the `repository` field
 
+## Regenerating Gbnf Output Artifacts
+
+The `Gbnf` project (`blog-projects/2025/GbnfGeneration/Gbnf/`) emits `.gbnf` and `.json` artifacts into its `output/` directory. These are referenced from the markdown posts with `gbnf:path` / `json:path` because `:xmldocid` only supports C# / VB language tags.
+
+To regenerate after changing any of the example generator code:
+
+```bash
+dotnet run --project blog-projects/2025/GbnfGeneration/Gbnf/Gbnf.csproj
+```
+
+The resulting `blog-projects/2025/GbnfGeneration/Gbnf/output/**` files are checked in — commit them along with any source changes.
+
 ## Key Configuration
 
 Main configuration is in `src/Thirty25.Web/Program.cs`:

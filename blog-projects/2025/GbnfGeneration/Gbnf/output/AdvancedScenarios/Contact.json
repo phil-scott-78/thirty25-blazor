@@ -1,0 +1,7 @@
+{
+    "FullName": "⟨string containing only letters and spaces⟩",
+    "Email": "⟨email address (e.g., user@example.com)⟩",
+    "PhoneNumber": "⟨string in the format: (###) ###-####⟩",
+    "CountryCode": "⟨uppercase string⟩",
+    "ReferenceNumber": "⟨alphanumeric string (letters and numbers only)⟩"
+}

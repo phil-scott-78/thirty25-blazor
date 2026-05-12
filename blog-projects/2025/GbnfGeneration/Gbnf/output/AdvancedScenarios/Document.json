@@ -1,0 +1,6 @@
+{
+    "ReferenceCode": "⟨string value⟩", // Alphanumeric code in the format XXX-XXX-XXXX.
+    "SerialNumber": "⟨string value⟩", // Serial number in the format AA999999999AA.
+    "Title": "⟨string value⟩",
+    "CreatedOn": ⟨ISO 8601 date value (YYYY-MM-DDThh:mm:ss.sssZ)⟩
+}

@@ -103,11 +103,11 @@ but appear as comments in the generated JSON sample, providing valuable context 
 ```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Product
 ```
-```json:xmldocid data="Gbnf.AdvancedScenarios.Product-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Product-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.gbnf
 ```
 
 The descriptions help guide the model about what each field represents without modifying the grammar constraints. This
@@ -125,11 +125,11 @@ or other standardized data.
 ```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.User
 ```
-```json:xmldocid data="Gbnf.AdvancedScenarios.User-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.User-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.gbnf
 ```
 
 This is particularly powerful for enforcing data validation rules directly at the generation level. If your zip code
@@ -144,11 +144,11 @@ format:
 T:Gbnf.AdvancedScenarios.ShoppingCart
 T:Gbnf.AdvancedScenarios.CartItem
 ```
-```json:xmldocid data="Gbnf.AdvancedScenarios.ShoppingCart-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.ShoppingCart-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.gbnf
 ```
 
 Notice how the JSON sample includes three example items to make it clear to the model that multiple entries should be
@@ -162,11 +162,11 @@ For strings that should follow specific patterns, RedPajama provides several for
 ```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Contact
 ```
-```json:xmldocid data="Gbnf.AdvancedScenarios.Contact-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Contact-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.gbnf
 ```
 
 RedPajama supports several built-in formats:
@@ -188,11 +188,11 @@ For absolute control, RedPajama allows you to specify custom GBNF patterns direc
 ```csharp:xmldocid tabs=true
 T:Gbnf.AdvancedScenarios.Document
 ```
-```json:xmldocid data="Gbnf.AdvancedScenarios.Document-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Document-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.gbnf
 ```
 
 The `gbnf:` prefix allows you to inject raw GBNF patterns for complete control over string validation. This is
@@ -207,11 +207,11 @@ For properties that should only accept specific values, RedPajama supports const
 T:Gbnf.AdvancedScenarios.Order
 ```
 
-```json:xmldocid data="Gbnf.AdvancedScenarios.Order-json"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.json
 ```
-```gbnf:xmldocid data="Gbnf.AdvancedScenarios.Order-gbnf"
-M:Gbnf.AdvancedScenarios.ScenarioRunner.ProcessAllTypesInNamespace
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.gbnf
 ```
 
 This approach is more flexible than C# enums because:
@@ -229,11 +229,11 @@ and `WithAllowedValues`:
 ```csharp:xmldocid tabs=true
 M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
-```json:xmldocid data="json"
-M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
+```json:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.json
 ```
-```gbnf:xmldocid data="gbnf"
-M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
+```gbnf:path tabs=true
+blog-projects/2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.gbnf
 ```
 
 This allows for scenarios where the allowed values or description might not be known until runtime.

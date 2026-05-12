@@ -1,0 +1,6 @@
+{
+    "FirstName": "⟨string value⟩",
+    "LastName": "⟨string value⟩",
+    "Age": ⟨integer value⟩,
+    "IsMember": ⟨true or false⟩
+}

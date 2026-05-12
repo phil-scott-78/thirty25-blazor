@@ -1,0 +1,6 @@
+{
+    "ProductId": "⟨string value⟩",
+    "ProductName": "⟨string value⟩",
+    "Quantity": ⟨integer value⟩,
+    "Price": ⟨decimal value⟩
+}

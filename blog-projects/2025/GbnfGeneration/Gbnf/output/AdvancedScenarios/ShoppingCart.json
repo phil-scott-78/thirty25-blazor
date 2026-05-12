@@ -1,0 +1,9 @@
+{
+    "UserId": "⟨string value⟩",
+    "Items": [{
+        "ProductId": "⟨string value⟩",
+        "ProductName": "⟨string value⟩",
+        "Quantity": ⟨integer value⟩,
+        "Price": ⟨decimal value⟩
+    }, Items_2, Items_N]
+}

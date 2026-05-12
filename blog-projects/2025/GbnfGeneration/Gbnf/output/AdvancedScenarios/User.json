@@ -1,0 +1,5 @@
+{
+    "Username": "⟨string value between 2 and 50 characters⟩",
+    "Password": "⟨string value between 8 and 100 characters⟩",
+    "ZipCode": "⟨string value exactly 5 characters⟩"
+}

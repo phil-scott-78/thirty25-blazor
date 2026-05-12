@@ -1,0 +1,5 @@
+{
+    "CustomerName": "⟨string value⟩",
+    "Status": "⟨Pending|Processing|Shipped|Delivered|Cancelled⟩",
+    "ShippingMethod": "⟨Standard|Express|Overnight⟩"
+}

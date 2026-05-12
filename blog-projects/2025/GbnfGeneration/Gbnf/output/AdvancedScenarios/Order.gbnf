@@ -1,0 +1,8 @@
+root ::= "{" space root-customername-kv "," space root-status-kv "," space root-shippingmethod-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+root-customername-kv ::= "\"CustomerName\"" space ":" space "\"" char{1, 512} "\"" space
+root-status ::= ("\"Pending\""|"\"Processing\""|"\"Shipped\""|"\"Delivered\""|"\"Cancelled\"") space
+root-status-kv ::= "\"Status\"" space ":" space root-status
+root-shippingmethod ::= ("\"Standard\""|"\"Express\""|"\"Overnight\"") space
+root-shippingmethod-kv ::= "\"ShippingMethod\"" space ":" space root-shippingmethod

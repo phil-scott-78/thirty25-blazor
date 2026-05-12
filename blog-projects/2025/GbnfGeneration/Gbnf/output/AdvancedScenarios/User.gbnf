@@ -1,0 +1,6 @@
+root ::= "{" space root-username-kv "," space root-password-kv "," space root-zipcode-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+root-username-kv ::= "\"Username\"" space ":" space "\"" char{2,50} "\"" space
+root-password-kv ::= "\"Password\"" space ":" space "\"" char{8,100} "\"" space
+root-zipcode-kv ::= "\"ZipCode\"" space ":" space "\"" char{5,5} "\"" space

@@ -1,0 +1,33 @@
+root-name ::= "\"name\"" ws01 ":" ws01 string
+root-age ::= "\"age\"" ws01 ":" ws01 integer
+root-nicknames-items ::= string
+root-nicknames ::= "\"nicknames\"" ws01 ":" ws01 "[" ws01 root-nicknames-items ("," ws01 root-nicknames-items)? ("," ws01 root-nicknames-items)? ws01 "]"
+root ::= "{" ws01 root-name" ," ws01 root-age" ," ws01 (root-nicknames)? "}" ws01
+
+value  ::= (object | array | string | number | boolean | null) ws
+
+object ::=
+  "{" ws (
+    string ":" ws value
+    ("," ws string ":" ws value)*
+  )? "}"
+
+array  ::=
+  "[" ws01 (
+            value
+    ("," ws01 value)*
+  )? "]"
+
+string ::=
+  "\"" (string-char)* "\""
+
+string-char ::= [^"\\] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]) # escapes
+
+number ::= integer ("." [0-9]+)? ([eE] [-+]? [0-9]+)?
+integer ::= "-"? ([0-9] | [1-9] [0-9]*)
+boolean ::= "true" | "false"
+null ::= "null"
+
+# Optional space: by convention, applied in this grammar after literal chars when allowed
+ws ::= ([ \t\n] ws)?
+ws01 ::= ([ \t\n])?

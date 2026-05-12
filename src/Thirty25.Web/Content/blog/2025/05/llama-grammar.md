@@ -50,8 +50,8 @@ M:Gbnf.LlamaGrammar.GetGrammar
 ```
 
 This produces the GBNF of
-```gbnf:xmldocid
-M:Gbnf.LlamaGrammar.GetGrammar
+```gbnf:path
+blog-projects/2025/GbnfGeneration/Gbnf/output/LlamaGrammar.GetGrammar.gbnf
 ```
 
 Looking at the GBNF it should look pretty familiar. It is less opinionated and closely aligns the GBNF generated from other tools.
@@ -65,8 +65,8 @@ M:Gbnf.LlamaGrammar.Schema
 ```
 
 This gives us the GBNF
-```gbnf:xmldocid
-M:Gbnf.LlamaGrammar.Schema
+```gbnf:path
+blog-projects/2025/GbnfGeneration/Gbnf/output/LlamaGrammar.Schema.gbnf
 ```
 
 This approach is useful when you want to dynamically construct your schema or if you prefer a fluent interface for schema definition. This syntax will also benefit if the project ever wants to go to a source generator.

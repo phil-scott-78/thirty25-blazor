@@ -1,0 +1,5 @@
+{
+    "FirstName": "⟨string value⟩", // User's given name
+    "LastName": "⟨string value⟩", // User's family name
+    "Title": "⟨Mr|Mrs|Ms|Dr|Prof⟩"
+}

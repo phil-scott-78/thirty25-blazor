@@ -1,0 +1,13 @@
+root ::= "{" space root-fullname-kv "," space root-email-kv "," space root-phonenumber-kv "," space root-countrycode-kv "," space root-referencenumber-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+root-fullname ::= "\"" [a-zA-Z ]{1,} "\"" space
+root-fullname-kv ::= "\"FullName\"" space ":" space root-fullname
+root-email ::= "\"" "e" "m" [a-z] "i" "l" "\"" space
+root-email-kv ::= "\"Email\"" space ":" space root-email
+root-phonenumber ::= "\"" "(" [0-9] [0-9] [0-9] ")" " " [0-9] [0-9] [0-9] "-" [0-9] [0-9] [0-9] [0-9] "\"" space
+root-phonenumber-kv ::= "\"PhoneNumber\"" space ":" space root-phonenumber
+root-countrycode ::= "\"" [A-Z]+ "\"" space
+root-countrycode-kv ::= "\"CountryCode\"" space ":" space root-countrycode
+root-referencenumber ::= "\"" [a-zA-Z0-9]+ "\"" space
+root-referencenumber-kv ::= "\"ReferenceNumber\"" space ":" space root-referencenumber

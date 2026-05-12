@@ -1,0 +1,5 @@
+{
+    "Id": ⟨GUID value in standard format⟩, // The unique identifier for this product5
+    "Name": "⟨string value⟩", // The customer-facing name of the product
+    "StockLevel": ⟨integer value⟩ // Current inventory count
+}

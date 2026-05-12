@@ -1,0 +1,7 @@
+root ::= "{" space root-firstname-kv "," space root-lastname-kv "," space root-age-kv "," space root-ismember-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+root-firstname-kv ::= "\"FirstName\"" space ":" space "\"" char{1, 512} "\"" space
+root-lastname-kv ::= "\"LastName\"" space ":" space "\"" char{1, 512} "\"" space
+root-age-kv ::= "\"Age\"" space ":" space ("-"? [0] | [1-9] [0-9]{0,15}) space
+root-ismember-kv ::= "\"IsMember\"" space ":" space ("true" | "false") space

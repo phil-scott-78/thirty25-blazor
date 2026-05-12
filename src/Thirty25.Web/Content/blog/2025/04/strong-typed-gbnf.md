@@ -164,8 +164,8 @@ M:Gbnf.MyApp.GetSimpleGbnf
 
 Running this, we get the following GBNF:
 
-```gbnf:xmldocid
-M:Gbnf.MyApp.GetSimpleGbnf
+```gbnf:path
+blog-projects/2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleGbnf.gbnf
 ```
 
 This is a bit more complex than the GBNF we were rolling by hand. Let's break down what each part does:
@@ -249,8 +249,8 @@ M:Gbnf.MyApp.GetSimpleJson
 
 Running this will give us a templated JSON output that we can use in our prompt.
 
-```json:xmldocid
-M:Gbnf.MyApp.GetSimpleJson
+```json:path
+blog-projects/2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleJson.json
 ```
 
 ## Putting It All Together

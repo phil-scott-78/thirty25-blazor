@@ -1,0 +1,37 @@
+root-Name ::= "\"Name\"" ws01 ":" ws01 string
+root-Age ::= "\"Age\"" ws01 ":" ws01 integer
+root-Nicknames-items ::= string
+root-Nicknames ::= "\"Nicknames\"" ws01 ":" ws01 "[" ws01 root-Nicknames-items ( ws01 "," ws01 root-Nicknames-items)* ws01 "]"
+root-HomeAddress-Street ::= "\"Street\"" ws01 ":" ws01 string
+root-HomeAddress-City ::= "\"City\"" ws01 ":" ws01 string
+root-HomeAddress-ZipCode ::= "\"ZipCode\"" ws01 ":" ws01 string
+root-HomeAddress ::= "\"HomeAddress\"" ws01 ":" ws01 "{" ws01 (root-HomeAddress-Street)?" ," ws01 (root-HomeAddress-City)?" ," ws01 (root-HomeAddress-ZipCode)? "}"
+root ::= "{" ws01 (root-Name)?" ," ws01 root-Age" ," ws01 (root-Nicknames)?" ," ws01 (root-HomeAddress)? "}" ws01
+
+value  ::= (object | array | string | number | boolean | null) ws
+
+object ::=
+  "{" ws (
+    string ":" ws value
+    ("," ws string ":" ws value)*
+  )? "}"
+
+array  ::=
+  "[" ws01 (
+            value
+    ("," ws01 value)*
+  )? "]"
+
+string ::=
+  "\"" (string-char)* "\""
+
+string-char ::= [^"\\] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]) # escapes
+
+number ::= integer ("." [0-9]+)? ([eE] [-+]? [0-9]+)?
+integer ::= "-"? ([0-9] | [1-9] [0-9]*)
+boolean ::= "true" | "false"
+null ::= "null"
+
+# Optional space: by convention, applied in this grammar after literal chars when allowed
+ws ::= ([ \t\n] ws)?
+ws01 ::= ([ \t\n])?

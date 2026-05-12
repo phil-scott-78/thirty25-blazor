@@ -1,0 +1,10 @@
+root ::= "{" space root-userid-kv "," space root-items-kv "}" space
+char ::= [^"\\\x7F\x00-\x1F\u27E8\u27E9] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+space ::= | " " | "\n" [ \t]{0,20}
+root-userid-kv ::= "\"UserId\"" space ":" space "\"" char{1, 512} "\"" space
+root-items-item-productid-kv ::= "\"ProductId\"" space ":" space "\"" char{1, 512} "\"" space
+root-items-item-productname-kv ::= "\"ProductName\"" space ":" space "\"" char{1, 512} "\"" space
+root-items-item-quantity-kv ::= "\"Quantity\"" space ":" space ("-"? [0] | [1-9] [0-9]{0,15}) space
+root-items-item-price-kv ::= "\"Price\"" space ":" space ("-"? ([0] | [1-9] [0-9]{0,15}) ("." [0-9]{1,15})?) space
+root-items-item ::= "{" space root-items-item-productid-kv "," space root-items-item-productname-kv "," space root-items-item-quantity-kv "," space root-items-item-price-kv "}" space
+root-items-kv ::= "\"Items\"" space ":" space "[" space (root-items-item ("," space root-items-item){0,7})? "]" space
