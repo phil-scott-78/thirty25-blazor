@@ -1,6 +1,7 @@
 using Pennington.BlogSite;
 using Pennington.BlogSite.Components;
 using Pennington.Content;
+using Pennington.Highlighting;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
 using Thirty25.Web;
@@ -69,6 +70,8 @@ builder.Services.AddPenningtonRoslyn(opts =>
 {
     opts.SolutionPath = "../../thirty25-blazor.sln";
 });
+
+builder.Services.AddSingleton<ICodeHighlighter, GbnfHighlighter>();
 
 builder.Services.AddSingleton<SocialImageService>();
 builder.Services.AddSingleton<IContentService>(provider => provider.GetRequiredService<SocialImageService>());
