@@ -19,8 +19,8 @@ The more advanced features of RedPajama give you even finer control over your mo
 
 Both the GBNF and JSON sample generators accept settings objects that allow you to customize their behavior:
 
-```csharp:xmldocid,bodyonly
-M:Gbnf.CustomSettingsExample.CustomSettings
+```csharp:symbol,bodyonly
+2025/GbnfGeneration/Gbnf/CustomSettings.cs > CustomSettingsExample.CustomSettings
 ```
 
 These settings allow you to control the appearance and behavior of the generated artifacts to match your specific needs
@@ -100,14 +100,14 @@ output because we are going to never allow them.
 One of the simplest enhancements is adding descriptions to properties. These descriptions don't affect the GBNF grammar
 but appear as comments in the generated JSON sample, providing valuable context to guide the model.
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.Product
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > Product
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Product.gbnf
 ```
 
 The descriptions help guide the model about what each field represents without modifying the grammar constraints. This
@@ -122,14 +122,14 @@ forever.
 But often you'll also want to limit the length of string fields, particularly for values like usernames, postal codes, 
 or other standardized data.
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.User
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > User
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/User.gbnf
 ```
 
 This is particularly powerful for enforcing data validation rules directly at the generation level. If your zip code
@@ -140,15 +140,15 @@ must be exactly five characters, the model physically cannot generate anything e
 RedPajama handles array properties gracefully, ensuring both the array structure and its elements follow the correct
 format:
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.ShoppingCart
-T:Gbnf.AdvancedScenarios.CartItem
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > ShoppingCart
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > CartItem
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/ShoppingCart.gbnf
 ```
 
 Notice how the JSON sample includes three example items to make it clear to the model that multiple entries should be
@@ -159,14 +159,14 @@ context.
 
 For strings that should follow specific patterns, RedPajama provides several formatting options:
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.Contact
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > Contact
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Contact.gbnf
 ```
 
 RedPajama supports several built-in formats:
@@ -185,14 +185,14 @@ RedPajama supports several built-in formats:
 
 For absolute control, RedPajama allows you to specify custom GBNF patterns directly:
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.Document
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > Document
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Document.gbnf
 ```
 
 The `gbnf:` prefix allows you to inject raw GBNF patterns for complete control over string validation. This is
@@ -203,15 +203,15 @@ the format, you'll want to use `[Description]` to help direct the model in its g
 
 For properties that should only accept specific values, RedPajama supports constraining to a predefined set:
 
-```csharp:xmldocid tabs=true
-T:Gbnf.AdvancedScenarios.Order
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/AdvancedScenarios/Scenarios.cs > Order
 ```
 
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/AdvancedScenarios/Order.gbnf
 ```
 
 This approach is more flexible than C# enums because:
@@ -226,14 +226,14 @@ This approach is more flexible than C# enums because:
 In addition to using attributes, RedPajama allows you to enhance your type models programmatically via `WithDescription`
 and `WithAllowedValues`:
 
-```csharp:xmldocid tabs=true
-M:Gbnf.ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
+```csharp:symbol tabs=true
+2025/GbnfGeneration/Gbnf/ProgrammaticallyEnhanced.cs > ProgrammaticallyEnhanced.ProgrammaticallyEnhancingTypeModels
 ```
-```json:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.json
+```json:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.json
 ```
-```gbnf:path tabs=true
-blog-projects/2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.gbnf
+```gbnf:symbol tabs=true
+2025/GbnfGeneration/Gbnf/output/ProgrammaticallyEnhanced.gbnf
 ```
 
 This allows for scenarios where the allowed values or description might not be known until runtime.

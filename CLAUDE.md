@@ -58,57 +58,58 @@ Store images in `src/Thirty25.Web/Content/blog/media/` and reference them relati
 
 ## Special Features for Code Examples
 
-### xmldocid Syntax - Embedding Code from Projects
+### `:symbol` Syntax - Embedding Code from Projects
 
-You can embed actual compiled C# code from the `blog-projects/` directory:
+You can embed live source code from the `blog-projects/` directory. `Pennington.TreeSitter`
+reads the `.cs` source directly via tree-sitter (no compilation needed):
 
 ````markdown
-```csharp:xmldocid
-M:Namespace.ClassName.MethodName
+```csharp:symbol
+RelativePath/To/File.cs > ClassName.MemberName
 ```
 ````
 
 **How it works:**
 1. Create a working C# project in `blog-projects/YYYY/ProjectName/`
-2. Add the project to `thirty25-blazor.sln`
-3. Use the xmldocid syntax to reference methods/classes by their XML documentation ID
-4. The code is extracted from the compiled assembly
+2. Add the project to `thirty25-blazor.sln` (for IDE support / compilation)
+3. Reference a member with `path > Type.Member`, where `path` is **relative to `ContentRoot`**
+   (set to `../../blog-projects` in `Program.cs`) — so drop the `blog-projects/` prefix.
+4. The member path is a dotted chain of *declaration names* — no namespace
+   (e.g. `LlamaGrammar.TestPerson`, `MyApp.BasicQueryWithTag`). A bare path with no `>`
+   embeds the whole file.
 
-**Options:**
-- `bodyonly` - Show only method body
-- `tabs=true` - Enable tabbed display
-- `data="id"` - Add HTML data attribute
+**Flags** (comma-separated after `:symbol`, order-independent):
+- `,bodyonly` - Show only the member body (strips the declaration line and braces)
+- `,imports` - Prepend the file's top-of-file `using` statements
+- `,signatures` - Collapse member bodies to `{ … }` (shows a type's shape only)
+
+**Other forms:**
+- `csharp:symbol-diff` - Unified diff between two references (one per line, before → after); accepts `,bodyonly`
+- `tabs=true` - Space-separated attribute that groups adjacent fences into a tabbed widget (composes with `:symbol`)
 
 **Example:**
 ````markdown
-```csharp:xmldocid
-M:EfCoreTagging.MyApp.BasicQueryWithTag
+```csharp:symbol,bodyonly
+2025/EfCoreTagging/EfCoreTagging/MyApp.cs > MyApp.BasicQueryWithTag
 ```
 ````
-
-### Finding XML Doc IDs
-
-To find the XML Doc ID for a method:
-1. Build the project in `blog-projects/`
-2. The format is: `M:Namespace.ClassName.MethodName` for methods
-3. Or: `T:Namespace.ClassName` for types
 
 ## blog-projects Directory
 
 The `blog-projects/` directory contains working code examples that are:
 - Included in the solution for IDE support
-- Referenced in blog posts via xmldocid syntax
+- Referenced in blog posts via the `:symbol` syntax
 - Linked in post front matter via the `repository` field
 
 When creating a new blog post with code examples:
 1. Create a project in `blog-projects/YYYY/ProjectName/`
 2. Add it to `thirty25-blazor.sln`
-3. Reference it in your blog post markdown using xmldocid syntax
+3. Reference it in your blog post markdown using the `:symbol` syntax
 4. Link to it in front matter with the `repository` field
 
 ## Regenerating Gbnf Output Artifacts
 
-The `Gbnf` project (`blog-projects/2025/GbnfGeneration/Gbnf/`) emits `.gbnf` and `.json` artifacts into its `output/` directory. These are referenced from the markdown posts with `gbnf:path` / `json:path` because `:xmldocid` only supports C# / VB language tags.
+The `Gbnf` project (`blog-projects/2025/GbnfGeneration/Gbnf/`) emits `.gbnf` and `.json` artifacts into its `output/` directory. These are embedded whole-file from the markdown posts with `gbnf:symbol` / `json:symbol` and a bare path (no `>`), e.g. `2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleGbnf.gbnf` (relative to `ContentRoot`).
 
 To regenerate after changing any of the example generator code:
 
@@ -121,6 +122,6 @@ The resulting `blog-projects/2025/GbnfGeneration/Gbnf/output/**` files are check
 ## Key Configuration
 
 Main configuration is in `src/Thirty25.Web/Program.cs`:
-- `SolutionPath = "../../thirty25-blazor.sln"` - Required for xmldocid to work
+- `AddPenningtonTreeSitter(opts => opts.ContentRoot = "../../blog-projects")` - Root that `:symbol` file paths resolve against
 - `ContentPath = "Content/blog/"` - Where markdown files are located
 - `BlogPath = "/blog"` - Base URL path for blog posts

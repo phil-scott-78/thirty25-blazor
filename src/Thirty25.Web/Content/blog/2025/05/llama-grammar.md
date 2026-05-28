@@ -39,19 +39,19 @@ Llama.Grammar can also generate GBNF directly from your C# classes. This closely
 
 Define your classes
 
-```csharp:xmldocid
-T:Gbnf.LlamaGrammar.TestPerson
-T:Gbnf.LlamaGrammar.Address
+```csharp:symbol
+2025/GbnfGeneration/Gbnf/LlamaGrammar.cs > LlamaGrammar.TestPerson
+2025/GbnfGeneration/Gbnf/LlamaGrammar.cs > LlamaGrammar.Address
 ```
 
 And then get your GBNF
-```csharp:xmldocid
-M:Gbnf.LlamaGrammar.GetGrammar
+```csharp:symbol
+2025/GbnfGeneration/Gbnf/LlamaGrammar.cs > LlamaGrammar.GetGrammar
 ```
 
 This produces the GBNF of
-```gbnf:path
-blog-projects/2025/GbnfGeneration/Gbnf/output/LlamaGrammar.GetGrammar.gbnf
+```gbnf:symbol
+2025/GbnfGeneration/Gbnf/output/LlamaGrammar.GetGrammar.gbnf
 ```
 
 Looking at the GBNF it should look pretty familiar. It is less opinionated and closely aligns the GBNF generated from other tools.
@@ -60,13 +60,13 @@ Looking at the GBNF it should look pretty familiar. It is less opinionated and c
 
 You can define a JSON schema programmatically and then convert it to GBNF.
 
-```csharp:xmldocid
-M:Gbnf.LlamaGrammar.Schema
+```csharp:symbol
+2025/GbnfGeneration/Gbnf/LlamaGrammar.cs > LlamaGrammar.Schema
 ```
 
 This gives us the GBNF
-```gbnf:path
-blog-projects/2025/GbnfGeneration/Gbnf/output/LlamaGrammar.Schema.gbnf
+```gbnf:symbol
+2025/GbnfGeneration/Gbnf/output/LlamaGrammar.Schema.gbnf
 ```
 
 This approach is useful when you want to dynamically construct your schema or if you prefer a fluent interface for schema definition. This syntax will also benefit if the project ever wants to go to a source generator.

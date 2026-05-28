@@ -147,8 +147,8 @@ same.
 
 RedPajama works more closely to gbnfgen. To use it, we need to create a TypeModelBuilder for our class.
 
-```csharp:xmldocid
-T:Gbnf.User
+```csharp:symbol
+2025/GbnfGeneration/Gbnf/MyApp.cs > User
 ```
 
 Given this class, to use RedPajama to generate it, we need to
@@ -158,14 +158,14 @@ Given this class, to use RedPajama to generate it, we need to
 3. Call the `Build` method on the TypeModelBuilder to get the TypeModel.
 4. Call the `Generate` method on the GbnfGenerator to get the GBNF.
  
-```csharp:xmldocid,bodyonly
-M:Gbnf.MyApp.GetSimpleGbnf
+```csharp:symbol,bodyonly
+2025/GbnfGeneration/Gbnf/MyApp.cs > MyApp.GetSimpleGbnf
 ```
 
 Running this, we get the following GBNF:
 
-```gbnf:path
-blog-projects/2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleGbnf.gbnf
+```gbnf:symbol
+2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleGbnf.gbnf
 ```
 
 This is a bit more complex than the GBNF we were rolling by hand. Let's break down what each part does:
@@ -243,22 +243,22 @@ This assembles all the key-value pairs into a complete JSON object with the exac
 In the previous article, we saw that giving the model a JSON sample drastically improved its success rate. So while we 
 have a representation of the type, let's get a helper that does that too.
 
-```csharp:xmldocid
-M:Gbnf.MyApp.GetSimpleJson
+```csharp:symbol
+2025/GbnfGeneration/Gbnf/MyApp.cs > MyApp.GetSimpleJson
 ```
 
 Running this will give us a templated JSON output that we can use in our prompt.
 
-```json:path
-blog-projects/2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleJson.json
+```json:symbol
+2025/GbnfGeneration/Gbnf/output/MyApp.GetSimpleJson.json
 ```
 
 ## Putting It All Together
 
 So now we have a way to automate GBNF generation, and sample JSON generation. Let's build a full example.
 
-```csharp:xmldocid,bodyonly
-T:Gbnf.ParseOrder
+```csharp:symbol,bodyonly
+2025/GbnfGeneration/Gbnf/ParseOrder.cs > ParseOrder
 ```
 
 With all our new tools, we were able to give the model everything it needs. A good sample so it has directions on the

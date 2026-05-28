@@ -3,7 +3,7 @@ using Pennington.BlogSite.Components;
 using Pennington.Content;
 using Pennington.Highlighting;
 using Pennington.MonorailCss;
-using Pennington.Roslyn;
+using Pennington.TreeSitter;
 using Thirty25.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,8 +19,7 @@ builder.Services.AddBlogSite(() =>
         CanonicalBaseUrl = canonicalBaseUrl,
         ColorScheme = new AlgorithmicColorScheme
         {
-            PrimaryHue = 240,
-            BaseColorName = ColorName.Zinc
+            PrimaryHue = 240
         },
         AdditionalRoutingAssemblies = [typeof(Program).Assembly],
         BlogContentPath = "blog",
@@ -66,9 +65,11 @@ builder.Services.AddBlogSite(() =>
     };
 });
 
-builder.Services.AddPenningtonRoslyn(opts =>
+builder.Services.AddPenningtonTreeSitter(opts =>
 {
-    opts.SolutionPath = "../../thirty25-blazor.sln";
+    // :symbol code fences resolve their file paths against this root. The blog-projects
+    // tree holds the compiled sample code referenced from the posts.
+    opts.ContentRoot = "../../blog-projects";
 });
 
 builder.Services.AddSingleton<ICodeHighlighter, GbnfHighlighter>();

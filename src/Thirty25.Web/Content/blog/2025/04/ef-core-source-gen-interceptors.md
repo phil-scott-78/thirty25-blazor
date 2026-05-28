@@ -30,8 +30,8 @@ at who to blame.
 This feature has been around for a while. With EF Core 2.2, Microsoft added the `TagWith` extension method. 
 This allows us to write a query such as:
 
-```csharp:xmldocid,bodyonly
-M:EfCoreTagging.MyApp.BasicQueryWithTag
+```csharp:symbol,bodyonly
+2025/EfCoreTagging/EfCoreTagging/MyApp.cs > MyApp.BasicQueryWithTag
 ```
 
 This generates SQL with a comment:
@@ -116,14 +116,14 @@ Let's walk through the key parts of the implementation:
 
 First we need to initialize our incremental generator.
 
-```csharp:xmldocid
-M:EfCoreTagging.SourceGenerator.EfCoreTaggingGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)
+```csharp:symbol
+2025/EfCoreTagging/EfCoreTagging.SourceGenerator/EfCoreTaggingGenerator.cs > EfCoreTaggingGenerator.Initialize
 ```
 
 Here we using a predicate that calls `IsLikelyEfCoreTerminalMethod`
 
-```csharp:xmldocid
-M:EfCoreTagging.SourceGenerator.EfCoreTaggingGenerator.IsLikelyEfCoreTerminalMethod(Microsoft.CodeAnalysis.SyntaxNode)
+```csharp:symbol
+2025/EfCoreTagging/EfCoreTagging.SourceGenerator/EfCoreTaggingGenerator.cs > EfCoreTaggingGenerator.IsLikelyEfCoreTerminalMethod
 ```
 
 This code is used to merely filter out code our source generator is looking at. It's rather simple, with the predicates
@@ -141,8 +141,8 @@ information needed for that base64 encoded string we saw above in the `Intercept
 up the rest of the information about the call being made so we have the proper data to write our tags, and dump it in
 our `MethodCallInfo` DTO.
 
-```csharp:xmldocid
-M:EfCoreTagging.SourceGenerator.EfCoreTaggingGenerator.GetMethodCallInfo(Microsoft.CodeAnalysis.GeneratorSyntaxContext)
+```csharp:symbol
+2025/EfCoreTagging/EfCoreTagging.SourceGenerator/EfCoreTaggingGenerator.cs > EfCoreTaggingGenerator.GetMethodCallInfo
 ```
 
 ### Generating Interceptors
@@ -194,8 +194,8 @@ location for each method call.
 
 Let's see this in action with a simple EF Core query:
 
-```csharp:xmldocid
-M:EfCoreTagging.MyApp.RunIt
+```csharp:symbol
+2025/EfCoreTagging/EfCoreTagging/MyApp.cs > MyApp.RunIt
 ```
 
 Behind the scenes, our source generator creates an interceptor:
