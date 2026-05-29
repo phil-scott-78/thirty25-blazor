@@ -1,233 +1,142 @@
 # Thirty25, Phil Scott's Blog
 
-Based heavily on BlazorStatic,  a library that enables you to generate static HTML websites from Blazor applications. This approach combines the development experience of Blazor with the performance and deployment simplicity of static websites.
-
-## Features
-
-- Convert server-side rendered Blazor applications to static HTML, CSS, and JavaScript
-- Support for Markdown content with YAML front matter
-- Automatic blog post and tag page generation
-- Customizable content processing pipeline
-- File watching and hot reload during development
-- Sitemap.xml and RSS feed generation
-- Flexible route-based static site generation
+A static site built on [Pennington.BlogSite](https://github.com/phil-scott-78/MyLittleContentEngine), a .NET static content generator. Blog posts are written in Markdown and converted to static HTML.
 
 ## Getting Started
 
-You're gonna have to fork this repo and rip my stuff out to use this. For a better supported and complete experience, check out [BlazorStatic](https://github.com/BlazorStatic/BlazorStatic).
+This is a personal blog — you'll need to fork this and replace the content and configuration with your own. For a more general-purpose static site framework, see the underlying [MyLittleContentEngine](https://github.com/phil-scott-78/MyLittleContentEngine) project.
 
-### Basic Configuration
+## Common Commands
 
-Configure BlazorStatic in your `Program.cs` file:
+### Development
 
-```csharp
-using BlazorStatic;
-using YourNamespace.Web.BlogServices;
-using YourNamespace.Web.Components;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.UseStaticWebAssets();
-builder.Services.AddRazorComponents();
-
-// Configure site-wide settings
-builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
-{
-    BlogTitle = "Your Blog Title",
-    BlogDescription = "Your blog description goes here",
-    BaseUrl = "https://yourdomain.com"
-});
-
-// Configure content service with custom front matter type
-builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>
-{
-    PageUrl = "blog",
-    ContentPath = "blog/content"
-});
-
-var app = builder.Build();
-app.UseHttpsRedirection();
-app.MapRazorComponents<App>();
-
-// Run the app or generate static files based on command-line arguments
-await app.RunOrBuildBlazorStaticSite(args);
+```bash
+dotnet run --project src/Thirty25.Web/Thirty25.Web.csproj
 ```
 
-## Configuration Options
+Site runs at https://localhost:7075 with hot reload for both Razor files and blog post Markdown.
 
-### BlazorStaticOptions
+### Build Static Site
 
-Site-wide configuration options for the static generation process:
+```bash
+dotnet run --project src/Thirty25.Web/Thirty25.Web.csproj --configuration Release -- build
+```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `BlogTitle` | Title of the blog or website | *required* |
-| `BlogDescription` | Description or tagline of the blog | *required* |
-| `BaseUrl` | Base URL for the published site (e.g., "https://example.com") | *required* |
-| `OutputFolderPath` | Output directory path for generated static files | "output" |
-| `PagesToGenerate` | Collection of pages to generate as static HTML files | empty list |
-| `AddPagesWithoutParameters` | Whether to include non-parameterized Razor pages | true |
-| `IndexPageHtml` | Filename to use for index pages | "index.html" |
-| `IgnoredPathsOnContentCopy` | Paths to exclude when copying content | empty list |
-| `FrontMatterDeserializer` | YAML deserializer for parsing front matter | default config |
-| `MarkdownPipeline` | Markdown processing pipeline | default config |
+Output goes to `src/Thirty25.Web/output/`.
 
-### BlazorStaticContentOptions<TFrontMatter>
+### Build Solution
 
-Content-specific configuration options:
+```bash
+dotnet build
+```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `ContentPath` | Folder path where content files are stored | "Content/Blog" |
-| `PostFilePattern` | File pattern used to identify content files | "*.md" |
-| `PageUrl` | URL path component for the page that displays content | "blog" |
-| `PreProcessMarkdown` | Hook to process markdown content before rendering | identity function |
-| `PostProcessMarkdown` | Hook to process front matter and HTML after parsing | identity function |
-| `ExcludedMapRoutes` | List of routes to exclude from static generation | empty list |
-| `Tags` | Options related to tag functionality | default config |
+## Configuration
 
-### Tags Options
+Main configuration is in `src/Thirty25.Web/Program.cs` via `AddBlogSite()`:
 
-Tag-related configuration options:
+| Property | Description |
+|----------|-------------|
+| `SiteTitle` | Title of the site |
+| `AuthorName` | Author's name |
+| `Description` | Site tagline |
+| `CanonicalBaseUrl` | Full base URL (also read from `CanonicalBaseHref` env var) |
+| `BlogContentPath` | Folder under `Content/` where Markdown posts live |
+| `BlogBaseUrl` | URL prefix for blog posts |
+| `TagsPageUrl` | URL for the tags index page |
+| `EnableRss` / `EnableSitemap` | Toggle RSS feed and sitemap generation |
+| `ColorScheme` | Algorithmic color scheme (hue-based) |
+| `HeroContent` | Homepage hero text |
+| `MyWork` | Projects listed on the homepage |
+| `Socials` | Social media links |
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `AddTagPagesFromPosts` | Whether to generate tag pages from blog posts | true |
-| `TagsPageUrl` | URL path component for the tag page | "tags" |
-| `TagEncodeFunc` | Function to encode tag strings into URL-friendly formats | Slugify function |
+The `:symbol` code fence feature is configured separately:
 
-## Content Structure
+```csharp
+builder.Services.AddPenningtonTreeSitter(opts =>
+{
+    opts.ContentRoot = "../../blog-projects";
+});
+```
+
+## Writing Blog Posts
+
+### File Location
+
+Create Markdown files in `src/Thirty25.Web/Content/blog/YYYY/MM/post-slug.md`.
 
 ### Front Matter
 
-Create a class to define the structure of your markdown front matter:
-
-```csharp
-public class FrontMatter : IFrontMatter, IFrontMatterWithTags
-{
-    public required string Title { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public DateTime Date { get; set; } = DateTime.Now;
-    public bool IsDraft { get; set; }
-    public List<string> Tags { get; set; } = new();
-}
+```yaml
+---
+Title: Your Post Title
+description: Brief description for SEO and social cards
+date: 2025-01-07
+tags:
+  - CSharp
+  - Blazor
+repository: https://github.com/phil-scott-78/thirty25-blazor/tree/main/blog-projects/2025/ProjectName
+series: "Series Name"
+---
 ```
 
-### Markdown Files
+### Images
 
-Create markdown files with YAML front matter in your content directory:
+Store images in `src/Thirty25.Web/Content/blog/media/` and reference them relatively:
 
 ```markdown
----
-title: My First Post
-description: A brief description of this post
-date: 2023-01-01
-tags: [blazor, static, web]
----
-
-# Hello World
-
-This is my first blog post using BlazorStatic.
+![Alt text](../media/image.png)
 ```
 
-## Building Your Static Site
+## Embedding Code from blog-projects
 
-To generate a static site from your Blazor application, run:
+The `:symbol` fence type embeds live source code from the `blog-projects/` directory using [Pennington.TreeSitter](https://github.com/phil-scott-78/MyLittleContentEngine) (no compilation needed — parsed directly from source).
+
+````markdown
+```csharp:symbol
+2025/MyProject/MyProject/MyApp.cs > MyClass.MyMethod
+```
+````
+
+Paths are relative to `ContentRoot` (`../../blog-projects`), so omit the `blog-projects/` prefix.
+
+**Flags** (comma-separated, e.g. `` ```csharp:symbol,bodyonly ``):
+
+| Flag | Effect |
+|------|--------|
+| `bodyonly` | Strip the declaration line and braces, show only the body |
+| `imports` | Prepend the file's top-level `using` statements |
+| `signatures` | Collapse member bodies to `{ … }` |
+
+**Variants:**
+
+- `csharp:symbol-diff` — unified diff between two symbol references (one per line, before → after)
+- A bare path with no `>` embeds the entire file
+
+**Tabbed widget:** add `tabs=true` as a fence attribute to group adjacent fenced blocks into a tab strip.
+
+### Adding a new code example
+
+1. Create a project in `blog-projects/YYYY/ProjectName/`
+2. Add it to `thirty25-blazor.sln`
+3. Reference symbols in your post via `:symbol`
+4. Link to it in front matter via the `repository` field
+
+### GBNF output artifacts
+
+The `Gbnf` project (`blog-projects/2025/GbnfGeneration/Gbnf/`) writes `.gbnf` and `.json` files to its `output/` directory. These are embedded via `gbnf:symbol` / `json:symbol` with a bare path. To regenerate after changing generator code:
 
 ```bash
-dotnet run -- build
+dotnet run --project blog-projects/2025/GbnfGeneration/Gbnf/Gbnf.csproj
 ```
 
-This will create static HTML files in the configured output directory.
-
-## Advanced Usage
-
-### Custom Content Processing
-
-You can customize how markdown content is processed:
-
-```csharp
-builder.Services.AddBlazorStaticContentService(() => new BlazorStaticContentOptions<FrontMatter>
-{
-    PageUrl = "blog",
-    ContentPath = "blog/content",
-    PreProcessMarkdown = (serviceProvider, markdownContent) => {
-        // Modify markdown content before parsing
-        return markdownContent;
-    },
-    PostProcessMarkdown = (serviceProvider, frontMatter, htmlContent) => {
-        // Modify front matter or HTML content after parsing
-        return (frontMatter, htmlContent);
-    }
-});
-```
-
-### Custom Page Generation
-
-Define specific pages to generate:
-
-```csharp
-builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
-{
-    // Required properties
-    BlogTitle = "My Blog",
-    BlogDescription = "Blog description",
-    BaseUrl = "https://example.com",
-    
-    // Add custom pages
-    PagesToGenerate = ImmutableList.Create(
-        new PageToGenerate("/custom-page", "custom-page.html"),
-        new PageToGenerate("/projects/featured", "projects/featured.html")
-    )
-});
-```
-
-### Customizing Ignored Paths
-
-Specify paths to ignore during content copying:
-
-```csharp
-builder.Services.AddBlazorStaticService(() => new BlazorStaticOptions
-{
-    // Required properties
-    BlogTitle = "My Blog",
-    BlogDescription = "Blog description",
-    BaseUrl = "https://example.com",
-    
-    // Ignore specific paths
-    IgnoredPathsOnContentCopy = ImmutableList.Create(
-        "draft-content",
-        "temp-files"
-    )
-});
-```
-
-## Components
-
-BlazorStatic includes several Razor components to display blog content:
-
-- `BlogPost.razor` - Displays a single blog post
-- `BlogPostsList.razor` - Displays a list of blog posts
-- `BlogSummary.razor` - Displays a summary of a blog post
+Commit the resulting `blog-projects/2025/GbnfGeneration/Gbnf/output/**` files alongside source changes.
 
 ## License
 
 MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
