@@ -3,6 +3,7 @@ using Pennington.BlogSite.Components;
 using Pennington.Content;
 using Pennington.Highlighting;
 using Pennington.MonorailCss;
+using Pennington.SocialCards;
 using Pennington.TreeSitter;
 using Thirty25.Web;
 
@@ -15,7 +16,7 @@ builder.Services.AddBlogSite(() =>
     {
         SiteTitle = "Thirty25",
         AuthorName = "Phil Scott",
-        Description = "Quite exciting this computer magic",
+        SiteDescription = "Quite exciting this computer magic",
         CanonicalBaseUrl = canonicalBaseUrl,
         ColorScheme = new AlgorithmicColorScheme
         {
@@ -61,11 +62,25 @@ builder.Services.AddBlogSite(() =>
             new SocialLink(SocialIcons.BlueskyIcon, "https://bsky.app/profile/philco.bsky.social")
         ],
         MainSiteLinks = [],
-        SocialMediaImageUrlFactory = page => $"{canonicalBaseUrl}/social-images/{SocialImageService.GenerateSocialFilename(page.Url)}"
+        SocialCards = new SocialCardOptions
+        {
+            // This sample paints a solid placeholder card with a dependency-free PNG encoder so the
+            // example needs no image library. In a real app, draw `request.Title` /
+            // `request.Description` onto the canvas with an image library (ImageSharp, SkiaSharp) or
+            // screenshot an HTML template with Playwright — `request` carries everything you need.
+            Render = (request, sp) =>
+            {
+                var png = SocialImageService.RenderCard(
+                    request.Title,
+                    request.Description ?? request.SiteDescription ?? string.Empty, 
+                    request.Date?.ToLongDateString() ?? string.Empty);
+                return Task.FromResult<byte[]?>(png);
+            },
+        },
     };
 });
 
-builder.Services.AddPenningtonTreeSitter(opts =>
+builder.Services.AddTreeSitter(opts =>
 {
     // :symbol code fences resolve their file paths against this root. The blog-projects
     // tree holds the compiled sample code referenced from the posts.
@@ -73,9 +88,6 @@ builder.Services.AddPenningtonTreeSitter(opts =>
 });
 
 builder.Services.AddSingleton<ICodeHighlighter, GbnfHighlighter>();
-
-builder.Services.AddSingleton<SocialImageService>();
-builder.Services.AddSingleton<IContentService>(provider => provider.GetRequiredService<SocialImageService>());
 
 var app = builder.Build();
 app.MapStaticAssets();

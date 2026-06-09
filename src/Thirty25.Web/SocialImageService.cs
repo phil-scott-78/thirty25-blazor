@@ -1,218 +1,134 @@
-using System.Collections.Concurrent;
-using System.Collections.Immutable;
-using Microsoft.Playwright;
-using Pennington.BlogSite.Services;
-using Pennington.Content;
-using Pennington.Pipeline;
+using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Thirty25.Web;
 
-public class SocialImageService(IServiceProvider serviceProvider, ILogger<SocialImageService> logger) : IContentService
+public class SocialImageService
 {
-    public string DefaultSectionLabel => "";
+    private const string InterFontPath = "Inter-VariableFont_opsz,wght.ttf";
 
-    public int SearchPriority => 0;
+    private static readonly SKTypeface BoldTypeface = LoadTypeface(SKFontStyleWeight.ExtraBold);
+    private static readonly SKTypeface LightTypeface = LoadTypeface(SKFontStyleWeight.Light);
+    private static readonly SKFont TitleFont = new(BoldTypeface, 40);
+    private static readonly SKFont DescFont = new(LightTypeface, 24);
+    private static readonly SKFont DateFont = new(LightTypeface, 20);
+    private static readonly SKShaper TitleShaper = new(BoldTypeface);
+    private static readonly SKShaper DescShaper = new(LightTypeface);
 
-    public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+    public static byte[] RenderCard(string title, string description, string date)
     {
-        await Task.CompletedTask;
-        yield break;
-    }
+        const int width = 1200;
+        const int height = 630;
+        const int padding = 50;
 
-    public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() =>
-        Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        using var surface = SKSurface.Create(new SKImageInfo(width, height));
+        var canvas = surface.Canvas;
+        canvas.Clear(new SKColor(0x09, 0x09, 0x0b));
 
-    public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() =>
-        Task.FromResult(ImmutableList<ContentToCopy>.Empty);
-
-    public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() =>
-        Task.FromResult(ImmutableList<CrossReference>.Empty);
-
-    public Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync() =>
-        Task.FromResult(ImmutableList<DiscoveredItem>.Empty);
-
-    public async Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-    {
-        var png = ConvertPngToBase64ImgTag("social-bg.png");
-
-        var contentToCreate = new ConcurrentBag<ContentToCreate>();
-
-        logger.LogInformation("Starting social media card generation");
-
-        using var playwright = await Playwright.CreateAsync();
-        logger.LogDebug("Playwright created.");
-        await using var browser = await playwright.Chromium.LaunchAsync();
-        logger.LogDebug("Browser launched.");
-
-        var browserContext = await browser.NewContextAsync(new BrowserNewContextOptions
-            { ViewportSize = new ViewportSize { Width = 1200, Height = 630 } });
-
-        var blogContentResolver = serviceProvider.GetRequiredService<BlogContentResolver>();
-        var posts = await blogContentResolver.GetAllPostsAsync();
-        await Parallel.ForEachAsync(posts, async (post, token) =>
+        if (File.Exists("social-bg.png"))
         {
-            var page = await browserContext.NewPageAsync();
+            using var bgBitmap = SKBitmap.Decode("social-bg.png");
+            if (bgBitmap != null)
+            {
+                var scale = (float)height / bgBitmap.Height * 1.25f;
+                var scaledW = bgBitmap.Width * scale;
+                var scaledH = bgBitmap.Height * scale;
+                var dy = (height - scaledH) / 2f;
+                using var bgImage = SKImage.FromBitmap(bgBitmap);
+                canvas.DrawImage(bgImage,
+                    new SKRect(width - scaledW, dy, width, dy + scaledH),
+                    new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
+            }
+        }
 
-            var filename = GenerateSocialFilename(post.Url);
-            var title = post.FrontMatter.Title;
-            var description = post.FrontMatter.Description ?? string.Empty;
-            var date = post.FrontMatter.Date?.ToString("yyyy MMMM dd") ?? string.Empty;
+        using var gradientShader = SKShader.CreateLinearGradient(
+            new SKPoint(0, 0),
+            new SKPoint(width * 0.7f, 0),
+            [
+                new SKColor(0x09, 0x09, 0x0b, 255),
+                new SKColor(0x09, 0x09, 0x0b, 0xcc),
+                new SKColor(0x09, 0x09, 0x0b, 0)
+            ],
+            [0f, 0.5f, 1f],
+            SKShaderTileMode.Clamp);
+        using var gradientPaint = new SKPaint();
+        gradientPaint.Shader = gradientShader;
+        canvas.DrawRect(new SKRect(0, 0, width * 0.7f, height), gradientPaint);
 
-            var html = BuildSocialCardHtml(title, description, date, png);
+        float y = padding;
 
-            await page.SetContentAsync(html);
-            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        using var titlePaint = new SKPaint { Color = SKColors.White, IsAntialias = true };
+        y += TitleFont.Size;
+        y = DrawWrappedText(canvas, title, TitleShaper, TitleFont, titlePaint, padding, y, width * 0.55f - padding);
+        y += 30;
 
-            var imageBytes = await page.ScreenshotAsync(new PageScreenshotOptions { Type = ScreenshotType.Png });
+        using var descPaint = new SKPaint { Color = new SKColor(255, 255, 255, 230), IsAntialias = true };
+        DrawWrappedText(canvas, description, DescShaper, DescFont, descPaint, padding, y, width * 0.55f - padding, maxLines: 4);
 
-            contentToCreate.Add(new ContentToCreate(
-                $"social-images/{filename}",
-                () => Task.FromResult(imageBytes),
-                "image/png"));
-        });
+        if (!string.IsNullOrEmpty(date))
+        {
+            using var datePaint = new SKPaint { Color = new SKColor(255, 255, 255, 200), IsAntialias = true };
+            canvas.DrawText(date.ToUpperInvariant(), padding, height - padding, DateFont, datePaint);
+        }
 
-        return contentToCreate.ToImmutableList();
+        using var snapshot = surface.Snapshot();
+        using var encoded = snapshot.Encode(SKEncodedImageFormat.Png, 100);
+        return encoded.ToArray();
     }
 
-    public static string GenerateSocialFilename(string url)
+    private static SKTypeface LoadTypeface(SKFontStyleWeight weight)
     {
-        var sanitized = url.Replace("/", "-").Replace("\\", "-").Trim('-');
-        return string.IsNullOrEmpty(sanitized) ? "index.png" : $"{sanitized}.png";
+        var style = new SKFontStyle(weight, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+        // System Inter honors variable font weight axes; bundled file is a fallback at default weight
+        return SKTypeface.FromFamilyName("Inter", style)
+            ?? (File.Exists(InterFontPath) ? SKTypeface.FromFile(InterFontPath) : null)
+            ?? SKTypeface.FromFamilyName("Segoe UI", style)
+            ?? SKTypeface.FromFamilyName("Helvetica Neue", style)
+            ?? SKTypeface.Default;
     }
 
-    private static string ConvertPngToBase64ImgTag(string imagePath)
+    private static float DrawWrappedText(
+        SKCanvas canvas, string text, SKShaper shaper, SKFont font, SKPaint paint,
+        float x, float y, float maxWidth, int maxLines = int.MaxValue)
     {
-        if (!File.Exists(imagePath))
-            throw new FileNotFoundException("Image file not found.", imagePath);
+        if (string.IsNullOrWhiteSpace(text)) return y;
 
-        var imageBytes = File.ReadAllBytes(imagePath);
-        var base64String = Convert.ToBase64String(imageBytes);
-        return $"data:image/png;base64,{base64String}";
-    }
+        var lineHeight = font.Size * 1.3f;
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var currentLine = string.Empty;
+        var linesDrawn = 0;
 
-    private static string BuildSocialCardHtml(string title, string description, string date, string backgroundImage)
-    {
-        return $$"""
-                  <!DOCTYPE html>
-                  <html>
-                  <head>
-                      <link rel="preconnect" href="https://fonts.googleapis.com">
-                      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+        void DrawLine(string line)
+        {
+            var shaped = shaper.Shape(line, x, y, font);
+            using var blob = SKTextBlob.CreatePositioned(line, font, shaped.Points);
+            if (blob != null) canvas.DrawText(blob, 0, 0, paint);
+        }
 
-                      <style>
-                          body {
-                              margin: 0;
-                              padding: 30px;
-                              font-family: Quicksand, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                              background-color: #000000;
-                              width: 100vw;
-                              height: 100vh;
-                              box-sizing: border-box;
-                              display: flex;
-                              flex-direction: column;
-                              justify-content: space-between;
-                              align-items: flex-start;
-                              color: #fff;
-                          }
+        foreach (var word in words)
+        {
+            if (linesDrawn >= maxLines) break;
 
-                          .container {
-                              z-index:50;
-                              width: 100%;
-                              height: 100%;
-                              display: flex;
-                              flex-direction: column;
-                              justify-content: space-between;
-                              max-width: none;
-                              margin: 0;
-                          }
+            var candidate = currentLine.Length == 0 ? word : currentLine + " " + word;
+            if (shaper.Shape(candidate, font).Width > maxWidth && currentLine.Length > 0)
+            {
+                DrawLine(currentLine);
+                y += lineHeight;
+                linesDrawn++;
+                currentLine = word;
+            }
+            else
+            {
+                currentLine = candidate;
+            }
+        }
 
-                          .content-top {
-                              display: flex;
-                              flex-direction: column;
-                              align-items: flex-start;
-                              gap: 30px;
-                              flex-grow: 1;
-                              max-width: 75%;
-                          }
+        if (linesDrawn < maxLines && currentLine.Length > 0)
+        {
+            DrawLine(currentLine);
+            y += lineHeight;
+        }
 
-                          .title {
-                              font-size: 68px;
-                              font-weight: 900;
-                              line-height: 1.3;
-                              margin: 0;
-                              text-shadow: #000 1px 0 10px;
-                              width: 100%;
-                          }
-
-                          .description {
-                              font-size: 32px;
-                              font-weight: 300;
-                              line-height: 1.3;
-                              margin: 0;
-                              opacity: 0.9;
-                              max-width: 70%;
-                              display: -webkit-box;
-                              -webkit-line-clamp: 4;
-                              -webkit-box-orient: vertical;
-                              overflow: hidden;
-                          }
-
-                          .date {
-                              font-size: 20px;
-                              font-weight: 300;
-                              opacity: 0.8;
-                              text-transform: uppercase;
-                              letter-spacing: 2px;
-                              margin: 0;
-                              align-self: flex-start;
-                          }
-
-                  .image {
-                    position: absolute;
-                    z-index:10;
-                    width:100vw;
-                    top:0;
-                    left:0;
-                    height: 100vh;
-                    background-color: #000;
-                    overflow: hidden;
-                  }
-
-                  .gradient-overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 70vw;
-                    height: 100%;
-                    background: linear-gradient(to right, #09090b 0%, #09090bcc 50%, transparent 100%);
-                    z-index: 99;
-                  }
-
-                  .image img {
-                    position: absolute;
-                    right:0;
-                    top:0;
-                    height:100vh;
-                    z-index: -1;
-                    scale:1.25
-                  }
-                  </style>
-                  </head>
-                  <body>
-                      <div class="container">
-                          <div class="content-top">
-                              <div class="title">{{title}}</div>
-                              <div class="description">{{description}}</div>
-                          </div>
-                          <div class="date">{{date}}</div>
-                      </div>
-                      <div class="image">
-                        <img src="{{backgroundImage}}"/>
-                        <div class="gradient-overlay"></div>
-                      </div>
-                  </body>
-                  </html>
-                  """;
+        return y;
     }
 }

@@ -44,26 +44,9 @@ jobs:
         with:
           global-json-file: global.json
 
-      # Cache Playwright browsers
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/ms-playwright
-            ~/AppData/Local/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/global.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Build the Project
         run: |
           dotnet build
-
-      - name: Install Playwright.NET
-        uses: phil-scott-78/setup-playwright-dotnet@v0.1.0-alpha
-        with:
-          global-json-file: global.json
-          browsers: 'chromium'
 
       - name: Run webapp and generate static files
         run: |
